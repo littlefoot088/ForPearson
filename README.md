@@ -15,8 +15,8 @@ Open the local URL printed by Vite. `npm run build` creates the production bundl
 
 ## What it demonstrates
 
-- A job-specific narrative explains why Eimhin is worth considering, followed by distinct experience, qualifications and keeper-interest indicators. Career intentions remain explicitly unknown.
-- Three experience rows lead to their assessment and original evidence. Five qualification rows and two non-certificate considerations follow. Mechanical or electrical maintenance remains one underlying requirement with two alternative evidence routes.
+- One concise narrative explains why Eimhin is worth considering. A compact header identifies the keeper, opportunity, employer and sourced working arrangements.
+- Two essential maintenance evidence rows lead to their assessment and original evidence. Five safety/medical rows follow; permits and supporting colleagues are grouped as additional employer preferences. Offshore working conditions sit with opportunity interest. Mechanical or electrical maintenance remains one underlying requirement with two alternative evidence routes.
 - Eleven verbatim raw log entries and four training records, with source locations, exact highlights and separate interpretations.
 - Evidence-state labels that distinguish experience evidence, recorded modules, attendance and unresolved requirements without scores or unsupported certification claims.
 - One editable Discussion with Eimhin list; reversible qualification checks and separate internal record-review flags.
@@ -40,7 +40,7 @@ Requirement assessments, exact substring highlighting and record metadata remain
 
 ## Validation
 
-All 23 tests pass (12 fixture/workflow tests and 11 component tests). `npm test` covers source integrity, qualification distinctions, evidence reachability and the proposed workflow rules. Component tests cover single-row disclosure, source navigation/highlighting, source details, discussion questions, verification checks, career discussion, separate suggestion/response stages and nomination gates. The nomination tests check that changed interest invalidates a prior local decision and never submits to an employer. The component suite uses jsdom and does not verify visual layout.
+All 25 tests pass (13 fixture/workflow tests and 12 component tests). `npm test` covers source integrity, qualification distinctions, evidence reachability and the proposed workflow rules. Component tests cover single-row disclosure, source navigation/highlighting, source details, discussion questions, verification checks, career discussion, separate suggestion/response stages and nomination gates. The nomination tests check that changed interest invalidates a prior local decision and never submits to an employer. The component suite uses jsdom and does not verify visual layout.
 
 The production build passes. Component tests cover the restructured experience/qualification lists, all eleven exact log highlights, all four training records, optional discussion topics and state-based recommendation precedence, in addition to the existing focus, discussion, check and nomination safeguards. They run in jsdom and do not verify visual layout.
 
@@ -50,8 +50,17 @@ The proposed operating process and potential business benefits are documented in
 
 ## Candidate-focused assessment
 
-The Why consider Eimhin narrative is curated copy in `src/data.js`, with explicit claim, source and vacancy links. It connects repeated pump repairs and electrical fault-finding to the employer’s acceptance of maintenance experience from other plant and lack of a prior-wind requirement. The rationale does not depend on the two disputed 2009 records and does not certify current competence. Once interest is recorded, the narrative no longer asks for it to be established.
+The Why consider Eimhin narrative is curated copy in `src/data.js`, with explicit claim, source and vacancy links. It connects repeated pump repairs and electrical fault-finding to the employer’s acceptance of maintenance experience from other plant and lack of a prior-wind requirement. The rationale does not depend on the two disputed 2009 records and does not certify current competence. Interest has its own section and is not repeated in the narrative.
 
-Recommended next step is a normal-flow section, not a sticky bar. `nextRecommendation` supplies both its guidance and primary action. Initial Prepare discussion opens the existing question list with two optional topics; nothing is saved until the officer edits/saves a question. Subsequent states prioritise recording a response, following up information, reconsidering an unsuitable assessment or considering/reviewing nomination. Interest, checks and nomination remain separate.
+Officer decision and next step is a normal-flow section, not a sticky bar. `nextRecommendation` supplies both its guidance and primary action. Initial Prepare discussion opens the existing question list with two optional topics; nothing is saved until the officer edits/saves a question. Subsequent states prioritise recording a response, following up information, reconsidering an unsuitable assessment or considering/reviewing nomination. Interest, checks and nomination remain separate.
 
 Safety certification is expressly required before mobilisation. The vacancy states medical fitness as essential without specifying a verification stage; it does not establish certificate verification as an interview gate.
+
+
+## Intentional hierarchy
+
+Each fact has one home: candidate/opportunity context → suitability narrative → essential experience → safety certificates and medical fitness → additional employer preferences → keeper interest and required working conditions → officer decision and next step. The former three-column summary and repeated career-intention/preference labels are removed. Unknown personal plans stay distinct from opportunity-specific responses in the data.
+
+Prepare a question opens an editable role/offshore discussion prompt. Add qualification check creates a task, not a verification result; added checks are listed below qualifications and can be removed without reopening a row. Response editing sits beside interest; officer assessment editing sits beside the judgement. An unsuitable assessment can remain on hold. Evidence opens on the first post-joining selected record, while every early record and attribution caveat remains accessible in chronological navigation.
+
+Latest hierarchy review: desktop rendering and narrow layout at 250% browser zoom were inspected. Controls wrapped without visible horizontal overflow. Physical-mobile and screen-reader testing were not performed; modal behaviour and focus restoration are covered by the component suite. The local preview is left running.

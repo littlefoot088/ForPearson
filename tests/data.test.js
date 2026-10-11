@@ -130,7 +130,7 @@ test("candidate narrative and experience rows retain traceable requirement links
     /does not require previous wind experience/,
   );
   assert.doesNotMatch(
-    candidateSummary.interestKnownText,
+    candidateSummary.text,
     /interest in offshore work need discussion/,
   );
 });

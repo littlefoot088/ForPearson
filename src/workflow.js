@@ -1,10 +1,10 @@
 // Proposed workflow for one person/opportunity pair; no communications or submissions.
 export const careerContext = {
   id: "career-preferences",
-  text: "Career intentions and preferences",
-  title: "Career intentions and preferences",
+  text: "Interest and offshore working preferences",
+  title: "Interest and offshore working preferences",
   question:
-    "What would you like to do next: seek employment, explore different careers or consider retirement? What types of work, locations and travel arrangements interest you? Would you consider offshore work or additional training?",
+    "Would you like to explore this Wind Turbine Technician opportunity? How would offshore work and the 14-days-on / 14-days-off pattern fit your plans?",
 };
 export const opportunityContext = {
   id: "opportunity-questions",
@@ -106,8 +106,7 @@ export function nextRecommendation(state) {
     return {
       action: "assessment",
       label: "Update officer assessment",
-      guidance:
-        "Reconsider your assessment before progressing this opportunity.",
+      guidance: "This opportunity is on hold following your assessment.",
     };
   if (state.interest === "not-interested")
     return {
@@ -158,9 +157,8 @@ export function nextRecommendation(state) {
   return {
     action: "discussion",
     label: "Prepare discussion",
-    guidance:
-      "Eimhin’s maintenance experience makes this opportunity worth discussing.",
+    guidance: "Discuss the role and Eimhin’s existing safety certificates.",
     detail:
-      "Establish his interest in offshore work and ask which safety certificates he already holds. These checks can guide a referral without assuming he needs new training.",
+      "Prepare editable questions for your conversation; saving them does not record a suggestion or response.",
   };
 }

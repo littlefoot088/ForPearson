@@ -94,3 +94,10 @@ Discussion with Eimhin collects editable questions by experience area or topic, 
 Experience presentation rows preserve their parent requirement IDs. Pump repair and electrical fault-finding map to the same maintenance requirement; the pumped-systems and generator-control modules stay with their respective area. Safe-work planning/permits map to the permit preference. Formal qualifications and non-certificate considerations retain their original definitions and evidence statuses.
 
 The narrative’s uncertainty sentence omits the request to establish interest once any opportunity response is recorded. `nextRecommendation` derives recommendations from existing officer, interest and nomination state; it never treats a local qualification task as a verified outcome. Safety certification is a documented mobilisation condition. Medical fitness is essential with timing unspecified. The fixture provides no verified-current full required qualification and no confirmed training gap.
+
+
+## Consolidated assessment presentation
+
+The shorter suitability narrative retains its existing claim and vacancy provenance; it does not depend on either early, attribution-uncertain record. Personal intention, working preferences and opportunity interest remain separate data concepts despite a consolidated interest presentation. No source fixtures, quotations, highlights or expiry rules changed.
+
+Evidence inspection starts on the first selected record on or after the documented joining date. This is an initial selection only, not an exclusion or a claim of externally verified attribution. Chronological record navigation still includes all eleven logs and both early attribution caveats. Qualification checks are visible local tasks, independent of questions, record-review flags and progression. A not-currently-suitable assessment leaves the opportunity on hold without prompting progression.

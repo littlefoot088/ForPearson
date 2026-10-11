@@ -21,7 +21,6 @@ import {
   dateLabel,
   reviewDate,
   person,
-  requirementNextSteps,
 } from "./data";
 
 const statusIcons = {
@@ -59,13 +58,14 @@ export function RequirementRow({ requirement, children }) {
             className="assessment-status"
           >
             <Icon icon={statusIcons[status.icon]} />
-            {requirement.conclusion ?? status.label}
+            {requirement.conclusion ??
+              (requirement.assessment === "unknown" &&
+              requirement.type === "qualification"
+                ? requirement.id === "medical"
+                  ? "Clearance not established from records"
+                  : "Certificate not established from records"
+                : status.label)}
           </Text>
-          {!requirement.conclusion && (
-            <Text component="span" size="sm" c="dimmed">
-              {requirementNextSteps[requirement.id]}
-            </Text>
-          )}
         </span>
       </Accordion.Control>
       <Accordion.Panel aria-labelledby={"requirement-" + requirement.id}>
@@ -174,7 +174,7 @@ function QualificationDetail({
           leftSection={<Icon icon={flagged ? Check : Flag} />}
           onClick={() => onFlag(q)}
         >
-          {flagged ? "Qualification check added" : "Check qualification"}
+          {flagged ? "Qualification check added" : "Add qualification check"}
         </Button>
       </Group>
       {flagged && (

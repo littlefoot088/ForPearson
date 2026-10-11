@@ -74,7 +74,13 @@ describe("Mantine review interactions", () => {
     const inspect = await openPump(user);
     const dialog = await screen.findByRole("dialog");
     await waitFor(() =>
-      expect(within(dialog).getByText("Record 1 of 5")).toBeVisible(),
+      expect(within(dialog).getByText("Record 2 of 5")).toBeVisible(),
+    );
+    expect(
+      within(dialog).queryByText(/Confirm it belongs to him/),
+    ).not.toBeInTheDocument();
+    await user.click(
+      within(dialog).getByRole("button", { name: "Previous evidence record" }),
     );
     expect(within(dialog).getByText("Needs checking:")).toBeVisible();
     expect(
@@ -152,7 +158,7 @@ describe("Mantine review interactions", () => {
     expect(
       screen.getByText(/Officer assessment:/).parentElement,
     ).toHaveTextContent("Not reviewed");
-    expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
+    expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
       "Not yet discussed",
     );
     await user.click(
@@ -186,7 +192,7 @@ describe("Mantine review interactions", () => {
     const user = setup();
     await user.click(requirement(/Sea survival.*Module recorded/));
     await user.click(
-      await screen.findByRole("button", { name: "Check qualification" }),
+      await screen.findByRole("button", { name: "Add qualification check" }),
     );
     expect(
       screen.getByRole("button", { name: "Qualification check added" }),
@@ -206,7 +212,7 @@ describe("Mantine review interactions", () => {
       screen.getByRole("button", { name: "Qualification check added" }),
     );
     expect(
-      screen.getByRole("button", { name: "Check qualification" }),
+      screen.getByRole("button", { name: "Add qualification check" }),
     ).toHaveAttribute("aria-pressed", "false");
     await user.click(requirement(maintenance));
     await user.click(
@@ -221,20 +227,24 @@ describe("Mantine review interactions", () => {
   it("keeps career preferences unknown while allowing a contextual discussion draft", async () => {
     const user = setup();
     const discuss = screen.getByRole("button", {
-      name: "Add preferences to discussion",
+      name: "Prepare a question",
     });
     expect(
-      screen.getByText("Career preferences not yet discussed"),
+      screen.getByText(
+        "His career plans and willingness to work offshore are also unknown.",
+      ),
     ).toBeVisible();
     await user.click(discuss);
     const input = await screen.findByRole("textbox", {
       name: "Question for the keeper",
     });
-    expect(input.value).toContain("What would you like to do next");
+    expect(input.value).toContain("Would you like to explore");
     await user.click(screen.getByRole("button", { name: "Save question" }));
     await waitFor(() => expect(discuss).toHaveFocus());
     expect(
-      screen.getByText("Career preferences not yet discussed"),
+      screen.getByText(
+        "His career plans and willingness to work offshore are also unknown.",
+      ),
     ).toBeVisible();
     await user.click(
       screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
@@ -253,7 +263,7 @@ describe("Mantine review interactions", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     expect(screen.getByText("Awaiting keeper response")).toBeVisible();
-    expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
+    expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
       "Suggested to keeper",
     );
     expect(
@@ -274,11 +284,13 @@ describe("Mantine review interactions", () => {
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
+    expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
       "Interested · simulated response",
     );
     expect(
-      screen.getByText("Career preferences not yet discussed"),
+      screen.getByText(
+        "His career plans and willingness to work offshore are also unknown.",
+      ),
     ).toBeVisible();
     await user.click(
       screen.getByRole("button", { name: "Consider for nomination" }),
@@ -309,7 +321,7 @@ describe("Mantine review interactions", () => {
       screen.getByText("Nomination decision recorded · not submitted"),
     ).toBeVisible();
     expect(
-      requirement(/Offshore medical fitness.*Not established/),
+      requirement(/Offshore medical fitness.*Clearance not established/),
     ).toBeVisible();
     await user.click(
       await screen.findByRole("button", {
@@ -357,7 +369,7 @@ describe("Mantine review interactions", () => {
     expect(
       screen.getByText(/Officer assessment:/).parentElement,
     ).toHaveTextContent("Worth discussing");
-    expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
+    expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
       "Not yet discussed",
     );
     await user.click(
@@ -391,7 +403,7 @@ it("keeps discussion topics unique and distinct from qualification checks", asyn
   const user = setup();
   await user.click(requirement(/Sea survival.*Module recorded/));
   await user.click(
-    await screen.findByRole("button", { name: "Check qualification" }),
+    await screen.findByRole("button", { name: "Add qualification check" }),
   );
   await user.click(screen.getByRole("button", { name: "Add to discussion" }));
   await user.click(
@@ -419,7 +431,7 @@ it("keeps discussion topics unique and distinct from qualification checks", asyn
     screen.getByRole("button", { name: "Qualification check added" }),
   ).toHaveAttribute("aria-pressed", "true");
   expect(requirement(/Sea survival.*Module recorded/)).toBeVisible();
-  expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
+  expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
     "Not yet discussed",
   );
   await user.click(
@@ -448,6 +460,10 @@ it("opens every selected log with its exact highlight through the requirement as
       }),
     );
     const dialog = await screen.findByRole("dialog");
+    const previous = within(dialog).getByRole("button", {
+      name: "Previous evidence record",
+    });
+    while (!previous.disabled) await user.click(previous);
     for (const record of sourceRecords
       .filter((r) => r.id.startsWith(prefix))
       .sort((a, b) => a.date.localeCompare(b.date))) {
@@ -498,7 +514,7 @@ it("prepares optional discussion topics without recording a suggestion or consen
       screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
     ).toHaveFocus(),
   );
-  expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
+  expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
     "Not yet discussed",
   );
   expect(
@@ -542,4 +558,35 @@ it("keeps all four training records reachable in their experience or qualificati
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
   }
+});
+
+it("gives every section one purpose and keeps qualification tasks discoverable", async () => {
+  const user = setup();
+  expect(screen.queryByLabelText("Quick assessment")).not.toBeInTheDocument();
+  expect(screen.queryByText(/Career intention:/)).not.toBeInTheDocument();
+  const preferred = screen.getByRole("region", {
+    name: "Additional employer preferences",
+  });
+  expect(
+    within(preferred).getByRole("button", { name: /Safe-work planning/ }),
+  ).toBeVisible();
+  expect(
+    within(preferred).getByRole("button", { name: /Training and supporting/ }),
+  ).toBeVisible();
+  await user.click(requirement(/Sea survival.*Module recorded/));
+  await user.click(
+    await screen.findByRole("button", { name: "Add qualification check" }),
+  );
+  await user.click(requirement(maintenance));
+  const checks = screen.getByLabelText("Qualification checks");
+  expect(checks).toHaveTextContent("No qualification has been verified");
+  await user.click(
+    within(checks).getByRole("button", { name: /Remove check:/ }),
+  );
+  expect(
+    screen.queryByLabelText("Qualification checks"),
+  ).not.toBeInTheDocument();
+  expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
+    "Not yet discussed",
+  );
 });

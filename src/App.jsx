@@ -20,14 +20,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import {
-  ArrowUpRight,
-  ChevronRight,
-  Check,
-  Pencil,
-  Waves,
-  Trash2,
-} from "lucide-react";
+import { ChevronRight, Check, Pencil, Waves, Trash2 } from "lucide-react";
 import {
   person,
   vacancy,
@@ -51,6 +44,7 @@ import {
   initialOpportunity,
   opportunityReducer,
   interestLabel,
+  nextRecommendation,
 } from "./workflow";
 import {
   OpportunityActions,
@@ -89,7 +83,13 @@ export default function App() {
   }
   function inspect(item, type, requirement) {
     rememberFocus();
-    setIndex(0);
+    const records = type === "claim" ? getSources(item) : [];
+    setIndex(
+      Math.max(
+        0,
+        records.findIndex((record) => record.date >= person.joined),
+      ),
+    );
     setDrawer({ type, item, requirement });
   }
   function clarify(item, requirement, fromDraft = false) {
@@ -273,101 +273,55 @@ export default function App() {
             </Text>
             <Text size="sm">{vacancy.title}</Text>
           </Breadcrumbs>
-          <Stack component="section" gap="md" aria-labelledby="candidate-name">
-            <Group wrap="nowrap" align="flex-start">
-              <Avatar size="lg" color="carrowmore" aria-hidden="true">
-                EM
-              </Avatar>
-              <Box miw={0}>
-                <Text size="xs" c="dimmed">
-                  OPPORTUNITY ASSESSMENT
-                </Text>
-                <Title order={1} id="candidate-name">
-                  {person.name}
-                </Title>
-                <Text c="dimmed">Lighthouse keeper</Text>
-              </Box>
-            </Group>
-            <Paper withBorder p="md">
-              <Group justify="space-between">
-                <div>
-                  <Text size="sm" c="dimmed">
-                    Being considered for
-                  </Text>
-                  <Text>
-                    <strong>{vacancy.title}</strong> · {vacancy.employer}
-                  </Text>
-                </div>
-                <Button
-                  variant="subtle"
-                  rightSection={<Icon icon={ArrowUpRight} />}
-                  onClick={() => {
-                    rememberFocus();
-                    setJobOpen(true);
-                  }}
-                >
-                  View role
-                </Button>
-              </Group>
-            </Paper>
-            <Stack gap="sm" aria-labelledby="summary-heading">
-              <Title order={2} id="summary-heading">
-                Why consider Eimhin
-              </Title>
-              <Text size="lg">
-                {opportunity.interest === "not-discussed"
-                  ? candidateSummary.text
-                  : candidateSummary.interestKnownText}
+          <Stack component="section" gap="sm" aria-labelledby="candidate-name">
+            <Title order={1} size="h2" id="candidate-name">
+              {person.name}
+            </Title>
+            <Text c="dimmed">Lighthouse keeper · Opportunity assessment</Text>
+            <Group gap="sm">
+              <Text fw={600}>
+                {vacancy.title} · {vacancy.employer}
               </Text>
-              <Group gap="lg" align="flex-start" aria-label="Quick assessment">
-                <Text size="sm">
-                  <strong>Experience:</strong> Relevant maintenance recorded
-                </Text>
-                <Text size="sm">
-                  <strong>Qualifications:</strong> Coverage needs checking
-                </Text>
-                <Text size="sm">
-                  <strong>Interest:</strong> {interestLabel(opportunity)}
-                  {opportunity.responseOrigin && " · simulated response"}
-                </Text>
-              </Group>
-            </Stack>
-            <Group justify="space-between" align="center" gap="sm">
-              <div>
-                <Text size="sm">
-                  <strong>Career intention:</strong> {person.careerIntention}
-                </Text>
-                <Text size="sm" c="dimmed">
-                  Career preferences not yet discussed
-                </Text>
-              </div>
               <Button
-                id="requirement-career-preferences"
                 variant="subtle"
-                leftSection={<Icon icon={Pencil} />}
-                onClick={() => clarify(careerContext, careerContext)}
+                size="compact-sm"
+                onClick={() => {
+                  rememberFocus();
+                  setJobOpen(true);
+                }}
               >
-                Add preferences to discussion
+                View role details
               </Button>
             </Group>
+            <Text size="sm" c="dimmed">
+              {vacancy.base} · {vacancy.pattern} · Based on the service
+              operations vessel
+            </Text>
+          </Stack>
+          <Stack component="section" gap="xs" aria-labelledby="summary-heading">
+            <Title order={2} size="h3" id="summary-heading">
+              Why consider Eimhin
+            </Title>
+            <Text maw="75ch">{candidateSummary.text}</Text>
           </Stack>
           <Accordion value={expanded} onChange={setExpanded} order={3}>
-            <Stack gap="lg">
+            <Stack gap="xl">
               <Stack
                 component="section"
                 gap="sm"
                 aria-labelledby="experience-heading"
               >
-                <Title order={2} id="experience-heading">
+                <Title order={2} size="h3" id="experience-heading">
                   Relevant experience
                 </Title>
                 <Text size="sm" c="dimmed">
-                  The role accepts mechanical or electrical maintenance
-                  experience. Permit-system experience is an employer
-                  preference.
+                  Mechanical or electrical maintenance can meet the experience
+                  requirement.
                 </Text>
                 <Paper withBorder>
-                  {experienceRows.map((row) => renderAssessment(row))}
+                  {experienceRows
+                    .filter((row) => row.id !== "safety")
+                    .map(renderAssessment)}
                 </Paper>
               </Stack>
               <Stack
@@ -375,8 +329,8 @@ export default function App() {
                 gap="sm"
                 aria-labelledby="qualifications-heading"
               >
-                <Title order={2} id="qualifications-heading">
-                  Qualifications and outstanding requirements
+                <Title order={2} size="h3" id="qualifications-heading">
+                  Safety certificates and medical fitness
                 </Title>
                 <Text size="sm" c="dimmed">
                   Safety certification is required before mobilisation. Medical
@@ -386,19 +340,99 @@ export default function App() {
                 <Paper withBorder>
                   {requirements
                     .filter((r) => r.type === "qualification")
-                    .map((row) => renderAssessment(row))}
+                    .map(renderAssessment)}
                 </Paper>
-                <Title order={3} size="h4">
-                  Working conditions and additional experience
+                {verifications.length > 0 && (
+                  <Stack gap="xs" aria-label="Qualification checks">
+                    <Text size="sm" fw={600}>
+                      Qualification checks ({verifications.length})
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      Tasks to follow up with Eimhin, Authority training records
+                      or the provider. No qualification has been verified.
+                    </Text>
+                    {verifications.map((id) => {
+                      const q = qualifications.find((q) => q.id === id);
+                      return (
+                        <Group key={id} gap="xs">
+                          <Text size="sm">{q.title}</Text>
+                          <Button
+                            size="compact-sm"
+                            variant="subtle"
+                            onClick={() => flag(q)}
+                            aria-label={`Remove check: ${q.title}`}
+                          >
+                            Remove check
+                          </Button>
+                        </Group>
+                      );
+                    })}
+                  </Stack>
+                )}
+              </Stack>
+              <Stack
+                component="section"
+                gap="sm"
+                aria-labelledby="preferences-heading"
+              >
+                <Title order={2} size="h3" id="preferences-heading">
+                  Additional employer preferences
                 </Title>
                 <Text size="sm" c="dimmed">
-                  Comfort with offshore conditions is essential. Supporting
-                  colleagues is an employer preference.
+                  Valued experience, rather than essential requirements.
+                </Text>
+                <Paper withBorder>
+                  {experienceRows
+                    .filter((row) => row.id === "safety")
+                    .map(renderAssessment)}
+                  {requirements
+                    .filter((r) => r.id === "mentoring")
+                    .map(renderAssessment)}
+                </Paper>
+              </Stack>
+              <Stack
+                component="section"
+                gap="sm"
+                aria-labelledby="interest-heading"
+              >
+                <Title order={2} size="h3" id="interest-heading">
+                  Eimhin’s interest in this role
+                </Title>
+                <Group gap="sm">
+                  <Text data-testid="keeper-interest">
+                    {interestLabel(opportunity)}
+                    {opportunity.responseOrigin && " · simulated response"}
+                  </Text>
+                  {nextRecommendation(opportunity).action !== "response" && (
+                    <Button
+                      size="compact-sm"
+                      variant="subtle"
+                      onClick={() => openWorkflow("response")}
+                    >
+                      Record keeper response
+                    </Button>
+                  )}
+                </Group>
+                <Text size="sm" c="dimmed">
+                  His career plans and willingness to work offshore are also
+                  unknown.
+                </Text>
+                <Button
+                  id="requirement-career-preferences"
+                  variant="subtle"
+                  size="compact-sm"
+                  style={{ alignSelf: "flex-start" }}
+                  onClick={() => clarify(careerContext, careerContext)}
+                >
+                  Prepare a question
+                </Button>
+                <Text size="sm" fw={600}>
+                  Required working conditions
                 </Text>
                 <Paper withBorder>
                   {requirements
-                    .filter((r) => r.type === "clarification")
-                    .map((row) => renderAssessment(row))}
+                    .filter((r) => r.id === "environment")
+                    .map(renderAssessment)}
                 </Paper>
               </Stack>
             </Stack>
@@ -502,8 +536,8 @@ export default function App() {
         {draftOpen && (
           <Stack gap="md">
             <Text ref={discussionStart} tabIndex={-1}>
-              Prepare for your discussion. Questions are saved locally, not
-              sent.
+              Save questions for your conversation with Eimhin. Questions stay
+              local; nothing is sent.
             </Text>
             {discussionTopics
               .filter((topic) => !drafts.some((draft) => draft.id === topic.id))

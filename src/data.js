@@ -323,9 +323,7 @@ export const requirementNextSteps = {
 
 // Curated conclusions grounded in the linked claims and O&M vacancy, not a score.
 export const candidateSummary = {
-  text: "Eimhin’s pump repairs and electrical fault-finding provide a practical starting point for turbine maintenance. Carrowmore Array welcomes maintenance experience from other kinds of plant and does not require previous wind experience. His independent responsibilities and interest in offshore work need discussion, while safety certification and medical fitness still need checking.",
-  interestKnownText:
-    "Eimhin’s pump repairs and electrical fault-finding provide a practical starting point for turbine maintenance. Carrowmore Array welcomes maintenance experience from other kinds of plant and does not require previous wind experience. His independent responsibilities need discussion, while safety certification and medical fitness still need checking.",
+  text: "Eimhin has recorded pump-repair and electrical fault-finding experience. The employer accepts maintenance experience from other plant and does not require previous wind experience. His independent responsibilities need clarification.",
   claimIds: ["pump", "electrical"],
   sourceIds: [
     "pump_2010-08-06",

@@ -44,7 +44,9 @@ export function OpportunityActions({
       aria-label="Opportunity actions"
     >
       <Stack gap="md">
-        <Title order={2}>Recommended next step</Title>
+        <Title order={2} size="h3">
+          Officer decision and next step
+        </Title>
         <Text>{guidance}</Text>
         {detail && (
           <Text size="sm" c="dimmed">
@@ -57,6 +59,11 @@ export function OpportunityActions({
               <strong>Officer assessment:</strong>{" "}
               {officerAssessments[state.assessment]}
             </Text>
+            {action !== "assessment" && (
+              <Button variant="subtle" onClick={() => onOpen("assessment")}>
+                Update officer assessment
+              </Button>
+            )}
           </Stack>
           <Group gap="xs">
             {drafts.length > 0 && action !== "discussion" && (
@@ -90,16 +97,6 @@ export function OpportunityActions({
                   Suggest to keeper
                 </Button>
               )}
-            {action !== "assessment" && (
-              <Button variant="subtle" onClick={() => onOpen("assessment")}>
-                Update officer assessment
-              </Button>
-            )}
-            {action !== "response" && (
-              <Button variant="subtle" onClick={() => onOpen("response")}>
-                Record keeper response
-              </Button>
-            )}
           </Group>
         </Group>
       </Stack>

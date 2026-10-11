@@ -136,3 +136,13 @@ test("recommendation guidance and primary action follow the same state precedenc
     );
   }
 });
+
+test("an unsuitable assessment can remain on hold without encouragement to progress", async () => {
+  const { nextRecommendation } = await import("../src/workflow.js");
+  const next = nextRecommendation({
+    ...initialOpportunity,
+    assessment: "not-suitable",
+  });
+  assert.match(next.guidance, /on hold/);
+  assert.doesNotMatch(next.guidance, /Reconsider/);
+});
