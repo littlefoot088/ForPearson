@@ -54,8 +54,9 @@ export const claims = [
     limitation:
       "The entries describe repairs, but do not establish how independently Eimhin worked or his present competence.",
     question:
-      "The records describe pump repairs from 2010 to 2026. Was this a regular responsibility? Which repairs did you carry out independently, and when did you last do this work?",
+      "The records describe pump repairs from 2009 to 2026. Was this a regular responsibility? Which repairs did you carry out independently, and when did you last do this work?",
     sourceIds: [
+      "pump_2009-03-13",
       "pump_2010-08-06",
       "pump_2024-09-27",
       "pump_2025-10-10",
@@ -78,6 +79,7 @@ export const claims = [
     question:
       "Which electrical systems and voltages have you worked on? Please describe your independent fault-finding responsibilities and the limits of your authorisation.",
     sourceIds: [
+      "electrical_2009-05-27",
       "electrical_2011-09-21",
       "electrical_2018-01-01",
       "electrical_2026-12-26",
@@ -183,6 +185,10 @@ export const qualifications = [
   },
 ];
 export const interpretations = {
+  "pump_2009-03-13":
+    "Describes replacing a fire-pump seal and re-aligning its coupling. This remains relevant maintenance evidence despite preceding the personnel joining date.",
+  "electrical_2009-05-27":
+    "Describes identifying an incorrect charger setting and recording the correction. The personnel joining date does not invalidate this recorded work.",
   "pump_2010-08-06":
     "Describes replacing a fire-pump seal and re-aligning its coupling.",
   "pump_2024-09-27":

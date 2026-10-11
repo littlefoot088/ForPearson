@@ -179,6 +179,35 @@ export const sources = [
       skill_tags: "",
     },
   },
+  {
+    id: "pump_2009-03-13",
+    date: "2009-03-13",
+    rawDate: "20090313",
+    station: "SLI",
+    personRef: "K0104",
+    source: "raw/logbooks/era2-keeperlog/KLOG2009.DAT",
+    recordId: "002666",
+    original:
+      "Mechanical seal gone on the fire pump, fitted new and re-aligned the coupling.",
+    highlight: "fitted new and re-aligned the coupling",
+    rawRecord:
+      "002666|20090313|SLI|K0104|MAC NEIDHE E|MECH|Mechanical seal gone on the fire pump, fitted new and re-aligned the coupling.|4.0",
+  },
+  {
+    id: "electrical_2009-05-27",
+    date: "2009-05-27",
+    rawDate: "20090527",
+    station: "SLI",
+    personRef: "K0104",
+    source: "raw/logbooks/era2-keeperlog/KLOG2009.DAT",
+    recordId: "005386",
+    original:
+      "Charger float voltage set wrong, was cooking the bank. Reset and logged the readings.",
+    highlight:
+      "Charger float voltage set wrong, was cooking the bank. Reset and logged the readings.",
+    rawRecord:
+      "005386|20090527|SLI|K0104|MAC NEIDHE E|ELEC|Charger float voltage set wrong, was cooking the bank. Reset and logged the readings.|6.0",
+  },
 ];
 export const trainingRecords = [
   {

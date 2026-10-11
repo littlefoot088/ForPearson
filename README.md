@@ -15,7 +15,7 @@ Open the local URL printed by Vite. `npm run build` creates the production bundl
 
 ## What it demonstrates
 
-- Three experience areas linked to nine verbatim raw log entries, with exact highlighted passages, source locations, interpretations and limitations.
+- Three experience areas linked to eleven verbatim raw log entries, with exact highlighted passages, source locations, interpretations and limitations.
 - Formal qualification coverage kept separate from practical experience. Individual modules never stand in for complete certificates.
 - An evidence drawer with dated record selection, previous/next controls, keyboard support and a narrow-screen layout.
 - Editable clarification drafts, qualification verification flags and reversible review decisions.
@@ -32,6 +32,6 @@ See [information architecture](docs/information-architecture.md) and [data decis
 
 ## Validation
 
-Production build and three fixture tests pass. The nine log entries were compared directly with the supplied ZIP. Desktop Chrome checks covered evidence navigation, highlighted passages, Escape and focus restoration, edited draft saving, qualification flags and progression while keeping outstanding requirements visible.
+Production build and four fixture tests pass. The eleven log entries were compared directly with the supplied ZIP. Desktop Chrome checks covered evidence navigation, highlighted passages, Escape and focus restoration, edited draft saving, qualification flags and progression while keeping outstanding requirements visible.
 
 Responsive CSS includes a single-column narrow-screen layout and a full-width evidence drawer. Mobile visual QA remains unverified: the browser automation connection failed when switching to device preview. No claim of a full accessibility audit is made.

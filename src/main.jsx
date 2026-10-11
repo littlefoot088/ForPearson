@@ -199,7 +199,8 @@ function App() {
               </p>
               <h1>{person.name}</h1>
               <p className="candidate-meta">
-                Lighthouse keeper <span>·</span> Recorded service from 2009
+                Lighthouse keeper <span>·</span> Personnel joining date: 6 Nov
+                2009
               </p>
             </div>
           </div>
@@ -620,6 +621,18 @@ function App() {
                   <dt>Person reference</dt>
                   <dd>{source.personRef}</dd>
                 </dl>
+                {source.date < person.joined && (
+                  <div className="record-context">
+                    <strong>Employment-date context</strong>
+                    <p>
+                      This entry carries keeper code {person.id} and predates
+                      the personnel joining date of {dateLabel(person.joined)}.
+                      It is included as relevant experience evidence. The reason
+                      for the date difference is not established; earlier
+                      contract or part-time service is one possible explanation.
+                    </p>
+                  </div>
+                )}
                 <div className="interpretation">
                   <p className="eyebrow">SYSTEM INTERPRETATION</p>
                   <p>{interpretations[source.id]}</p>

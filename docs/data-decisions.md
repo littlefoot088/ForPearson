@@ -12,7 +12,7 @@ The selected records demonstrate repeated repairs, older and recent electrical w
 
 LearnHub records, including LH500003, LH500008 and LH500010, explicitly contain both K0104 and payroll reference 0012801. Across LearnHub, the selected reference links to K0104 only. This supports linking the selected recent spreadsheet entries bearing 0012801 or the leading-zero-stripped 12801. Their stations fit the personnel postings: ERR in 2022–2024 and GOW in 2025–2026. This corroborated attribution is documented rather than treated as external identity verification. The raw pack README’s general warning about a missing payroll mapping is not silently ignored; the selected LearnHub rows provide a specific cross-reference.
 
-The user chose **31 December 2026** as the fictional review date. The pack’s stated March preparation date and February LearnHub extraction date conflict with later records. Those metadata conflicts remain a known limitation; neither date has been presented as a reliable snapshot boundary. The fixture deliberately includes the approved later 2026 entries. Earlier log entries that predate recorded employment are excluded.
+The user chose **31 December 2026** as the fictional review date. The pack’s stated March preparation date and February LearnHub extraction date conflict with later records. Those metadata conflicts remain a known limitation; neither date has been presented as a reliable snapshot boundary. The fixture deliberately includes the approved later 2026 entries. Entries preceding the personnel joining date remain eligible as experience evidence. That date does not establish the start of all work: earlier part-time or contract service is possible, but is not confirmed. Two relevant 2009 examples carrying K0104 are included and annotated in the evidence inspector; no adverse competence inference is made from the date difference.
 
 Selected mixed-format dates are unambiguous (for example 12/26/2026). Normalised dates are shown alongside raw dates. Original text, spelling, capitalisation and punctuation remain unchanged. Raw data-row locations count parsed CSV records starting at one, excluding the header; they are not invented source record IDs.
 
@@ -20,21 +20,23 @@ Selected mixed-format dates are unambiguous (for example 12/26/2026). Normalised
 
 The fixture in `src/records.js` contains original text, highlighted substrings, source path, raw date, source locator, identity reference and original row fields. It was extracted directly from the supplied ZIP, not the clean subset.
 
-| Experience               | Date        | Raw source and locator                                                                            |
-| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------- |
-| Pump repair              | 6 Aug 2010  | `raw/logbooks/era2-keeperlog/KLOG2010.DAT`, REC_ID 007616                                         |
-| Pump repair              | 27 Sep 2024 | `raw/logbooks/era3-spreadsheets/station-logs-2022-2026.csv`, date + keeper 0012801                |
-| Pump repair              | 10 Oct 2025 | Same CSV, date + keeper 12801                                                                     |
-| Pump rebuild             | 21 Apr 2026 | Same CSV, date + keeper 0012801                                                                   |
-| Electrical control       | 21 Sep 2011 | `raw/logbooks/era2-keeperlog/KLOG2011.DAT`, REC_ID 009447                                         |
-| Electrical fault-finding | 1 Jan 2018  | `raw/logbooks/era3-spreadsheets/station-logs-2018-2021.csv`, date + keeper 0012801                |
-| Charger fault correction | 26 Dec 2026 | `raw/logbooks/era3-spreadsheets/station-logs-2022-2026.csv`, raw date 12/26/2026 + keeper 0012801 |
-| Safe-work planning       | 15 Apr 2014 | `raw/logbooks/era3-spreadsheets/station-logs-2014-2017.csv`, date + Eimhin Mac Neidhe             |
-| Permit responsibility    | 19 Aug 2025 | `raw/logbooks/era3-spreadsheets/station-logs-2022-2026.csv`, date + keeper 0012801                |
+| Experience                  | Date        | Raw source and locator                                                                            |
+| --------------------------- | ----------- | ------------------------------------------------------------------------------------------------- |
+| Pump repair                 | 13 Mar 2009 | `raw/logbooks/era2-keeperlog/KLOG2009.DAT`, REC_ID 002666                                         |
+| Electrical fault correction | 27 May 2009 | `raw/logbooks/era2-keeperlog/KLOG2009.DAT`, REC_ID 005386                                         |
+| Pump repair                 | 6 Aug 2010  | `raw/logbooks/era2-keeperlog/KLOG2010.DAT`, REC_ID 007616                                         |
+| Pump repair                 | 27 Sep 2024 | `raw/logbooks/era3-spreadsheets/station-logs-2022-2026.csv`, date + keeper 0012801                |
+| Pump repair                 | 10 Oct 2025 | Same CSV, date + keeper 12801                                                                     |
+| Pump rebuild                | 21 Apr 2026 | Same CSV, date + keeper 0012801                                                                   |
+| Electrical control          | 21 Sep 2011 | `raw/logbooks/era2-keeperlog/KLOG2011.DAT`, REC_ID 009447                                         |
+| Electrical fault-finding    | 1 Jan 2018  | `raw/logbooks/era3-spreadsheets/station-logs-2018-2021.csv`, date + keeper 0012801                |
+| Charger fault correction    | 26 Dec 2026 | `raw/logbooks/era3-spreadsheets/station-logs-2022-2026.csv`, raw date 12/26/2026 + keeper 0012801 |
+| Safe-work planning          | 15 Apr 2014 | `raw/logbooks/era3-spreadsheets/station-logs-2014-2017.csv`, date + Eimhin Mac Neidhe             |
+| Permit responsibility       | 19 Aug 2025 | `raw/logbooks/era3-spreadsheets/station-logs-2022-2026.csv`, date + keeper 0012801                |
 
 Exact parsed-row locations for the CSV entries are included in the fixture and evidence inspector. KEEPERLOG files were decoded as CP1252. Raw activity text is separate from curated interpretations in `src/data.js`.
 
-Four pump records, three electrical records and two safe-work records are deliberately selected examples, not exhaustive search totals or counts of actual work. Date markers show those records, not continuous activity or a competence score. Repeated wording on different dates may reflect routine work or templated entries; it does not prove distinct independently verified repairs. `verified_by`, including “self”, is preserved in raw fields but never treated as verification of present competence.
+Five pump records, four electrical records and two safe-work records are deliberately selected examples, not exhaustive search totals or counts of actual work. Date markers show those records, not continuous activity or a competence score. Repeated wording on different dates may reflect routine work or templated entries; it does not prove distinct independently verified repairs. `verified_by`, including “self”, is preserved in raw fields but never treated as verification of present competence.
 
 ## Formal qualification records
 

@@ -12,7 +12,7 @@ import {
 } from "../src/data.js";
 
 test("every selected claim has traceable, verbatim highlightable evidence", () => {
-  assert.equal(sources.length, 9);
+  assert.equal(sources.length, 11);
   assert.equal(new Set(sources.map((s) => s.id)).size, sources.length);
   for (const claim of claims) {
     assert.ok(requirements.some((r) => r.id === claim.requirementId));
@@ -31,7 +31,7 @@ test("every selected claim has traceable, verbatim highlightable evidence", () =
           ? source.rawRecord.split("|")[6]
           : (source.rawRecord.description ?? source.rawRecord.Activity);
       assert.equal(source.original, rawText);
-      assert.ok(source.date >= person.joined && source.date <= reviewDate);
+      assert.ok(source.date <= reviewDate);
     }
   }
 });
@@ -63,4 +63,13 @@ test("expiry labels agree with the fixed review date for recorded passes", () =>
     qualifications.find((q) => q.id === "generator").required,
     false,
   );
+});
+
+test("earlier experience is retained despite the personnel joining date", () => {
+  const earlier = sources.filter((source) => source.date < person.joined);
+  assert.equal(earlier.length, 2);
+  for (const source of earlier) {
+    assert.equal(source.personRef, person.id);
+    assert.ok(claims.some((claim) => claim.sourceIds.includes(source.id)));
+  }
 });

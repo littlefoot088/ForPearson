@@ -1429,3 +1429,29 @@ mark {
     scroll-behavior: auto !important;
   }
 }
+
+/* Allow additional selected dates to wrap without implying a scaled timeline. */
+.evidence-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(85px, 1fr));
+  gap: 14px 8px;
+}
+.evidence-strip::before {
+  display: none;
+}
+.date-marker:last-child {
+  align-items: flex-start;
+}
+.record-context {
+  margin-top: 22px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #f3f6f3;
+  color: #52675e;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.record-context p {
+  margin-top: 5px;
+}
