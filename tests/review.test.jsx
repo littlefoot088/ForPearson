@@ -174,7 +174,7 @@ describe("Mantine review interactions", () => {
     ).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Remove" }));
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
-      "Interested",
+      "Not yet discussed",
     );
   });
 
@@ -189,14 +189,12 @@ describe("Mantine review interactions", () => {
       screen.queryByRole("button", { name: /qualification check/i }),
     ).not.toBeInTheDocument();
   });
-  it("labels illustrative interest once and keeps current and prospective roles explicit", async () => {
+  it("keeps missing interest unknown and keeps current and prospective roles explicit", async () => {
     setup();
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
-      "Interested",
+      "Not yet discussed",
     );
-    expect(
-      screen.getByText(/Interested is illustrative scenario data/),
-    ).toBeVisible();
+    expect(screen.getByText(/No response recorded/)).toBeVisible();
     expect(screen.getByText(/Current role:/).parentElement).toHaveTextContent(
       "Lighthouse keeper · Carrowmore Light Authority",
     );
@@ -226,13 +224,11 @@ describe("Mantine review interactions", () => {
     await user.click(screen.getByRole("button", { name: "Edit response" }));
     await user.selectOptions(
       await screen.findByRole("combobox", {
-        name: "Simulated response from Eimhin",
+        name: "Response from Eimhin",
       }),
       "not-interested",
     );
-    await user.click(
-      screen.getByRole("button", { name: "Save simulated response" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Save response" }));
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
@@ -302,7 +298,9 @@ it("keeps optional discussion prompts available after saving a contextual questi
   expect(
     screen.getByRole("button", { name: "Discussion with Eimhin (2)" }),
   ).toBeVisible();
-  expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
+  expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
+    "Not yet discussed",
+  );
 });
 
 it("keeps all four training records reachable in their experience or qualification context", async () => {

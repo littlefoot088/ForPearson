@@ -157,8 +157,8 @@ export function EvidenceContent({
           <Divider />
           <Text fw={600}>Manager feedback</Text>
           <Text size="sm">
-            These are managers’ observations, not verified competence
-            assessments. Later praise does not erase earlier concerns.
+            Manager observations are shown in date order so changes over time
+            remain visible.
           </Text>
           {evidenceAudit.appraisals
             .filter((r) =>

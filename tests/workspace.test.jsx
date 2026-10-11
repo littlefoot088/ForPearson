@@ -14,7 +14,11 @@ import userEvent from "@testing-library/user-event";
 import { MantineProvider } from "@mantine/core";
 import App from "../src/App";
 import { theme } from "../src/theme";
-import { storageKey } from "../src/workspace";
+import {
+  storageKey,
+  initialWorkspace,
+  workspaceReducer,
+} from "../src/workspace";
 const mount = () =>
   render(
     <MantineProvider theme={theme} forceColorScheme="light">
@@ -73,7 +77,9 @@ it("adds, edits, completes, reopens and removes a task and persists across remou
   expect(
     screen.queryByRole("checkbox", { name: "Ask the provider" }),
   ).not.toBeInTheDocument();
-  expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
+  expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
+    "Not yet discussed",
+  );
 });
 it("saves dated private notes with follow-up, edits them and excludes their text from referrals", async () => {
   const user = userEvent.setup();
@@ -113,6 +119,18 @@ it("saves dated private notes with follow-up, edits them and excludes their text
   );
 });
 it("previews a concise document, supports edit/review/save and marks ready only for Eimhin's review", async () => {
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify({
+      version: 2,
+      workspace: workspaceReducer(initialWorkspace(), {
+        type: "opportunity",
+        action: { type: "response", value: "interested" },
+      }),
+      drafts: [],
+      recordFlags: [],
+    }),
+  );
   const user = userEvent.setup();
   mount();
   const launch = screen.getByRole("button", {
@@ -179,13 +197,11 @@ it("previews a concise document, supports edit/review/save and marks ready only 
   await user.click(screen.getByRole("button", { name: "Edit response" }));
   await user.selectOptions(
     await screen.findByRole("combobox", {
-      name: "Simulated response from Eimhin",
+      name: "Response from Eimhin",
     }),
     "not-interested",
   );
-  await user.click(
-    screen.getByRole("button", { name: "Save simulated response" }),
-  );
+  await user.click(screen.getByRole("button", { name: "Save response" }));
   await waitFor(() =>
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
@@ -274,7 +290,7 @@ it("records responsibilities separately and includes them only on explicit selec
     JSON.parse(localStorage.getItem(storageKey)).workspace.notes,
   ).toHaveLength(0);
 });
-it("confirms reset, clears persisted review data and restores the illustrative scenario", async () => {
+it("confirms reset, clears persisted review data and restores unknown interest", async () => {
   const user = userEvent.setup();
   mount();
   await user.click(
@@ -304,9 +320,7 @@ it("confirms reset, clears persisted review data and restores the illustrative s
   expect(
     screen.getByRole("checkbox", { name: "Prepare candidate introduction" }),
   ).not.toBeChecked();
-  expect(
-    screen.getByText(/Interested is illustrative scenario data/),
-  ).toBeVisible();
+  expect(screen.getByText(/No response recorded/)).toBeVisible();
 });
 it("keeps the app usable when browser persistence is unavailable", () => {
   vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {

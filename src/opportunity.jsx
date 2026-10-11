@@ -109,13 +109,13 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
       {mode === "response" && (
         <>
           <Text size="sm">
-            Record a simulated response from Eimhin about this opportunity. No
-            response has been received through this application.
+            Record only a response Eimhin has given you about this opportunity.
+            This does not record permission to share his information.
           </Text>
           <NativeSelect
             ref={fieldRef}
             data-autofocus
-            label="Simulated response from Eimhin"
+            label="Response from Eimhin"
             value={response}
             onChange={(event) => setResponse(event.currentTarget.value)}
             data={Object.entries(keeperResponses).map(([value, label]) => ({
@@ -139,9 +139,9 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
       {mode === "nomination" && (
         <>
           <Text size="sm">
-            Eimhin’s interest is recorded as a simulated response. Consider
-            experience relevance, qualification readiness and employer
-            requirements before deciding.
+            Eimhin’s interest was recorded by you. Consider experience
+            relevance, qualification readiness and employer requirements before
+            deciding.
           </Text>
           <Paper p="sm" bg="clarification.0">
             <Text size="sm" c="clarification.7">
@@ -198,7 +198,7 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
           {mode === "suggest"
             ? "Record suggestion locally"
             : mode === "response"
-              ? "Save simulated response"
+              ? "Save response"
               : mode === "assessment"
                 ? "Save assessment"
                 : "Save nomination decision"}

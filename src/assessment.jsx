@@ -139,9 +139,8 @@ export function ExpandedAssessment({
               <Text size="sm">{claim.evidenceSummary}</Text>
               {claim.id === "pump" && (
                 <Text size="sm">
-                  Manager feedback is mixed: older reviews raised concerns about
-                  pump work; the 2026 review describes Eimhin as the station’s
-                  go-to for pumps.
+                  Reviews in 2014–2018 raised concerns about pump work. In 2026,
+                  his manager described Eimhin as the station’s go-to for pumps.
                 </Text>
               )}
               {claim.id === "electrical" && (

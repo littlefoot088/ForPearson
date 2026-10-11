@@ -14,7 +14,7 @@ import {
 test("workspace uses pair tasks and progress without inferring overall intention", () => {
   let state = initialWorkspace();
   assert.deepEqual(assessmentOverview(state), {
-    progress: "Interested",
+    progress: "Not yet discussed",
     nextAction: "Check existing offshore certificates",
   });
   assert.equal(peopleForWorkspace(state)[0].intention, "Not yet discussed");
@@ -23,6 +23,10 @@ test("workspace uses pair tasks and progress without inferring overall intention
     assessmentOverview(state).nextAction,
     "Discuss Eimhin’s maintenance experience",
   );
+  state = workspaceReducer(state, {
+    type: "opportunity",
+    action: { type: "response", value: "interested" },
+  });
   state = workspaceReducer(state, {
     type: "referral-save",
     referral: createReferral(),
@@ -41,17 +45,14 @@ test("workspace uses pair tasks and progress without inferring overall intention
 });
 test("search ignores accents, filters combine, retirement has no recommendations", () => {
   const people = peopleForWorkspace(initialWorkspace());
+  assert.equal(people.length, 1);
+  assert.equal(people[0].opportunities.length, 1);
+  assert.equal(filterPeople(people, "EIMHIN", null, false).length, 1);
   assert.equal(
-    filterPeople(people, "aoife ni mhurchu", null, false)[0].id,
-    "K0847",
-  );
-  assert.equal(
-    filterPeople(people, "", "Planning retirement", false)[0].opportunities
-      .length,
+    filterPeople(people, "", "Planning retirement", false).length,
     0,
   );
-  assert.equal(filterPeople(people, "", "Planning retirement", true).length, 0);
-  assert.equal(filterPeople(people, "", null, true).length, 2);
+  assert.equal(filterPeople(people, "", null, true).length, 1);
   assert.equal(
     filterPeople(people, "Eimhin", "Seeking employment", false).length,
     0,

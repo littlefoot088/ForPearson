@@ -52,7 +52,7 @@ export function opportunityReducer(state, action) {
       return {
         ...state,
         interest: action.value,
-        responseOrigin: action.value === "not-discussed" ? null : "simulated",
+        responseOrigin: action.value === "not-discussed" ? null : "manually-recorded",
         nominationDecision: changed ? null : state.nominationDecision,
         assessment:
           changed && state.assessment === "worth-nominating"

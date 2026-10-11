@@ -73,3 +73,7 @@ Keep assessment language concrete: name the work, outcome and expiry date. Do no
 Experience content answers “What Eimhin did” and “When it is recorded”, followed by the selected logbook count and source access. Distinguish repeated recent examples from isolated older records through concrete dates, not a competence score. Keep record-administration discrepancies inside the inspector. Qualifications instead show the training outcome and dates or the absence of documentation; do not force a work-frequency narrative onto them.
 
 For larger evidence sets, use a labelled record selector alongside previous/next controls instead of a growing grid of date buttons. Keep aggregate counts distinct from actual work frequency. Manager observations belong in investigation detail and remain distinct from original task logs.
+
+## Data trust
+
+Do not populate the product with invented career intentions, opportunity associations or candidate responses. Unknown information stays unknown. Source records, dated manager opinions, curated interpretation and reviewer-entered information must remain distinguishable. Describe changes in feedback chronologically: earlier concerns followed by later praise suggest improvement; do not flatten them into a timeless “mixed” label or assert independently verified competence.

@@ -63,7 +63,7 @@ test("revised keeper interest clears a stale nomination and allows later reconsi
   const declined = reduce(saved, { type: "response", value: "not-interested" });
   assert.equal(declined.nominationDecision, null);
   assert.equal(declined.assessment, "not-reviewed");
-  assert.equal(declined.responseOrigin, "simulated");
+  assert.equal(declined.responseOrigin, "manually-recorded");
   assert.equal(declined.employerProgression, "not-submitted");
   const reconsidered = reduce(declined, {
     type: "response",

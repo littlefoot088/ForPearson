@@ -413,11 +413,10 @@ export default function App() {
                               </Button>
                             </Group>
                             <Text size="xs" c="dimmed">
-                              {opportunity.responseOrigin === "illustrative"
-                                ? "Interested is illustrative scenario data, not a historical response."
-                                : opportunity.responseOrigin === "simulated"
-                                  ? "Manually recorded prototype response."
-                                  : "No response recorded."}{" "}
+                              {opportunity.responseOrigin ===
+                              "manually-recorded"
+                                ? "Response recorded by you."
+                                : "No response recorded."}{" "}
                               Career preferences remain unknown.
                             </Text>
                           </Stack>
@@ -637,8 +636,8 @@ export default function App() {
         <Stack gap="md">
           <Text>
             This removes saved notes, tasks, accounts, discussion questions,
-            flags and referral decisions from this browser. The illustrative
-            interested scenario and initial tasks will be restored.
+            flags and referral decisions from this browser. The initial tasks
+            will be restored, with no interest recorded.
           </Text>
           <Group justify="flex-end">
             <Button variant="default" onClick={() => setResetOpen(false)}>

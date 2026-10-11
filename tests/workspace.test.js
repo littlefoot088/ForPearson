@@ -12,10 +12,16 @@ import {
 import { sources } from "../src/records.js";
 import { person } from "../src/data.js";
 const draftState = () =>
-  reduce(initialWorkspace(), {
-    type: "referral-save",
-    referral: createReferral(),
-  });
+  reduce(
+    reduce(initialWorkspace(), {
+      type: "opportunity",
+      action: { type: "response", value: "interested" },
+    }),
+    {
+      type: "referral-save",
+      referral: createReferral(),
+    },
+  );
 const markReady = (state) =>
   reduce(state, {
     type: "ready",
@@ -24,10 +30,10 @@ const markReady = (state) =>
     acknowledged: true,
   });
 
-test("initial interest is illustrative; referral provenance excludes both disputed early records", () => {
+test("initial interest is unknown; referral provenance excludes both disputed early records", () => {
   const state = initialWorkspace();
-  assert.equal(state.opportunity.responseOrigin, "illustrative");
-  assert.equal(state.opportunity.interest, "interested");
+  assert.equal(state.opportunity.responseOrigin, null);
+  assert.equal(state.opportunity.interest, "not-discussed");
   assert.deepEqual(state.notes, []);
   assert.deepEqual(state.reports, {});
   const draft = createReferral();
@@ -184,7 +190,7 @@ test("versioned storage round-trips workspace state; corruption and unavailable 
     assert.match(loadWorkspace(storage).message, /could not be loaded/);
     assert.equal(
       loadWorkspace(storage).workspace.opportunity.responseOrigin,
-      "illustrative",
+      null,
     );
   }
   assert.equal(
@@ -263,4 +269,27 @@ test("changed fixture context requests review without overwriting edited introdu
   assert.equal(loaded.workspace.referral.why, "Officer-authored wording");
   assert.equal(loaded.workspace.referral.needsReview, true);
   assert.equal(loaded.workspace.ready, null);
+});
+
+test("legacy example responses are cleared without discarding saved work; manual responses survive", () => {
+  for (const origin of ["illustrative", "simulated", "manually-recorded"]) {
+    const workspace = draftState();
+    workspace.opportunity.responseOrigin = origin;
+    workspace.notes = [
+      { id: "note", date: "2026-10-11", text: "Retain my note", followup: "" },
+    ];
+    const before = workspace.referral.why;
+    const loaded = loadWorkspace({
+      getItem: () =>
+        JSON.stringify({ version: 2, workspace, drafts: [], recordFlags: [] }),
+    });
+    assert.equal(loaded.workspace.referral.why, before);
+    assert.equal(loaded.workspace.notes[0].text, "Retain my note");
+    assert.equal(
+      loaded.workspace.opportunity.interest,
+      origin === "manually-recorded" ? "interested" : "not-discussed",
+    );
+    if (origin !== "manually-recorded")
+      assert.equal(loaded.workspace.ready, null);
+  }
 });

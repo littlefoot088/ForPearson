@@ -104,3 +104,7 @@ Experience summaries now explain the work in plain language and describe the dat
 ## Full supplied-log review
 
 The earlier eleven-entry selection is no longer the basis for frequency wording. See [the reproducible evidence review](evidence-review.md) for identity rules, exclusions, yearly counts, ambiguous dates and mixed appraisal evidence. All 68 matching logs are inspectable; the original eleven quotations/highlights remain unchanged. Recorded repetition is not a duty-frequency or competence rating. Additional training records were encountered but this iteration is a log-frequency review, not a full revalidation of qualification coverage.
+
+## Source-grounded defaults (supersedes illustrative scenarios)
+
+The current workspace contains only the source-grounded Eimhin assessment. Invented people/intentions/opportunity progress have been removed. Initial interest is unknown. Existing `illustrative` or `simulated` responses are cleared on load, with a notice; dependent readiness is cleared while saved notes, tasks and introduction wording remain. New responses are labelled as manually recorded by the reviewer and must represent what Eimhin actually said, not generated consent. Pump appraisal copy now preserves the chronology of 2014–2018 concerns followed by positive 2026 feedback. It does not claim a measured improvement in competence. The agreed December 2026 review scenario and unchanged source quotations remain in place.

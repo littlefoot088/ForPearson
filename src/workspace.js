@@ -37,8 +37,6 @@ export function initialWorkspace() {
   return {
     opportunity: {
       ...initialOpportunity,
-      interest: "interested",
-      responseOrigin: "illustrative",
     },
     tasks: [
       {
@@ -284,6 +282,18 @@ export function loadWorkspace(storage) {
     const raw = storage.getItem(storageKey);
     if (!raw) return { ...fallback, message: "" };
     const saved = JSON.parse(raw);
+    const removedIllustration = ["illustrative", "simulated"].includes(
+      saved.workspace?.opportunity?.responseOrigin,
+    );
+    if (removedIllustration) {
+      saved.workspace.opportunity.interest = "not-discussed";
+      saved.workspace.opportunity.responseOrigin = null;
+      saved.workspace.opportunity.nominationDecision = null;
+      if (saved.workspace.opportunity.assessment === "worth-nominating")
+        saved.workspace.opportunity.assessment = "not-reviewed";
+      saved.workspace.ready = null;
+      if (saved.workspace.referral) saved.workspace.referral.needsReview = true;
+    }
     if (saved.version === 1 && saved.workspace) {
       // A previous referral decision is not the person's approval of an introduction.
       if (saved.workspace.referral) {
@@ -336,12 +346,17 @@ export function loadWorkspace(storage) {
       !saved.recordFlags.every(string)
     )
       throw new Error("Invalid saved workspace");
-    return { ...saved, message: "" };
+    return {
+      ...saved,
+      message: removedIllustration
+        ? "The example response has been removed. Eimhin’s response is not recorded; your saved work is retained."
+        : "",
+    };
   } catch {
     return {
       ...fallback,
       message:
-        "Saved workspace could not be loaded. The illustrative scenario has been restored.",
+        "Saved workspace could not be loaded. The initial workspace has been restored.",
     };
   }
 }

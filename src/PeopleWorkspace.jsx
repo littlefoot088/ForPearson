@@ -58,17 +58,17 @@ export function PeopleWorkspace({
           <Stack gap="sm">
             <Group gap="xs">
               <Badge variant="light" color="gray">
-                Illustrative workspace
+                Assessment workspace
               </Badge>
               <Text size="sm">
-                A small sample of the workforce, not the full directory.
+                This workspace currently includes Eimhin’s opportunity
+                assessment.
               </Text>
             </Group>
             <Text size="sm" c="dimmed">
-              Opportunity associations and sample intentions are illustrative.
-              Eimhin’s Wind Turbine Technician progress and next action reflect
-              your saved assessment; its initial interest is illustrative. Other
-              assessments are outside this prototype.
+              Employment records inform the assessment. Progress and next steps
+              reflect your saved work; career intentions and interest remain
+              unknown until recorded.
             </Text>
           </Stack>
         </Paper>
@@ -125,11 +125,6 @@ export function PeopleWorkspace({
                       {p.intention}
                     </Text>
                   </Group>
-                  {p.illustrativeIdentity && (
-                    <Text size="xs" c="dimmed" mb="sm">
-                      Illustrative person and stated retirement choice.
-                    </Text>
-                  )}
                   {p.opportunities.length ? (
                     <Stack gap="xs">
                       <Grid gutter="md" visibleFrom="sm" aria-hidden="true">

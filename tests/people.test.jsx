@@ -41,31 +41,24 @@ it("opens a people-first list and combines search, intention and attention filte
   expect(
     screen.queryByRole("link", { name: "Marine Electrician" }),
   ).not.toBeInTheDocument();
-  expect(screen.getByText("No employment recommendations")).toBeInTheDocument();
+  expect(screen.queryByText("Fintan Ó Ceallaigh")).not.toBeInTheDocument();
   await user.type(
     screen.getByRole("textbox", { name: "Search by name" }),
-    "aoife ni mhurchu",
+    "Eimhin",
   );
   expect(
-    screen.getByRole("heading", { name: "Aoife Ní Mhurchú" }),
+    screen.getByRole("heading", { name: "Eimhin Mac Neidhe" }),
   ).toBeInTheDocument();
-  expect(
-    screen.queryByRole("heading", { name: "Eimhin Mac Neidhe" }),
-  ).not.toBeInTheDocument();
-  await user.clear(screen.getByRole("textbox", { name: "Search by name" }));
   await user.selectOptions(
     screen.getByRole("combobox", { name: "Employment intention" }),
     "Planning retirement",
   );
-  expect(
-    screen.getByRole("heading", { name: "Fintan Ó Ceallaigh" }),
-  ).toBeInTheDocument();
   await user.click(screen.getByRole("checkbox", { name: "Needs attention" }));
   expect(
     screen.getByText("No people match these filters."),
   ).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Clear filters" }));
-  expect(screen.getByText("4 people shown")).toBeInTheDocument();
+  expect(screen.getByText("1 person shown")).toBeInTheDocument();
 });
 it("navigates directly to the assessment and back without resetting tasks or saved state", async () => {
   const user = userEvent.setup();
