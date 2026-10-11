@@ -1,5 +1,5 @@
 import React from "react";
-import { Accordion, Button, Divider, Group, Stack, Text } from "@mantine/core";
+import { Accordion, Button, Stack, Text } from "@mantine/core";
 import {
   FileText,
   Files,
@@ -75,26 +75,39 @@ export function RequirementRow({ requirement, children }) {
         </span>
       </Accordion.Control>
       <Accordion.Panel aria-labelledby={"requirement-" + requirement.id}>
-        <Stack gap="md" className="assessment-detail">
-          {children}
-        </Stack>
+        <Stack gap="md">{children}</Stack>
       </Accordion.Panel>
     </Accordion.Item>
   );
 }
 
-export function TrainingSummary({ q }) {
+function DetailSection({ title, children }) {
   return (
     <Stack gap="xs">
-      {q.recordId && (
-        <Text fw={600} size="sm">
-          {q.status}
-        </Text>
-      )}
-      <Text size="sm">{q.detail}</Text>
+      <Text fw={600} size="sm">
+        {title}
+      </Text>
+      <Stack gap="xs" ps={{ base: "sm", sm: "md" }}>
+        {children}
+      </Stack>
     </Stack>
   );
 }
+
+export function TrainingSummary({ q, children }) {
+  const content = (
+    <>
+      <Text size="sm">{q.detail}</Text>
+      {children}
+    </>
+  );
+  return q.recordId ? (
+    <DetailSection title={q.status}>{content}</DetailSection>
+  ) : (
+    <Stack gap="xs">{content}</Stack>
+  );
+}
+
 export function ExpandedAssessment({
   requirement,
   contextRequirement = requirement,
@@ -116,81 +129,72 @@ export function ExpandedAssessment({
         return (
           <Stack
             component="section"
-            gap="sm"
+            gap="md"
             aria-label={claim.title}
             key={claim.id}
           >
-            <Stack gap="xs">
-              <Text fw={600} size="sm">
-                Recorded experience
-              </Text>
-              <Text>{claim.introductionSummary}</Text>
-              <Text size="sm" c="dimmed">
-                {claim.relevance}
-              </Text>
-            </Stack>
-            <Stack gap="xs">
-              <Text fw={600} size="sm">
-                Supporting evidence
-              </Text>
-              <Text size="sm" c="dimmed">
+            <DetailSection title="Recorded experience">
+              <Text size="sm">{claim.introductionSummary}</Text>
+              <Text size="sm">{claim.relevance}</Text>
+            </DetailSection>
+            <DetailSection title="Supporting evidence">
+              <Text size="sm">
                 {records.length} supporting records ·{" "}
                 {records[0].date.slice(0, 4)}–{records.at(-1).date.slice(0, 4)}{" "}
                 · {claim.involvement}
               </Text>
               {records.some((r) => r.date < person.joined) && (
-                <Text size="sm" c="clarification.8">
+                <Text size="sm">
                   The {dateLabel(records[0].date)} entry uses Eimhin’s name and
                   code, but predates his recorded joining date (
                   {dateLabel(person.joined)}). The date discrepancy is
                   unresolved.
                 </Text>
               )}
-              <Text size="sm" c="dimmed">
+              <Text size="sm">
                 {claim.id === "safety"
                   ? "The records do not show whether Eimhin’s permit authority is still current."
                   : "The entries describe the work, but not whether anyone assisted or supervised."}
               </Text>
               <Button
                 variant="light"
+                size="sm"
                 w="fit-content"
                 onClick={() => inspect(claim, "claim")}
               >
                 View evidence
               </Button>
-            </Stack>
+            </DetailSection>
             {linkedQualifications.map((q) => (
-              <Stack key={q.id} gap="xs">
-                <Divider />
-                <Text fw={600} size="sm">
-                  Related training
-                </Text>
+              <DetailSection key={q.id} title="Related training">
                 <Text size="sm">{q.title}</Text>
-                <Group justify="space-between" gap="xs">
-                  <Text size="sm" c="dimmed">
-                    {q.status === "Not established"
-                      ? "No record found"
-                      : q.status}{" "}
-                    · Supporting module
-                  </Text>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => inspect(q, "qualification")}
-                  >
-                    View training record
-                  </Button>
-                </Group>
-              </Stack>
+                <Text size="sm">
+                  {q.status === "Not established"
+                    ? "No record found"
+                    : q.status}{" "}
+                  · Supporting module
+                </Text>
+                <Button
+                  variant="default"
+                  size="sm"
+                  w="fit-content"
+                  onClick={() => inspect(q, "qualification")}
+                >
+                  View training record
+                </Button>
+              </DetailSection>
             ))}
             {report && (
-              <Text size="sm" className="source-quote">
-                <strong>Reported by Eimhin · {dateLabel(report.date)}:</strong>{" "}
-                {report.text}{" "}
-                <Text span c="dimmed">
+              <DetailSection
+                title={`Reported by Eimhin · ${dateLabel(report.date)}`}
+              >
+                <Text size="sm" className="source-quote">
+                  {report.text}
+                </Text>
+                <Text size="sm">
                   Recorded by you; not independently verified.
                 </Text>
-              </Text>
+              </DetailSection>
             )}
           </Stack>
         );
@@ -198,23 +202,22 @@ export function ExpandedAssessment({
       {requirement.type !== "experience" &&
         linkedQualifications.map((q) => (
           <Stack component="section" gap="sm" aria-label={q.title} key={q.id}>
-            <TrainingSummary q={q} />
-            {q.recordId && (
-              <Button
-                variant="default"
-                size="sm"
-                w="fit-content"
-                onClick={() => inspect(q, "qualification")}
-              >
-                View training record
-              </Button>
-            )}
+            <TrainingSummary q={q}>
+              {q.recordId && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  w="fit-content"
+                  onClick={() => inspect(q, "qualification")}
+                >
+                  View training record
+                </Button>
+              )}
+            </TrainingSummary>
           </Stack>
         ))}
       {requirement.type === "clarification" && (
-        <>
-          <Text size="sm">{requirement.detail}</Text>
-        </>
+        <Text size="sm">{requirement.detail}</Text>
       )}
     </>
   );
