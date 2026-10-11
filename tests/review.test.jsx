@@ -14,6 +14,7 @@ import { MantineProvider } from "@mantine/core";
 import App from "../src/App";
 import { theme } from "../src/theme";
 import { sources as sourceRecords } from "../src/records";
+import { claims, getSources } from "../src/data";
 
 afterEach(() => {
   cleanup();
@@ -94,7 +95,7 @@ describe("Mantine review interactions", () => {
     const inspect = await openPump(user);
     const dialog = await screen.findByRole("dialog");
     await waitFor(() =>
-      expect(within(dialog).getByText("Record 2 of 5")).toBeVisible(),
+      expect(within(dialog).getByText("Record 3 of 18")).toBeVisible(),
     );
     expect(
       within(dialog).queryByText(/date discrepancy is unresolved/),
@@ -102,9 +103,13 @@ describe("Mantine review interactions", () => {
     await user.click(
       within(dialog).getByRole("button", { name: "Previous evidence record" }),
     );
+    await user.selectOptions(
+      within(dialog).getByLabelText("Select supporting record"),
+      "0",
+    );
     expect(within(dialog).getByText("Needs checking:")).toBeVisible();
     expect(
-      within(dialog).getByText(/5 selected supporting records.*1 predates/),
+      within(dialog).getByText(/18 matching logbook entries/),
     ).toBeVisible();
     expect(within(dialog).getByText("Source details")).toBeVisible();
     await user.click(
@@ -128,12 +133,12 @@ describe("Mantine review interactions", () => {
     await user.click(
       within(dialog).getByRole("button", { name: "Next evidence record" }),
     );
-    expect(within(dialog).getByText("Record 2 of 5")).toBeVisible();
+    expect(within(dialog).getByText("Record 2 of 18")).toBeVisible();
     await user.click(
       within(dialog).getByRole("button", { name: "Previous evidence record" }),
     );
     await waitFor(() =>
-      expect(within(dialog).getByText("Record 1 of 5")).toBeVisible(),
+      expect(within(dialog).getByText("Record 1 of 18")).toBeVisible(),
     );
     await waitFor(() => expect(dialog.querySelector("pre")).toBeVisible());
     const close = within(dialog).getByRole("button", {
@@ -272,9 +277,9 @@ it("opens every selected log with its exact highlight through the requirement as
       name: "Previous evidence record",
     });
     while (!previous.disabled) await user.click(previous);
-    for (const record of sourceRecords
-      .filter((r) => r.id.startsWith(prefix))
-      .sort((a, b) => a.date.localeCompare(b.date))) {
+    for (const record of getSources(
+      claims.find((c) => c.id === prefix.slice(0, -1)),
+    )) {
       const quote = dialog.querySelector("blockquote");
       expect(quote.textContent).toBe(record.original);
       expect(quote.querySelector("mark").textContent).toBe(record.highlight);
@@ -362,9 +367,9 @@ it("shows experience facts directly and keeps supporting-module actions in the i
     ),
   ).toBeVisible();
 
-  expect(within(panel).getByText(/5 selected logbook entries/)).toBeVisible();
+  expect(within(panel).getByText(/18 matching logbook entries/)).toBeVisible();
   expect(within(panel).queryByText(/joining date/)).not.toBeInTheDocument();
-  expect(within(panel).getByText(/three in 2024–2026/)).toBeVisible();
+  expect(within(panel).getByText(/Five are from 2024–2026/)).toBeVisible();
   expect(
     within(panel).queryByRole("button", {
       name: /follow-up|qualification check/i,

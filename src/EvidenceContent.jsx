@@ -8,11 +8,12 @@ import {
   Stack,
   Text,
   Mark,
+  NativeSelect,
 } from "@mantine/core";
 import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
 import { TrainingSummary } from "./assessment";
 import { Icon, Highlight, RecordFields } from "./components";
-import { dateLabel, person, interpretations } from "./data";
+import { dateLabel, person, interpretations, evidenceAudit } from "./data";
 
 export function EvidenceContent({
   drawer,
@@ -37,12 +38,21 @@ export function EvidenceContent({
           {dateLabel(records.at(-1).date)}. {drawer.item.involvement}
         </Text>
       )}
+      {source && (
+        <Text size="sm">
+          Matching entries by year:{" "}
+          {Array.from({ length: 18 }, (_, i) => 2009 + i)
+            .map(
+              (year) =>
+                `${year}: ${records.filter((r) => r.date.startsWith(String(year))).length}`,
+            )
+            .join(" · ")}
+        </Text>
+      )}
       {source ? (
         <>
           <Text size="sm">
-            {records.length} selected supporting records
-            {records.some((r) => r.date < person.joined) &&
-              " · 1 predates the recorded joining date"}
+            {records.length} matching logbook entries · Full supplied-log review
           </Text>
           <Text fw={600}>
             {dateLabel(source.date)} · {source.station} Station
@@ -65,8 +75,14 @@ export function EvidenceContent({
             <Text fw={600} size="sm">
               What this tells us
             </Text>
-            <Text>{interpretations[source.id]}</Text>
+            <Text>{interpretations[source.id] ?? source.interpretation}</Text>
           </div>
+          {source.dateNote && <Text size="sm">{source.dateNote}</Text>}
+          {source.measurementNote && (
+            <Text size="sm" c="clarification.7">
+              {source.measurementNote}
+            </Text>
+          )}
           {early && (
             <Text size="sm" c="clarification.7">
               <strong>Needs checking:</strong> This entry names MAC NEIDHE E and
@@ -97,19 +113,15 @@ export function EvidenceContent({
               </ActionIcon>
             </Group>
           </Group>
-          <Group gap="xs" aria-label="Select supporting record">
-            {records.map((r, i) => (
-              <Button
-                key={r.id}
-                size="xs"
-                variant={index === i ? "filled" : "default"}
-                aria-pressed={index === i}
-                onClick={() => setIndex(i)}
-              >
-                {dateLabel(r.date)}
-              </Button>
-            ))}
-          </Group>
+          <NativeSelect
+            label="Select supporting record"
+            value={String(index)}
+            onChange={(event) => setIndex(Number(event.currentTarget.value))}
+            data={records.map((r, i) => ({
+              value: String(i),
+              label: `${dateLabel(r.date)} · ${r.station} · ${r.original.slice(0, 65)}`,
+            }))}
+          />
           <Button
             variant="default"
             color="clarification"
@@ -139,6 +151,44 @@ export function EvidenceContent({
             />
           )}
         </>
+      )}
+      {source && ["pump", "electrical"].includes(drawer.item.id) && (
+        <Stack gap="sm">
+          <Divider />
+          <Text fw={600}>Manager feedback</Text>
+          <Text size="sm">
+            These are managers’ observations, not verified competence
+            assessments. Later praise does not erase earlier concerns.
+          </Text>
+          {evidenceAudit.appraisals
+            .filter((r) =>
+              drawer.item.id === "pump"
+                ? [
+                    "AP000004",
+                    "AP000005",
+                    "AP000006",
+                    "AP000007",
+                    "AP000013",
+                  ].includes(r.record_id)
+                : [
+                    "AP000002",
+                    "AP000003",
+                    "AP000008",
+                    "AP000009",
+                    "AP000010",
+                    "AP000013",
+                  ].includes(r.record_id),
+            )
+            .map((r) => (
+              <Stack gap="xs" key={r.record_id}>
+                <Text size="sm" fw={600}>
+                  {r.year} · {r.station} · {r.record_id}
+                </Text>
+                <Text size="sm">{r.text}</Text>
+              </Stack>
+            ))}
+          <Text size="xs">Source: raw/appraisals/appraisals.jsonl</Text>
+        </Stack>
       )}
       <Divider />
       <Text fw={600}>Source details</Text>

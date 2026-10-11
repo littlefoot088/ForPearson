@@ -135,3 +135,39 @@ test("candidate narrative and experience rows retain traceable requirement links
     /interest in offshore work need discussion/,
   );
 });
+
+test("full-log counts use unique traceable rows and retain ambiguous dates without guessing", async () => {
+  const { evidenceAudit, getSources, dateLabel } =
+    await import("../src/data.js");
+  assert.equal(evidenceAudit.matchedLogCount, 1095);
+  assert.equal(evidenceAudit.payrollLinkRecords, 7);
+  for (const [id, count, years, recent] of [
+    ["pump", 18, 10, 5],
+    ["electrical", 48, 13, 9],
+    ["safety", 2, 2, 1],
+  ]) {
+    const rows = getSources(claims.find((c) => c.id === id));
+    assert.equal(rows.length, count);
+    assert.equal(new Set(rows.map((r) => r.source + r.recordId)).size, count);
+    assert.equal(new Set(rows.map((r) => r.date.slice(0, 4))).size, years);
+    assert.equal(
+      rows.filter((r) => r.date.slice(0, 4) >= "2024").length,
+      recent,
+    );
+    for (const r of rows) {
+      assert.equal(
+        r.original,
+        typeof r.rawRecord === "string"
+          ? r.rawRecord.split("|")[6]
+          : (r.rawRecord.description ?? r.rawRecord.Activity),
+      );
+      assert.ok(r.original.includes(r.highlight));
+      if (r.date.length === 4) {
+        assert.ok(r.dateNote);
+        assert.match(dateLabel(r.date), /day\/month unclear/);
+      }
+    }
+    for (const selected of sources.filter((s) => s.id.startsWith(id + "_")))
+      assert.ok(rows.includes(selected));
+  }
+});

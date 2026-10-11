@@ -122,3 +122,5 @@ Experience panels distinguish recorded activity, supporting evidence and related
 
 
 Assessment sections are read-only summaries with source access. They do not offer per-item task or question actions, or repeat an assessment-date caption. Actual source dates and expiry dates remain visible; the fictional review date remains internal for consistent interpretation. Next steps is the single entry point for adding work and preparing questions. Its discussion drawer offers a topic selector, preserving topic deduplication and existing questions. Previously saved qualification tasks remain editable and removable in the workspace.
+
+The evidence inspector now exposes the complete set of matches from the bounded raw-log review (18 pump, 48 electrical and two planning/permit entries), with yearly distribution and mixed manager feedback. This replaces drawing frequency conclusions from eleven featured examples. Source inspection remains the investigation level; no new page or workflow is introduced. See [evidence-review.md](evidence-review.md) for matching rules and limitations.

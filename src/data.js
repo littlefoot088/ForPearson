@@ -1,4 +1,6 @@
 import { sources, trainingRecords } from "./records.js";
+import audit from "./evidence-audit.json" with { type: "json" };
+export const evidenceAudit = audit;
 export const reviewDate = "2026-12-31";
 export const person = {
   id: "K0104",
@@ -116,13 +118,14 @@ export const requirements = [
   },
   {
     id: "mentoring",
+    conclusion: "One plant walkthrough recorded",
     text: "Training and supporting colleagues",
     required: false,
     group: "preferred",
     type: "clarification",
     assessment: "unknown",
     detail:
-      "The selected records do not describe Eimhin training or supporting colleagues.",
+      "A 26 September 2018 log says “Took the AK round the plant.” This is one example of supporting a colleague, not evidence of regular training duties. Source: station-logs-2018-2021.csv, data row 9701.",
     question:
       "Have you trained or supported less experienced colleagues? Please describe your role and a recent example.",
   },
@@ -133,7 +136,7 @@ export const claims = [
     workSummary:
       "Replaced pump seals, aligned couplings and rebuilt a pump with new wear rings.",
     evidenceSummary:
-      "Repeated repair entries, including three in 2024–2026. The latest, on 21 April 2026, records a full pump rebuild and restored delivery pressure.",
+      "18 repair and maintenance entries across 10 separate years, from 2009 to 2026. Five are from 2024–2026; the latest records a pump rebuild on 21 April 2026. The logs do not establish how often this was part of his normal duties.",
     introductionSummary:
       "Pump rebuilding, seal replacement and coupling alignment.",
     number: "01",
@@ -162,7 +165,7 @@ export const claims = [
     workSummary:
       "Rebuilt electrical changeover controls, traced a lighting fault and corrected a battery charger’s settings.",
     evidenceSummary:
-      "Examples are recorded in 2011, 2018 and 2026. The latest, on 26 December 2026, describes correcting charger settings. The previous selected example is from January 2018.",
+      "48 fault-finding and control-work entries across 13 separate years, from 2009 to 2026. Nine are from 2024–2026; the latest records a charger correction on 26 December 2026. The logs do not establish how often this was part of his normal duties.",
     introductionSummary:
       "Control-system repairs, earth-fault tracing and charger fault correction.",
     number: "02",
@@ -190,7 +193,7 @@ export const claims = [
     workSummary:
       "Planned entry into a flooded sump with rescue equipment ready, and acted as the person authorised to issue work permits.",
     evidenceSummary:
-      "Two entries describe different responsibilities: entry planning on 15 April 2014, and issuing three permits on 19 August 2025. Current permit authority is not recorded.",
+      "Only two entries describe planning or permit issuing: entry planning on 15 April 2014, and issuing three permits on 19 August 2025. Current permit authority is not recorded.",
     introductionSummary:
       "Work planning and permit issuing; current authority needs confirmation.",
     number: "03",
@@ -316,11 +319,17 @@ export const interpretations = {
     "Describes permit-issuing responsibility. It does not state the scope or currency of authorisation.",
 };
 export function getSources(claim) {
-  return claim.sourceIds.map((id) =>
-    sources.find((source) => source.id === id),
-  );
+  return (audit.groups[claim.id] ?? [])
+    .map(
+      (record) =>
+        sources.find(
+          (s) => s.source === record.source && s.recordId === record.recordId,
+        ) ?? record,
+    )
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 export function dateLabel(date) {
+  if (/^\d{4}$/.test(date)) return `${date} (day/month unclear)`;
   return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",

@@ -137,7 +137,23 @@ export function ExpandedAssessment({
             </DetailSection>
             <DetailSection title="When it is recorded">
               <Text size="sm">{claim.evidenceSummary}</Text>
-              <Text size="sm">{records.length} selected logbook entries</Text>
+              {claim.id === "pump" && (
+                <Text size="sm">
+                  Manager feedback is mixed: older reviews raised concerns about
+                  pump work; the 2026 review describes Eimhin as the station’s
+                  go-to for pumps.
+                </Text>
+              )}
+              {claim.id === "electrical" && (
+                <Text size="sm">
+                  Manager reviews praise some electrical work but also raise
+                  concerns, including switchgear work in 2026.
+                </Text>
+              )}
+              <Text size="sm">
+                {records.length} matching logbook entries · Full supplied-log
+                review
+              </Text>
               <Button
                 variant="light"
                 size="sm"

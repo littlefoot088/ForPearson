@@ -81,7 +81,7 @@ export function createReferral() {
     // Internal provenance never renders as part of the employer-facing document.
     sourceIds: claims.flatMap((c) =>
       getSources(c)
-        .filter((r) => r.date >= person.joined)
+        .filter((r) => c.sourceIds.includes(r.id) && r.date >= person.joined)
         .map((r) => r.id),
     ),
     qualificationIds: qualifications.map((q) => q.id),
