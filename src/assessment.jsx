@@ -1,3 +1,5 @@
+import { qualificationCopy, verificationFor } from "./workflowState";
+import { selectedClaim } from "./evidenceSelection";
 import React from "react";
 import { Accordion, Button, Stack, Text } from "@mantine/core";
 import {
@@ -9,13 +11,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Icon } from "./components";
-import {
-  assessmentStates,
-  claims,
-  qualifications,
-  getSources,
-  dateLabel,
-} from "./data";
+import { assessmentStates, claims, qualifications, dateLabel } from "./data";
 
 const statusIcons = {
   file: FileText,
@@ -32,10 +28,38 @@ const statusColors = {
   documented: "documented.6",
 };
 
-export function RequirementRow({ requirement, children }) {
+export function RequirementRow({ requirement, children, workspace = {} }) {
   const status = assessmentStates[requirement.assessment];
+  const verification = verificationFor(workspace, requirement.id);
+  const qualificationScan =
+    verification.label ??
+    {
+      environment: requirement.conclusion ?? "Not yet discussed",
+      sea: "Module passed",
+      fire: "Attendance only",
+      "first-aid": "Certificate not recorded",
+      height: "Certificate not recorded",
+      medical: "Clearance not recorded",
+    }[requirement.id];
+  const qualificationDate = verification.record
+    ? verification.record.withdrawn
+      ? null
+      : verification.record.noExpiry
+        ? "No expiry recorded"
+        : `Expiry ${dateLabel(verification.record.expiresOn)}`
+    : {
+        sea: "Expires 3 May 2028",
+        fire: "Record expired 18 August 2025",
+      }[requirement.id];
   return (
-    <Accordion.Item value={requirement.id}>
+    <Accordion.Item
+      value={requirement.id}
+      className={
+        qualificationScan
+          ? "assessment-row qualification-row"
+          : "assessment-row"
+      }
+    >
       <Accordion.Control
         className="assessment-control"
         id={"requirement-" + requirement.id}
@@ -49,27 +73,52 @@ export function RequirementRow({ requirement, children }) {
         >
           <Text component="span" fw={600}>
             {requirement.text}
+            {["safety", "environment"].includes(requirement.id) && (
+              <Text
+                component="span"
+                display="block"
+                size="sm"
+                fw={400}
+                c="dimmed"
+              >
+                {requirement.id === "environment"
+                  ? "Working preferences"
+                  : "Employer preference"}
+              </Text>
+            )}
           </Text>
           <Text
             component="span"
             size="sm"
-            c={statusColors[status.tone] ?? "gray.6"}
+            c={
+              verification.current
+                ? "documented.7"
+                : (statusColors[status.tone] ?? "gray.6")
+            }
             className="assessment-status"
           >
-            <Icon icon={statusIcons[status.icon]} />
-            {requirement.conclusion ??
-              (requirement.assessment === "unknown" &&
-              requirement.type === "qualification"
-                ? requirement.id === "medical"
-                  ? "No clearance record found"
-                  : "No certificate record found"
-                : requirement.id === "fire"
-                  ? "Attendance recorded · expiry passed"
-                  : requirement.id === "environment"
-                    ? "Not yet discussed"
-                    : requirement.id === "mentoring"
-                      ? "No experience recorded"
-                      : status.label)}
+            {!qualificationScan && <Icon icon={statusIcons[status.icon]} />}
+            <span>
+              {qualificationScan ??
+                requirement.conclusion ??
+                (requirement.assessment === "unknown" &&
+                requirement.type === "qualification"
+                  ? requirement.id === "medical"
+                    ? "No clearance record found"
+                    : "No certificate record found"
+                  : requirement.id === "fire"
+                    ? "Attendance recorded · expiry passed"
+                    : requirement.id === "environment"
+                      ? "Not yet discussed"
+                      : requirement.id === "mentoring"
+                        ? "No experience recorded"
+                        : status.label)}
+            </span>
+            {qualificationDate && (
+              <Text component="span" size="xs" c="dimmed">
+                {qualificationDate}
+              </Text>
+            )}
           </Text>
         </span>
       </Accordion.Control>
@@ -111,10 +160,16 @@ export function ExpandedAssessment({
   requirement,
   contextRequirement = requirement,
   reports = {},
+  excludedRecordIds = [],
+  workspace = {},
+  onVerify,
   onInspect,
 }) {
   const linkedClaims = (requirement.claimIds ?? []).map((id) =>
-    claims.find((c) => c.id === id),
+    selectedClaim(
+      claims.find((c) => c.id === id),
+      excludedRecordIds,
+    ),
   );
   const linkedQualifications = (requirement.qualificationIds ?? []).map((id) =>
     qualifications.find((q) => q.id === id),
@@ -123,7 +178,6 @@ export function ExpandedAssessment({
   return (
     <>
       {linkedClaims.map((claim) => {
-        const records = getSources(claim);
         const report = reports[claim.id];
         return (
           <Stack
@@ -149,10 +203,6 @@ export function ExpandedAssessment({
                   work, while raising a concern about switchgear work.
                 </Text>
               )}
-              <Text size="sm">
-                {records.length} matching logbook entries · Full supplied-log
-                review
-              </Text>
               <Button
                 variant="light"
                 size="sm"
@@ -194,7 +244,19 @@ export function ExpandedAssessment({
       {requirement.type !== "experience" &&
         linkedQualifications.map((q) => (
           <Stack component="section" gap="sm" aria-label={q.title} key={q.id}>
-            <TrainingSummary q={q}>
+            <TrainingSummary q={qualificationCopy(q, workspace)}>
+              {q.required && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  w="fit-content"
+                  onClick={() => onVerify(q)}
+                >
+                  {verificationFor(workspace, q.id).record
+                    ? "Edit verification"
+                    : "Record verification"}
+                </Button>
+              )}
               {q.recordId && (
                 <Button
                   variant="default"

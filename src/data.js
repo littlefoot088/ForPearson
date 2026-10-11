@@ -352,17 +352,20 @@ export const requirementNextSteps = {
 
 // Curated conclusions grounded in the linked claims and O&M vacancy, not a score.
 export const candidateSummary = {
-  text: "Eimhin has recorded pump-repair and electrical fault-finding experience. The employer accepts maintenance experience from other plant and does not require previous wind experience. Offshore safety certificates and medical fitness still need checking.",
+  text: "Five pump jobs recorded in 2024–2026 and his manager’s ‘go-to for the pumps’ description show experience beyond isolated repairs. His lighthouse job title could obscure skills that transfer to turbine maintenance: Carrowmore Array accepts experience from other plant. Electrical fault-finding adds relevant experience, but safety certification and medical fitness still need checking.",
   claimIds: ["pump", "electrical"],
   sourceIds: [
     "pump_2010-08-06",
     "pump_2024-09-27",
+    "audit_ff642f8475b7",
+    "audit_ad4d99417a4f",
     "pump_2025-10-10",
     "pump_2026-04-21",
     "electrical_2011-09-21",
     "electrical_2018-01-01",
     "electrical_2026-12-26",
   ],
+  appraisalIds: ["AP000013"],
   vacancyId: vacancy.id,
 };
 

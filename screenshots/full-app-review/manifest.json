@@ -1,0 +1,134 @@
+[
+  {
+    "file": "01-people-workspace.png",
+    "description": "Complete People redeployment workspace"
+  },
+  {
+    "file": "02-people-search-and-filter.png",
+    "description": "People workspace with search and needs-attention filter applied"
+  },
+  {
+    "file": "03-opportunity-assessment-collapsed.png",
+    "description": "Complete opportunity assessment with sections collapsed"
+  },
+  {
+    "file": "04-role-details-open.png",
+    "description": "Role details drawer open"
+  },
+  {
+    "file": "05-pump-experience-expanded.png",
+    "description": "Pump maintenance experience expanded"
+  },
+  {
+    "file": "06-pump-evidence-timeline-open.png",
+    "description": "Pump evidence timeline open with all records"
+  },
+  {
+    "file": "07-electrical-experience-expanded.png",
+    "description": "Electrical experience expanded"
+  },
+  {
+    "file": "08-safe-work-experience-expanded.png",
+    "description": "Safe-work planning and permits expanded"
+  },
+  {
+    "file": "09-sea-survival-expanded.png",
+    "description": "Sea survival qualification expanded"
+  },
+  {
+    "file": "10-training-record-open.png",
+    "description": "Training record evidence drawer open"
+  },
+  {
+    "file": "11-qualification-verification-editor.png",
+    "description": "Qualification verification editor open"
+  },
+  {
+    "file": "12-working-conditions-expanded.png",
+    "description": "Working conditions section expanded"
+  },
+  {
+    "file": "13-working-preferences-editor.png",
+    "description": "Working preferences editor open"
+  },
+  {
+    "file": "14-officer-workspace.png",
+    "description": "Officer workspace with current tasks and contact state"
+  },
+  {
+    "file": "15-add-task-editor.png",
+    "description": "Add task drawer open"
+  },
+  {
+    "file": "16-task-options-menu.png",
+    "description": "Task options menu open"
+  },
+  {
+    "file": "17-discussion-planner.png",
+    "description": "Discussion-question planner open"
+  },
+  {
+    "file": "18-discussion-question-editor.png",
+    "description": "Discussion question editor open"
+  },
+  {
+    "file": "19-add-note-editor.png",
+    "description": "Conversation note editor open"
+  },
+  {
+    "file": "20-assessment-decision-editor.png",
+    "description": "Assessment decision editor open"
+  },
+  {
+    "file": "21-positive-decision-selected.png",
+    "description": "Positive suitability decision selected before saving"
+  },
+  {
+    "file": "22-interest-editor.png",
+    "description": "Eimhin interest editor open"
+  },
+  {
+    "file": "23-introduction-preview.png",
+    "description": "Generated candidate introduction preview"
+  },
+  {
+    "file": "24-introduction-editor.png",
+    "description": "Candidate introduction editing state"
+  },
+  {
+    "file": "25-introduction-review.png",
+    "description": "Candidate introduction review state before saving"
+  },
+  {
+    "file": "26-introduction-saved.png",
+    "description": "Saved introduction ready for review with Eimhin"
+  },
+  {
+    "file": "27-sharing-approval-unchecked.png",
+    "description": "Sharing approval step before acknowledgement"
+  },
+  {
+    "file": "28-sharing-approval-confirmed.png",
+    "description": "Sharing approval confirmed with simulated send enabled"
+  },
+  {
+    "file": "29-sent-introduction-record.png",
+    "description": "Immutable simulated sent-introduction record"
+  },
+  {
+    "file": "30-assessment-after-send.png",
+    "description": "Completed assessment workspace after simulated sending"
+  },
+  {
+    "file": "31-people-after-send.png",
+    "description": "People workspace reflecting the same completed send state"
+  },
+  {
+    "file": "32-mobile-assessment.png",
+    "description": "Mobile assessment overview"
+  },
+  {
+    "file": "33-mobile-officer-workspace.png",
+    "description": "Mobile officer workspace and completed state"
+  }
+]

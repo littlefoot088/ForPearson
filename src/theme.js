@@ -1,35 +1,16 @@
 import { createTheme } from "@mantine/core";
 
-// Brand and semantic colours only. Mantine owns typography, sizing and spacing.
+// Quiet Authority: one shared system for both routes and every overlay.
+const applicationFont =
+  '"IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 export const theme = createTheme({
-  black: "#203639",
+  fontFamily: applicationFont,
+  fontSizes: { xs: "0.8125rem" },
   primaryColor: "carrowmore",
   primaryShade: 7,
+  black: "#273238",
+  headings: { fontFamily: applicationFont, fontWeight: "500" },
   colors: {
-    carrowmore: [
-      "#edf5f5",
-      "#dceaea",
-      "#b9d3d5",
-      "#91b8bc",
-      "#6d9fa5",
-      "#4e858e",
-      "#36707b",
-      "#245b65",
-      "#204e57",
-      "#1a4149",
-    ],
-    evidence: [
-      "#edf5f8",
-      "#dcebf0",
-      "#bdd5df",
-      "#9abcc9",
-      "#78a3b4",
-      "#5d8a9e",
-      "#44768a",
-      "#2d6370",
-      "#265560",
-      "#204751",
-    ],
     clarification: [
       "#faf5eb",
       "#f2e8d4",
@@ -54,26 +35,147 @@ export const theme = createTheme({
       "#284e3b",
       "#203f30",
     ],
-    gray: [
-      "#f5f7f5",
-      "#edf1ed",
-      "#dfe5e1",
-      "#c9d2cd",
-      "#a8b5ae",
-      "#84958c",
-      "#647476",
-      "#4c6061",
-      "#344b4e",
-      "#203639",
+    carrowmore: [
+      "#f0f3f6",
+      "#e2e8ee",
+      "#cad4df",
+      "#aabccd",
+      "#869fb6",
+      "#617e9a",
+      "#385577",
+      "#243951",
+      "#1e3045",
+      "#182737",
     ],
+    evidence: [
+      "#f0f3f6",
+      "#e2e8ee",
+      "#cad4df",
+      "#aabccd",
+      "#869fb6",
+      "#617e9a",
+      "#456583",
+      "#385577",
+      "#2c4562",
+      "#243951",
+    ],
+    gray: [
+      "#faf9f5",
+      "#f0f0eb",
+      "#e2e3de",
+      "#c5cac7",
+      "#7d888c",
+      "#687379",
+      "#59646d",
+      "#46515b",
+      "#34404a",
+      "#273238",
+    ],
+    red: [
+      "#fbefec",
+      "#f5ddd7",
+      "#e9b8ad",
+      "#d99080",
+      "#c96d5a",
+      "#b85142",
+      "#a23b32",
+      "#8b3029",
+      "#732922",
+      "#5e241e",
+    ],
+  },
+  components: {
+    Title: {
+      defaultProps: { c: "carrowmore.7" },
+      styles: { root: { letterSpacing: "-0.015em" } },
+    },
+    Text: { styles: { root: { fontVariantNumeric: "lining-nums" } } },
+    Button: {
+      defaultProps: { radius: "sm" },
+      classNames: { root: "ui-button" },
+      styles: {
+        root: { fontWeight: 500, minHeight: 24 },
+        label: { whiteSpace: "normal", textAlign: "start" },
+      },
+    },
+    ActionIcon: {
+      defaultProps: { radius: "sm" },
+      styles: { root: { minWidth: 24, minHeight: 24 } },
+    },
+    CloseButton: { defaultProps: { radius: "sm" } },
+    Input: {
+      defaultProps: { radius: "sm" },
+      classNames: { input: "ui-input" },
+    },
+    InputWrapper: {
+      styles: {
+        label: { fontWeight: 500 },
+        description: { color: "var(--mantine-color-gray-6)" },
+      },
+    },
+    Checkbox: {
+      defaultProps: { size: "md", radius: "xs" },
+      classNames: { input: "ui-checkbox" },
+      styles: { label: { lineHeight: 1.5 } },
+    },
+    Menu: {
+      defaultProps: { radius: "sm", shadow: "xs" },
+      classNames: { item: "ui-menu-item" },
+      styles: {
+        dropdown: { borderColor: "var(--mantine-color-gray-3)" },
+        item: { fontSize: "var(--mantine-font-size-sm)" },
+      },
+    },
+    Accordion: {
+      classNames: { control: "ui-disclosure" },
+      styles: { chevron: { color: "var(--mantine-color-carrowmore-7)" } },
+    },
+    Badge: {
+      defaultProps: { radius: "sm" },
+      styles: {
+        root: {
+          fontWeight: 500,
+          fontSize: "var(--mantine-font-size-xs)",
+          letterSpacing: "0.01em",
+        },
+      },
+    },
+    Anchor: {
+      classNames: { root: "ui-link" },
+      styles: {
+        root: { textUnderlineOffset: "0.2em", textDecorationThickness: "1px" },
+      },
+    },
+    Drawer: {
+      styles: {
+        header: { borderBottom: "1px solid var(--mantine-color-gray-3)" },
+        title: { fontWeight: 500 },
+      },
+    },
+    Modal: { styles: { title: { fontWeight: 500 } } },
+    Notification: { defaultProps: { radius: "sm" } },
   },
 });
 
 export const cssVariablesResolver = () => ({
-  variables: {},
+  variables: {
+    "--carrowmore-page": "#F7F6F2",
+    "--carrowmore-workspace": "#F0F0ED",
+    "--carrowmore-header-border": "#D8DEE0",
+  },
   light: {
-    "--mantine-color-body": "var(--mantine-color-gray-0)",
+    "--mantine-color-body": "var(--carrowmore-page)",
     "--mantine-color-text": "var(--mantine-color-gray-9)",
+    "--mantine-color-dimmed": "var(--mantine-color-gray-6)",
+    "--mantine-color-placeholder": "var(--mantine-color-gray-6)",
+    "--mantine-color-default-border": "var(--mantine-color-gray-4)",
+    "--mantine-color-default-hover": "var(--mantine-color-evidence-0)",
+    "--mantine-color-disabled": "var(--mantine-color-gray-1)",
+    "--mantine-color-disabled-color": "var(--mantine-color-gray-6)",
+    "--mantine-color-disabled-border": "var(--mantine-color-gray-3)",
   },
   dark: {},
 });
+// Existing import names remain compatible; both resolve to the same system.
+export const quietTheme = theme;
+export const quietCssVariablesResolver = cssVariablesResolver;

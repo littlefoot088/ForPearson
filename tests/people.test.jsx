@@ -41,7 +41,7 @@ it("opens a people-first list and combines search, intention and attention filte
   expect(
     screen.queryByRole("link", { name: "Marine Electrician" }),
   ).not.toBeInTheDocument();
-  expect(screen.queryByText("Fintan Ó Ceallaigh")).not.toBeInTheDocument();
+  expect(screen.getByText("Fintan Ó Ceallaigh")).toBeInTheDocument();
   await user.type(
     screen.getByRole("textbox", { name: "Search by name" }),
     "Eimhin",
@@ -58,7 +58,7 @@ it("opens a people-first list and combines search, intention and attention filte
     screen.getByText("No people match these filters."),
   ).toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Clear filters" }));
-  expect(screen.getByText("1 person shown")).toBeInTheDocument();
+  expect(screen.getByText("6 people shown")).toBeInTheDocument();
 });
 it("navigates directly to the assessment and back without resetting tasks or saved state", async () => {
   const user = userEvent.setup();
@@ -72,14 +72,16 @@ it("navigates directly to the assessment and back without resetting tasks or sav
     screen.getByRole("link", { name: "Wind Turbine Technician" }),
   );
   await screen.findByRole("heading", { name: "Relevant experience" });
+  expect(document.documentElement.dataset.carrowmoreIdentity).toBe("quiet");
   expect(document.getElementById("main")).toHaveFocus();
   await user.click(
     screen.getByRole("checkbox", {
-      name: "Check existing offshore certificates",
+      name: "Discuss Eimhin’s maintenance experience",
     }),
   );
   await user.click(screen.getByRole("link", { name: "People" }));
   await screen.findByRole("heading", { name: "Redeployment workspace" });
+  expect(document.documentElement.dataset.carrowmoreIdentity).toBe("quiet");
   expect(screen.getByRole("textbox", { name: "Search by name" })).toHaveValue(
     "Eimhin",
   );
@@ -88,7 +90,7 @@ it("navigates directly to the assessment and back without resetting tasks or sav
   ).toBeChecked();
   const eimhin = screen.getByRole("region", { name: "Eimhin Mac Neidhe" });
   expect(
-    within(eimhin).getByText("Discuss Eimhin’s maintenance experience"),
+    within(eimhin).getByText("Review suitability"),
   ).toBeInTheDocument();
   expect(
     within(eimhin).queryByText("Check existing offshore certificates"),
@@ -98,11 +100,11 @@ it("navigates directly to the assessment and back without resetting tasks or sav
   );
   expect(
     await screen.findByRole("checkbox", {
-      name: "Check existing offshore certificates",
+      name: "Discuss Eimhin’s maintenance experience",
     }),
   ).toBeChecked();
   expect(
-    JSON.parse(localStorage.getItem(storageKey)).workspace.tasks[0].done,
+    JSON.parse(localStorage.getItem(storageKey)).workspace.tasks[1].done,
   ).toBe(true);
   // Skip link must not be interpreted as a route back to People.
   await user.click(

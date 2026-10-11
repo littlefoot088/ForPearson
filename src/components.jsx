@@ -8,13 +8,13 @@ export function Icon({ icon: Component, ...props }) {
 }
 
 // Keep the exact substring algorithm: source wording must not be normalised.
-export function Highlight({ text, passage }) {
+export function Highlight({ text, passage, color = "evidence.1" }) {
   const start = text.indexOf(passage);
   if (start < 0) return text;
   return (
     <>
       {text.slice(0, start)}
-      <Mark color="clarification.2">{passage}</Mark>
+      <Mark color={color}>{passage}</Mark>
       {text.slice(start + passage.length)}
     </>
   );

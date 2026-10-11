@@ -1,0 +1,257 @@
+[
+  {
+    "file": "01-people-default.png",
+    "name": "people-default",
+    "extra": ""
+  },
+  {
+    "file": "02-people-search-empty.png",
+    "name": "people-search-empty",
+    "extra": ""
+  },
+  {
+    "file": "03-assessment-collapsed.png",
+    "name": "assessment-collapsed",
+    "extra": ""
+  },
+  {
+    "file": "04-assessment-expanded-1.png",
+    "name": "assessment-expanded-1",
+    "extra": "Pump maintenance & repair Repeated pump repairs recorded"
+  },
+  {
+    "file": "05-pump-evidence-selected.png",
+    "name": "pump-evidence-selected",
+    "extra": ""
+  },
+  {
+    "file": "06-pump-evidence-next.png",
+    "name": "pump-evidence-next",
+    "extra": ""
+  },
+  {
+    "file": "07-pump-evidence-flagged.png",
+    "name": "pump-evidence-flagged",
+    "extra": "Flag set in isolated screenshot session only"
+  },
+  {
+    "file": "08-pump-evidence-source-details.png",
+    "name": "pump-evidence-source-details",
+    "extra": ""
+  },
+  {
+    "file": "09-pump-training.png",
+    "name": "pump-training",
+    "extra": ""
+  },
+  {
+    "file": "10-assessment-expanded-2.png",
+    "name": "assessment-expanded-2",
+    "extra": "Electrical fault-finding & control Fault-finding and repairs across several years"
+  },
+  {
+    "file": "11-electrical-evidence.png",
+    "name": "electrical-evidence",
+    "extra": ""
+  },
+  {
+    "file": "12-generator-training.png",
+    "name": "generator-training",
+    "extra": ""
+  },
+  {
+    "file": "13-assessment-expanded-3.png",
+    "name": "assessment-expanded-3",
+    "extra": "Sea survival Training recorded"
+  },
+  {
+    "file": "14-sea-survival-training.png",
+    "name": "sea-survival-training",
+    "extra": ""
+  },
+  {
+    "file": "15-assessment-expanded-4.png",
+    "name": "assessment-expanded-4",
+    "extra": "Fire prevention and response Attendance recorded · expiry passed"
+  },
+  {
+    "file": "16-fire-training.png",
+    "name": "fire-training",
+    "extra": ""
+  },
+  {
+    "file": "17-assessment-expanded-5.png",
+    "name": "assessment-expanded-5",
+    "extra": "First aid No certificate record found"
+  },
+  {
+    "file": "18-assessment-expanded-6.png",
+    "name": "assessment-expanded-6",
+    "extra": "Working-at-height certification No certificate record found"
+  },
+  {
+    "file": "19-assessment-expanded-7.png",
+    "name": "assessment-expanded-7",
+    "extra": "Offshore medical fitness No clearance record found"
+  },
+  {
+    "file": "20-assessment-expanded-8.png",
+    "name": "assessment-expanded-8",
+    "extra": "Safe-work planning & permits Planning and permit issuing recorded; current authority needs checking"
+  },
+  {
+    "file": "21-assessment-expanded-9.png",
+    "name": "assessment-expanded-9",
+    "extra": "Training and supporting colleagues One plant walkthrough recorded"
+  },
+  {
+    "file": "22-assessment-expanded-10.png",
+    "name": "assessment-expanded-10",
+    "extra": "Comfort at height, in enclosed spaces and on boats in a swell Not yet discussed"
+  },
+  {
+    "file": "23-role-details.png",
+    "name": "role-details",
+    "extra": ""
+  },
+  {
+    "file": "24-response-editor.png",
+    "name": "response-editor",
+    "extra": ""
+  },
+  {
+    "file": "25-assessment-editor.png",
+    "name": "assessment-editor",
+    "extra": ""
+  },
+  {
+    "file": "26-task-empty.png",
+    "name": "task-empty",
+    "extra": ""
+  },
+  {
+    "file": "27-task-editing.png",
+    "name": "task-editing",
+    "extra": "Demonstration text, isolated session"
+  },
+  {
+    "file": "28-task-saved.png",
+    "name": "task-saved",
+    "extra": "Demonstration task, isolated session"
+  },
+  {
+    "file": "29-task-edit-existing.png",
+    "name": "task-edit-existing",
+    "extra": ""
+  },
+  {
+    "file": "30-discussion-empty.png",
+    "name": "discussion-empty",
+    "extra": ""
+  },
+  {
+    "file": "31-discussion-composer.png",
+    "name": "discussion-composer",
+    "extra": ""
+  },
+  {
+    "file": "32-discussion-saved.png",
+    "name": "discussion-saved",
+    "extra": "Saved suggested question in isolated session"
+  },
+  {
+    "file": "33-discussion-list.png",
+    "name": "discussion-list",
+    "extra": ""
+  },
+  {
+    "file": "34-discussion-edit.png",
+    "name": "discussion-edit",
+    "extra": ""
+  },
+  {
+    "file": "35-note-empty.png",
+    "name": "note-empty",
+    "extra": ""
+  },
+  {
+    "file": "36-note-editing.png",
+    "name": "note-editing",
+    "extra": "Demonstration text; not an actual conversation"
+  },
+  {
+    "file": "37-note-saved.png",
+    "name": "note-saved",
+    "extra": "Demonstration note in isolated session"
+  },
+  {
+    "file": "38-introduction-preview.png",
+    "name": "introduction-preview",
+    "extra": ""
+  },
+  {
+    "file": "39-introduction-edit-top.png",
+    "name": "introduction-edit-top",
+    "extra": ""
+  },
+  {
+    "file": "40-introduction-edit-bottom.png",
+    "name": "introduction-edit-bottom",
+    "extra": ""
+  },
+  {
+    "file": "41-introduction-saved.png",
+    "name": "introduction-saved",
+    "extra": ""
+  },
+  {
+    "file": "42-introduction-ready.png",
+    "name": "introduction-ready",
+    "extra": "Ready state in isolated session; nothing shared"
+  },
+  {
+    "file": "43-introduction-reset-confirmation.png",
+    "name": "introduction-reset-confirmation",
+    "extra": ""
+  },
+  {
+    "file": "44-workspace-reset-confirmation.png",
+    "name": "workspace-reset-confirmation",
+    "extra": ""
+  },
+  {
+    "file": "45-mobile-assessment.png",
+    "name": "mobile-assessment",
+    "extra": ""
+  },
+  {
+    "file": "46-mobile-pump-expanded.png",
+    "name": "mobile-pump-expanded",
+    "extra": ""
+  },
+  {
+    "file": "47-mobile-pump-evidence.png",
+    "name": "mobile-pump-evidence",
+    "extra": ""
+  },
+  {
+    "file": "48-mobile-people.png",
+    "name": "mobile-people",
+    "extra": ""
+  },
+  {
+    "file": "49-reported-responsibilities-editor.png",
+    "name": "reported-responsibilities-editor",
+    "extra": ""
+  },
+  {
+    "file": "desktop-scrolled-workspace.png",
+    "name": "desktop-scrolled-workspace",
+    "extra": "Viewport capture showing the sticky workspace while assessment is scrolled"
+  },
+  {
+    "file": "50-assessment-recollapsed.png",
+    "name": "assessment-recollapsed",
+    "extra": ""
+  }
+]

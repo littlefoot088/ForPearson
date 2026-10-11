@@ -6,9 +6,7 @@ import {
   Button,
   Checkbox,
   Container,
-  Divider,
   Grid,
-  Group,
   Paper,
   NativeSelect,
   Stack,
@@ -24,6 +22,32 @@ import {
   peopleForWorkspace,
 } from "./people";
 
+function Progress({ children }) {
+  const color = [
+    "Interview invited",
+    "Employment arranged",
+    "Interested",
+    "Ready for Eimhin’s review",
+  ].includes(children)
+    ? "documented"
+    : children === "Qualification check needed"
+      ? "clarification"
+      : "carrowmore";
+  return (
+    <Badge
+      color={color}
+      variant="light"
+      size="md"
+      tt="none"
+      fw={500}
+      h="auto"
+      style={{ whiteSpace: "normal" }}
+    >
+      {children}
+    </Badge>
+  );
+}
+
 export function PeopleWorkspace({
   workspace,
   storageFailed,
@@ -31,11 +55,6 @@ export function PeopleWorkspace({
   onFiltersChange,
 }) {
   const { search, intention, attentionOnly } = filters;
-  const setSearch = (search) => onFiltersChange({ ...filters, search });
-  const setIntention = (intention) =>
-    onFiltersChange({ ...filters, intention });
-  const setAttentionOnly = (attentionOnly) =>
-    onFiltersChange({ ...filters, attentionOnly });
   const people = filterPeople(
     peopleForWorkspace(workspace),
     search,
@@ -49,178 +68,166 @@ export function PeopleWorkspace({
           <Title order={1} size="h2">
             Redeployment workspace
           </Title>
-          <Text c="dimmed" mt="xs">
-            Help people at Carrowmore Light Authority explore opportunities and
-            take their next step.
+          <Text c="dimmed" size="sm" mt="xs">
+            People, opportunities and next actions
           </Text>
         </Box>
-        <Paper withBorder p="md" radius="md" bg="white">
-          <Stack gap="sm">
-            <Group gap="xs">
-              <Badge variant="light" color="gray">
-                Assessment workspace
-              </Badge>
-              <Text size="sm">
-                This workspace currently includes Eimhin’s opportunity
-                assessment.
-              </Text>
-            </Group>
-            <Text size="sm" c="dimmed">
-              Employment records inform the assessment. Progress and next steps
-              reflect your saved work; career intentions and interest remain
-              unknown until recorded.
-            </Text>
-          </Stack>
-        </Paper>
-        <Stack gap="sm">
-          <Grid align="flex-end">
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <TextInput
-                label="Search by name"
-                placeholder="Find a person"
-                leftSection={<Search size={16} aria-hidden="true" />}
-                value={search}
-                onChange={(e) => setSearch(e.currentTarget.value)}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6 }}>
-              <NativeSelect
-                label="Employment intention"
-                data={[{ value: "", label: "All intentions" }, ...intentions]}
-                value={intention ?? ""}
-                onChange={(event) => setIntention(event.currentTarget.value)}
-              />
-            </Grid.Col>
-          </Grid>
-          <Group justify="space-between">
+        <Grid align="flex-end">
+          <Grid.Col span={{ base: 12, sm: 5 }}>
+            <TextInput
+              label="Search by name"
+              placeholder="Find a person"
+              leftSection={<Search size={16} aria-hidden="true" />}
+              value={search}
+              onChange={(e) =>
+                onFiltersChange({ ...filters, search: e.currentTarget.value })
+              }
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 4 }}>
+            <NativeSelect
+              label="Employment intention"
+              data={[{ value: "", label: "All intentions" }, ...intentions]}
+              value={intention ?? ""}
+              onChange={(e) =>
+                onFiltersChange({
+                  ...filters,
+                  intention: e.currentTarget.value,
+                })
+              }
+            />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 3 }} pb="sm">
             <Checkbox
               label="Needs attention"
-              description="People with an outstanding next action"
               checked={attentionOnly}
-              onChange={(e) => setAttentionOnly(e.currentTarget.checked)}
+              onChange={(e) =>
+                onFiltersChange({
+                  ...filters,
+                  attentionOnly: e.currentTarget.checked,
+                })
+              }
             />
-            <Text size="sm" c="dimmed" role="status">
-              {people.length} {people.length === 1 ? "person" : "people"} shown
-            </Text>
-          </Group>
-        </Stack>
-        <Paper withBorder radius="md" bg="white">
-          {people.length ? (
-            people.map((p, index) => (
-              <React.Fragment key={p.id}>
-                {index > 0 && <Divider />}
-                <Box
-                  component="section"
-                  p="md"
-                  aria-labelledby={`person-${p.id}`}
-                >
-                  <Group justify="space-between" gap="xs" mb="xs">
-                    <Title order={2} size="h4" id={`person-${p.id}`}>
-                      {p.name}
-                    </Title>
-                    <Text size="sm">
-                      <Text span c="dimmed">
-                        Intention:{" "}
-                      </Text>
-                      {p.intention}
+          </Grid.Col>
+        </Grid>
+        <Text size="sm" c="dimmed" role="status">
+          {people.length} {people.length === 1 ? "person" : "people"} shown
+        </Text>
+        <Paper bg="white" p="md" radius="sm">
+          {people.length > 0 && (
+            <Grid gutter="lg" mb="md" visibleFrom="sm" aria-hidden="true">
+              <Grid.Col span={3}>
+                <Text size="xs" c="dimmed">
+                  Person · employment intention
+                </Text>
+              </Grid.Col>
+              <Grid.Col span={9}>
+                <Grid gutter="xs">
+                  <Grid.Col span={5}>
+                    <Text size="xs" c="dimmed">
+                      Opportunity
                     </Text>
-                  </Group>
+                  </Grid.Col>
+                  <Grid.Col span={3}>
+                    <Text size="xs" c="dimmed">
+                      Progress
+                    </Text>
+                  </Grid.Col>
+                  <Grid.Col span={4}>
+                    <Text size="xs" c="dimmed">
+                      Next action
+                    </Text>
+                  </Grid.Col>
+                </Grid>
+              </Grid.Col>
+            </Grid>
+          )}
+          <Stack gap="xl">
+            {people.map((p) => (
+              <Grid
+                component="section"
+                key={p.id}
+                aria-labelledby={`person-${p.id}`}
+                gutter="lg"
+              >
+                <Grid.Col span={{ base: 12, sm: 3 }}>
+                  <Title order={2} size="md" id={`person-${p.id}`}>
+                    {p.name}
+                  </Title>
+                  <Text size="sm" c="dimmed" mt="xs">
+                    {p.intention}
+                  </Text>
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 9 }}>
                   {p.opportunities.length ? (
-                    <Stack gap="xs">
-                      <Grid gutter="md" visibleFrom="sm" aria-hidden="true">
-                        <Grid.Col span={5}>
-                          <Text size="xs" c="dimmed">
-                            Opportunity
-                          </Text>
-                        </Grid.Col>
-                        <Grid.Col span={3}>
-                          <Text size="xs" c="dimmed">
-                            Progress
-                          </Text>
-                        </Grid.Col>
-                        <Grid.Col span={4}>
-                          <Text size="xs" c="dimmed">
-                            Next action
-                          </Text>
-                        </Grid.Col>
-                      </Grid>
+                    <Stack gap="md">
                       {p.opportunities.map((o) => (
-                        <Box key={o.id} py="xs">
-                          <Grid gutter="md" align="flex-start">
-                            <Grid.Col span={{ base: 12, sm: 5 }}>
-                              {o.implemented ? (
-                                <Anchor
-                                  href={assessmentHash}
-                                  fw={600}
-                                  size="sm"
-                                >
-                                  {o.title}
-                                </Anchor>
-                              ) : (
-                                <Text size="sm" fw={500}>
-                                  {o.title}
-                                </Text>
-                              )}
-                              <Text size="xs" c="dimmed">
-                                {o.employer}
-                              </Text>
-                              <Text size="xs" c="dimmed">
-                                {o.implemented
-                                  ? "Open assessment"
-                                  : "Illustrative · Assessment not included"}
-                              </Text>
-                            </Grid.Col>
-                            <Grid.Col span={{ base: 12, sm: 3 }}>
-                              <Text size="xs" c="dimmed" hiddenFrom="sm">
-                                Progress
-                              </Text>
-                              <Text size="sm">{o.progress}</Text>
-                            </Grid.Col>
-                            <Grid.Col span={{ base: 12, sm: 4 }}>
-                              <Text size="xs" c="dimmed" hiddenFrom="sm">
-                                Next action
-                              </Text>
-                              <Text
+                        <Grid key={o.id} gutter="xs" align="flex-start">
+                          <Grid.Col span={{ base: 12, sm: 5 }}>
+                            {o.implemented ? (
+                              <Anchor
+                                href={assessmentHash}
+                                fw={600}
                                 size="sm"
-                                c={o.nextAction ? undefined : "dimmed"}
+                                underline="always"
                               >
-                                {o.nextAction ?? "No next action recorded"}
+                                {o.title}
+                              </Anchor>
+                            ) : (
+                              <Text size="sm" fw={500}>
+                                {o.title}
                               </Text>
-                            </Grid.Col>
-                          </Grid>
-                        </Box>
+                            )}
+                            <Text size="xs" c="dimmed">
+                              {o.employer}
+                            </Text>
+                          </Grid.Col>
+                          <Grid.Col span={{ base: 12, sm: 3 }}>
+                            <Progress>{o.progress}</Progress>
+                          </Grid.Col>
+                          <Grid.Col span={{ base: 12, sm: 4 }}>
+                            {o.nextAction && (
+                              <Text size="sm">
+                                <Text span c="dimmed" hiddenFrom="sm">
+                                  Next:{" "}
+                                </Text>
+                                {o.nextAction}
+                              </Text>
+                            )}
+                          </Grid.Col>
+                        </Grid>
                       ))}
                     </Stack>
                   ) : (
                     <Text size="sm" c="dimmed">
-                      No employment recommendations
+                      No job recommendations
                     </Text>
                   )}
-                </Box>
-              </React.Fragment>
-            ))
-          ) : (
-            <Stack align="center" p="lg" gap="sm">
-              <Text>No people match these filters.</Text>
-              <Button
-                variant="subtle"
-                onClick={() => {
-                  onFiltersChange({
-                    search: "",
-                    intention: null,
-                    attentionOnly: false,
-                  });
-                }}
-              >
-                Clear filters
-              </Button>
-            </Stack>
-          )}
+                </Grid.Col>
+              </Grid>
+            ))}
+            {!people.length && (
+              <Stack align="center" p="lg" gap="sm">
+                <Text>No people match these filters.</Text>
+                <Button
+                  variant="subtle"
+                  onClick={() =>
+                    onFiltersChange({
+                      search: "",
+                      intention: null,
+                      attentionOnly: false,
+                    })
+                  }
+                >
+                  Clear filters
+                </Button>
+              </Stack>
+            )}
+          </Stack>
         </Paper>
         {storageFailed && (
           <Text role="alert" size="sm" c="clarification.8">
-            Browser storage is unavailable. Changes are kept for this session
-            but will not survive refresh.
+            Browser storage is unavailable. Changes will not survive refresh.
           </Text>
         )}
       </Stack>

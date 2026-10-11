@@ -1,0 +1,20 @@
+Workflow integration validation — 11 October 2026
+
+Automated suite: 36 node tests and 28 UI tests passed.
+Production build: passed; existing bundle-size advisory remains.
+
+Isolated Chromium at desktop 1440x1050 and mobile 390x844:
+1. Positive suitability, saved introduction, derived preparation completion and refresh: passed.
+2. Assessment change preserves saved prose and requests review: passed. Readiness invalidation also covered by reducer tests.
+3. Document fields and coverage acknowledgement, current verification, expired correction, withdrawal and persisted history: passed.
+   Additional browser run verified no-expiry confirmation, linked requirement check, all-four safety check, independent medical/manual tasks, refresh and withdrawal reopening checks.
+4. Add/edit notes, latest conversation date rather than insertion order, refresh and independent interest: passed.
+5. Assessment/People return navigation, search retention and consistent recommended action: passed. Search remains in navigation state; full reload resets the search as before.
+6. Negative suitability prioritises reconsideration; saved introduction/notes survive and employer state remains not submitted: passed.
+
+Desktop/mobile verification drawer visually inspected. Tab remains within the drawer; Escape closes it and restores focus. No horizontal page overflow or browser page errors observed.
+Compared assessment screenshot against neutral-reset baseline: surfaces, spacing, typography and composition retained. Current approved lighthouse logo retained; the older reset baseline predates restoration of that logo. New verification controls and changed workflow labels are intentional functional changes.
+
+Automated regression coverage includes manual/edited tasks, conservative version-2 migration, qualification check identifiers/undo, saved introduction replacement and prior wording, record exclusions, source flags, discussion questions, and storage failure.
+
+Limits: Chromium validation only; no physical mobile device or screen-reader audit. Verification is an officer-recorded document judgement, not automated validation with an issuing body. No uploads, external checks, sharing or submissions occur.

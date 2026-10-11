@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 414 88" fill="none">
+  <title>Carrowmore Light Authority</title>
+  <g fill="#243951">
+    <path d="M14 65a34 34 0 1 1 51-1" stroke="#243951" stroke-width="2" fill="none"/>
+    <path d="M29 33h14l4 28c-8-4-13-4-22-1z"/>
+    <path d="M26 20l10-8 10 8v2H26zM35 8h2v6h-2zM26 30h20v3H26z"/>
+    <path d="M28 21h2v10h-2zm7 0h2v10h-2zm7 0h2v10h-2z"/>
+    <path d="M47 25l25-6-20 7zm0 3 25 6-20-4z"/>
+    <path d="M13 65c15-9 23-8 38-1 7 3 12 3 19 1-10 9-20 7-31 2-10-5-17-5-26-2zM18 71c12-5 18-3 28 1 5 2 10 3 15 2-14 7-29 5-43-3z"/>
+  </g>
+  <path d="M36 41h2v6h-2zm1 11h2v6h-2z" fill="#FFFFFF"/>
+  <text x="88" y="48" fill="#243951" font-family="Georgia, 'Times New Roman', serif" font-size="49" font-weight="700" letter-spacing="-1.6" textLength="282" lengthAdjust="spacingAndGlyphs">carrowmore</text>
+  <text x="92" y="69" fill="#243951" font-family="Arial, sans-serif" font-size="13" letter-spacing="4.2" textLength="268" lengthAdjust="spacingAndGlyphs">LIGHT AUTHORITY</text>
+</svg>

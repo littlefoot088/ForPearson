@@ -1,16 +1,15 @@
+import { qualificationCopy } from "./workflowState";
 import React from "react";
 import {
-  Divider,
-  ActionIcon,
   Button,
-  Group,
   Paper,
   Stack,
   Text,
   Mark,
-  NativeSelect,
+  Group,
+  Checkbox,
 } from "@mantine/core";
-import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
+import { Flag } from "lucide-react";
 import { TrainingSummary } from "./assessment";
 import { Icon, Highlight, RecordFields } from "./components";
 import { dateLabel, person, interpretations, evidenceAudit } from "./data";
@@ -18,119 +17,167 @@ import { dateLabel, person, interpretations, evidenceAudit } from "./data";
 export function EvidenceContent({
   drawer,
   records,
-  index,
-  setIndex,
+  training,
+  recordFlags,
+  onFlag,
+  excludedRecordIds = [],
+  onInclusion,
+  workspace = {},
+}) {
+  const appraisal = ["pump", "electrical"].includes(drawer.item.id)
+    ? evidenceAudit.appraisals.find((r) => r.record_id === "AP000013")
+    : null;
+  const excerpt = appraisal?.text
+    .split(/(?<=[.!?])\s+/)
+    .filter((sentence) =>
+      drawer.item.id === "pump"
+        ? /pumps/i.test(sentence)
+        : /panels|switchgear|changeover/i.test(sentence),
+    )
+    .join(" ");
+  if (!records.length)
+    return (
+      <EvidenceRecord
+        drawer={{ ...drawer, item: qualificationCopy(drawer.item, workspace) }}
+        training={training}
+      />
+    );
+  return (
+    <Stack gap="xl">
+      <Stack gap="xs">
+        <Text size="sm" c="dimmed">
+          {records.filter((r) => !excludedRecordIds.includes(r.id)).length}{" "}
+          included logbook entries
+          {records.some((r) => excludedRecordIds.includes(r.id))
+            ? ` · ${records.filter((r) => excludedRecordIds.includes(r.id)).length} excluded`
+            : ""}{" "}
+          · oldest first
+        </Text>
+        <Text size="sm" c="dimmed">
+          Excluding a record removes it from the assessment and generated
+          introduction. You can restore it at any time.
+        </Text>
+      </Stack>
+      <ol className="evidence-timeline">
+        {[...records]
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .map((source) => (
+            <li key={source.id}>
+              <EvidenceRecord
+                drawer={drawer}
+                source={source}
+                flagged={recordFlags.includes(source.id)}
+                onFlag={onFlag}
+                excluded={excludedRecordIds.includes(source.id)}
+                onInclusion={onInclusion}
+              />
+            </li>
+          ))}
+      </ol>
+      {appraisal && (
+        <section aria-label="Manager appraisal">
+          <Stack gap="sm">
+            <Text size="sm" fw={600}>
+              Manager appraisal · {appraisal.year}
+            </Text>
+            <Text component="blockquote" size="md" m={0}>
+              {excerpt}
+            </Text>
+            <Text size="sm" c="dimmed">
+              Manager’s observation, not an independent skills assessment.
+            </Text>
+            <details>
+              <Text component="summary" size="sm" style={{ cursor: "pointer" }}>
+                View source details
+              </Text>
+              <Text size="sm" mt="sm">
+                {appraisal.record_id} · {appraisal.station} ·
+                raw/appraisals/appraisals.jsonl
+              </Text>
+            </details>
+          </Stack>
+        </section>
+      )}
+    </Stack>
+  );
+}
+
+function EvidenceRecord({
+  drawer,
+  source,
   training,
   flagged,
   onFlag,
+  excluded,
+  onInclusion,
 }) {
-  const source = records[index];
   const early = source && source.date < person.joined;
+  const inclusion = source && (
+    <Checkbox
+      size="xs"
+      label="Exclude this record"
+      description={
+        early
+          ? `Date needs checking: this entry names Eimhin but predates his recorded joining date (${dateLabel(person.joined)}).`
+          : excluded
+            ? "Excluded from the assessment and introduction."
+            : undefined
+      }
+      styles={{
+        label: { fontSize: "var(--mantine-font-size-sm)" },
+        description: {
+          fontSize: "var(--mantine-font-size-xs)",
+          color: early ? "var(--mantine-color-clarification-7)" : undefined,
+        },
+      }}
+      checked={Boolean(excluded)}
+      onChange={(event) => onInclusion(source.id, !event.currentTarget.checked)}
+    />
+  );
   return (
-    <Stack gap="md">
-      <Text size="sm" c="dimmed">
-        {drawer.requirement.text}
-      </Text>
-      {source && (
-        <Text size="sm">
-          Records cover: {dateLabel(records[0].date)}–
-          {dateLabel(records.at(-1).date)}. Latest entry:{" "}
-          {dateLabel(records.at(-1).date)}. {drawer.item.involvement}
-        </Text>
-      )}
-      {source && (
-        <Text size="sm">
-          Matching entries by year:{" "}
-          {Array.from({ length: 18 }, (_, i) => 2009 + i)
-            .map(
-              (year) =>
-                `${year}: ${records.filter((r) => r.date.startsWith(String(year))).length}`,
-            )
-            .join(" · ")}
-        </Text>
-      )}
+    <Stack gap="sm">
       {source ? (
         <>
-          <Text size="sm">
-            {records.length} matching logbook entries · Full supplied-log review
-          </Text>
-          <Text fw={600}>
-            {dateLabel(source.date)} · {source.station} Station
-          </Text>
           <div>
-            <Text size="xs" c="dimmed" mb="xs">
-              ORIGINAL LOGBOOK
-            </Text>
+            <Group gap="xs" align="baseline">
+              <Text size="sm" fw={600}>
+                {dateLabel(source.date)}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {source.station} Station · Original logbook
+              </Text>
+            </Group>
             <Paper
               component="blockquote"
-              withBorder
-              p="md"
+              p="sm"
               m={0}
+              mt="xs"
+              bg="evidence.0"
               className="source-quote"
             >
-              <Highlight text={source.original} passage={source.highlight} />
+              <Highlight
+                text={source.original}
+                passage={source.highlight}
+                color="evidence.1"
+              />
             </Paper>
           </div>
-          <div>
-            <Text fw={600} size="sm">
-              What this tells us
-            </Text>
-            <Text>{interpretations[source.id] ?? source.interpretation}</Text>
-          </div>
+          {[
+            "pump_2025-10-10",
+            "safety_2014-04-15",
+            "safety_2025-08-19",
+          ].includes(source.id) && (
+            <div className="reference-interpretation">
+              <Text size="sm">{interpretations[source.id]}</Text>
+            </div>
+          )}
           {source.dateNote && <Text size="sm">{source.dateNote}</Text>}
           {source.measurementNote && (
             <Text size="sm" c="clarification.7">
               {source.measurementNote}
             </Text>
           )}
-          {early && (
-            <Text size="sm" c="clarification.7">
-              <strong>Needs checking:</strong> This entry names MAC NEIDHE E and
-              uses code K0104. It predates the recorded joining date of{" "}
-              {dateLabel(person.joined)}; the date discrepancy is unresolved.
-            </Text>
-          )}
-          <Group justify="space-between">
-            <Text size="sm">
-              Record {index + 1} of {records.length}
-            </Text>
-            <Group gap="xs">
-              <ActionIcon
-                variant="default"
-                disabled={index === 0}
-                aria-label="Previous evidence record"
-                onClick={() => setIndex(index - 1)}
-              >
-                <Icon icon={ChevronLeft} />
-              </ActionIcon>
-              <ActionIcon
-                variant="default"
-                disabled={index === records.length - 1}
-                aria-label="Next evidence record"
-                onClick={() => setIndex(index + 1)}
-              >
-                <Icon icon={ChevronRight} />
-              </ActionIcon>
-            </Group>
-          </Group>
-          <NativeSelect
-            label="Select supporting record"
-            value={String(index)}
-            onChange={(event) => setIndex(Number(event.currentTarget.value))}
-            data={records.map((r, i) => ({
-              value: String(i),
-              label: `${dateLabel(r.date)} · ${r.station} · ${r.original.slice(0, 65)}`,
-            }))}
-          />
-          <Button
-            variant="default"
-            color="clarification"
-            leftSection={<Icon icon={Flag} />}
-            aria-pressed={flagged}
-            onClick={() => onFlag(source.id)}
-          >
-            {flagged ? "Record flagged · undo" : "Flag record for review"}
-          </Button>
+          {inclusion}
         </>
       ) : (
         <>
@@ -152,63 +199,64 @@ export function EvidenceContent({
           )}
         </>
       )}
-      {source && ["pump", "electrical"].includes(drawer.item.id) && (
-        <Stack gap="sm">
-          <Divider />
-          <Text fw={600}>Latest manager review</Text>
-          {evidenceAudit.appraisals
-            .filter((r) => r.record_id === "AP000013")
-            .map((r) => (
-              <Stack gap="xs" key={r.record_id}>
-                <Text size="sm" fw={600}>
-                  {r.year} · {r.station} · {r.record_id}
-                </Text>
-                <Text size="sm">{r.text}</Text>
-              </Stack>
-            ))}
-          <Text size="xs">Source: raw/appraisals/appraisals.jsonl</Text>
-        </Stack>
-      )}
-      <Divider />
-      <Text fw={600}>Source details</Text>
-      <Stack gap="sm">
-        {source ? (
-          <>
-            <RecordFields
-              fields={[
-                ["Source file", source.source],
-                ["Record", source.recordId],
-                ["Person reference", source.personRef],
-                ["Original date", source.rawDate],
-              ]}
-            />
-            <Text size="sm">
-              Identity linked using personnel postings and LearnHub’s
-              keeper-code / payroll-reference pair.{" "}
-              {early
-                ? `This entry carries ${person.id}; its date conflicts with the personnel joining date of ${dateLabel(person.joined)}.`
-                : "Attribution is curated, not externally verified."}
-            </Text>
-          </>
-        ) : (
-          training && (
-            <RecordFields
-              fields={[
-                ["Record ID", training.id],
-                ["Keeper code", training.keeper_code],
-                ["Source", "raw/training/vendor-c-learnhub-2017-2026.json"],
-              ]}
-            />
-          )
-        )}
-        <Text component="pre" size="sm" className="source-quote" m={0}>
-          {source
-            ? typeof source.rawRecord === "string"
-              ? source.rawRecord
-              : JSON.stringify(source.rawRecord, null, 2)
-            : JSON.stringify(training, null, 2)}
+      <details key={source?.id ?? training?.id}>
+        <Text component="summary" size="sm" style={{ cursor: "pointer" }}>
+          View source details
         </Text>
-      </Stack>
+        <Stack gap="md" mt="sm" ps="sm">
+          {source && (
+            <Button
+              variant="subtle"
+              size="xs"
+              leftSection={<Icon icon={Flag} />}
+              aria-pressed={flagged}
+              onClick={() => onFlag(source.id)}
+              style={{ alignSelf: "flex-start" }}
+            >
+              {flagged ? "Record flagged · undo" : "Flag record for review"}
+            </Button>
+          )}
+          {source ? (
+            <>
+              <RecordFields
+                fields={[
+                  ["Source file", source.source],
+                  ["Record", source.recordId],
+                  ["Person reference", source.personRef],
+                  ["Original date", source.rawDate],
+                ]}
+              />
+              <Text size="sm">
+                Linked to Eimhin through personnel postings and the training
+                system’s keeper-code/payroll-reference match. Attribution has
+                not been independently verified.
+              </Text>
+            </>
+          ) : (
+            training && (
+              <RecordFields
+                fields={[
+                  ["Record ID", training.id],
+                  ["Keeper code", training.keeper_code],
+                  ["Source", "raw/training/vendor-c-learnhub-2017-2026.json"],
+                ]}
+              />
+            )
+          )}
+          <div>
+            <Text size="xs" c="dimmed" mb="xs">
+              Original source text
+            </Text>
+            <Text component="pre" size="xs" className="source-quote" m={0}>
+              {source
+                ? typeof source.rawRecord === "string"
+                  ? source.rawRecord
+                  : JSON.stringify(source.rawRecord, null, 2)
+                : JSON.stringify(training, null, 2)}
+            </Text>
+          </div>
+        </Stack>
+      </details>
     </Stack>
   );
 }

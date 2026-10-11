@@ -108,11 +108,12 @@ test("requirement-led assessment keeps every source and training record reachabl
 });
 
 test("candidate narrative and experience rows retain traceable requirement links", async () => {
-  const { candidateSummary, experienceRows } = await import("../src/data.js");
+  const { candidateSummary, experienceRows, getSources } =
+    await import("../src/data.js");
   assert.equal(candidateSummary.vacancyId, "array-om");
   assert.ok(
     candidateSummary.sourceIds.every((id) => {
-      const source = sources.find((r) => r.id === id);
+      const source = claims.flatMap(getSources).find((r) => r.id === id);
       return (
         source && source.date >= person.joined && source.date <= reviewDate
       );
@@ -126,10 +127,7 @@ test("candidate narrative and experience rows retain traceable requirement links
     experienceRows.flatMap((row) => row.qualificationIds),
     ["pumped", "generator"],
   );
-  assert.match(
-    candidateSummary.text,
-    /does not require previous wind experience/,
-  );
+  assert.match(candidateSummary.text, /accepts experience from other plant/);
   assert.doesNotMatch(
     candidateSummary.text,
     /interest in offshore work need discussion/,

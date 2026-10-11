@@ -121,7 +121,7 @@ test("tasks and private notes stay independent and do not enter the generated re
   state = reduce(state, { type: "task-toggle", id: "qualification:sea" });
   assert.equal(
     state.tasks.find((t) => t.id === "qualification:sea").done,
-    true,
+    false,
   );
   assert.deepEqual(state.referral, ready.referral);
   assert.ok(!JSON.stringify(state.referral).includes(note.text));
@@ -172,11 +172,20 @@ test("versioned storage round-trips workspace state; corruption and unavailable 
   };
   const snapshot = {
     workspace: markReady(draftState()),
-    drafts: [],
+    drafts: [
+      {
+        id: "pump",
+        requirementId: "maintenance",
+        title: "Pump maintenance & repair",
+        text: "Which repairs did you complete independently?",
+        completed: true,
+      },
+    ],
     recordFlags: ["pump_2009"],
   };
   assert.ok(persistWorkspace(storage, snapshot));
   assert.deepEqual(loadWorkspace(storage).workspace, snapshot.workspace);
+  assert.deepEqual(loadWorkspace(storage).drafts, snapshot.drafts);
   for (const invalid of [
     "{",
     '{"version":99}',
@@ -321,4 +330,103 @@ test("agreed interest restores the previous blank scenario once without replacin
   saved.workspace.opportunity.interest = "not-interested";
   saved.workspace.opportunity.responseOrigin = "manually-recorded";
   assert.equal(load(saved).workspace.opportunity.interest, "not-interested");
+});
+
+test("preference follow-up is migrated once without restoring removed tasks", () => {
+  const workspace = initialWorkspace();
+  delete workspace.preferenceTaskVersion;
+  workspace.tasks = workspace.tasks.filter(
+    (t) => t.id !== "career-preferences",
+  );
+  let snapshot = { version: 2, workspace, drafts: [], recordFlags: [] };
+  const storage = { getItem: () => JSON.stringify(snapshot) };
+  const migrated = loadWorkspace(storage);
+  assert.equal(
+    migrated.workspace.tasks.filter((t) => t.id === "career-preferences")
+      .length,
+    1,
+  );
+  migrated.workspace.tasks = migrated.workspace.tasks.filter(
+    (t) => t.id !== "career-preferences",
+  );
+  snapshot = { version: 2, ...migrated };
+  assert.equal(
+    loadWorkspace(storage).workspace.tasks.some(
+      (t) => t.id === "career-preferences",
+    ),
+    false,
+  );
+});
+
+test("working preferences persist separately and complete only their derived task", () => {
+  const state = draftState();
+  const preference = {
+    date: "2026-10-11",
+    response: "Comfortable on boats; wants to discuss heights.",
+    concerns: "Discuss working at height.",
+  };
+  const saved = reduce(state, { type: "preferences-save", preference });
+  assert.deepEqual(saved.workingPreferences, preference);
+  assert.deepEqual(saved.tasks, state.tasks);
+  assert.deepEqual(saved.opportunity, state.opportunity);
+  assert.equal(saved.referral.needsReview, true);
+  assert.equal(saved.ready, null);
+  let raw;
+  const storage = {
+    setItem: (_, value) => {
+      raw = value;
+    },
+    getItem: () => raw,
+  };
+  persistWorkspace(storage, { workspace: saved, drafts: [], recordFlags: [] });
+  assert.deepEqual(
+    loadWorkspace(storage).workspace.workingPreferences,
+    preference,
+  );
+  assert.equal(
+    reduce(state, {
+      type: "preferences-save",
+      preference: { ...preference, response: " " },
+    }),
+    state,
+  );
+});
+
+test("record exclusion persists, updates introduction provenance and invalidates readiness without rewriting saved text", () => {
+  let state = draftState();
+  const previous = state.referral.pump;
+  state = reduce(state, {
+    type: "record-inclusion",
+    id: "pump_2026-04-21",
+    included: false,
+  });
+  assert.deepEqual(state.excludedRecordIds, ["pump_2026-04-21"]);
+  assert.equal(state.referral.pump, previous);
+  assert.equal(state.referral.needsReview, true);
+  assert.equal(state.ready, null);
+  assert(!state.referral.sourceIds.includes("pump_2026-04-21"));
+  const generated = createReferral(state.excludedRecordIds);
+  assert(!generated.sourceIds.includes("pump_2026-04-21"));
+  assert.notEqual(generated.pump, createReferral().pump);
+  let saved;
+  persistWorkspace(
+    {
+      setItem: (_key, value) => {
+        saved = value;
+      },
+    },
+    { workspace: state, drafts: [], recordFlags: [] },
+  );
+  const restored = loadWorkspace({ getItem: () => saved }).workspace;
+  assert.deepEqual(restored.excludedRecordIds, state.excludedRecordIds);
+  state = reduce(restored, {
+    type: "record-inclusion",
+    id: "pump_2026-04-21",
+    included: true,
+  });
+  assert.deepEqual(state.excludedRecordIds, []);
+  assert.equal(
+    createReferral(state.excludedRecordIds).pump,
+    createReferral().pump,
+  );
 });

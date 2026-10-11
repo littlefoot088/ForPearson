@@ -1,4 +1,23 @@
 import {
+  canSendIntroduction,
+  introductionDocument,
+  introductionVersion,
+  verificationSignature,
+  qualificationSummary,
+  summaryWithQualifications,
+  systemTaskComplete,
+  linkedTask,
+  today,
+  requiredQualifications,
+} from "./workflowState.js";
+import {
+  recordIds,
+  selectedClaim,
+  includedRecords,
+  claimChanged,
+  selectedCandidateSummary,
+} from "./evidenceSelection.js";
+import {
   person,
   vacancy,
   claims,
@@ -30,12 +49,21 @@ const legacyFields = [
   "qualifications",
   "questions",
 ];
-export function assessmentSignature() {
-  return JSON.stringify({ claims, qualifications, vacancy });
+export function assessmentSignature(excluded = [], verifications = {}) {
+  return JSON.stringify({
+    claims,
+    qualifications,
+    vacancy,
+    ...(Object.keys(verifications).length
+      ? { verifications: verificationSignature({ verifications }) }
+      : {}),
+    ...(excluded.length ? { excluded: [...excluded].sort() } : {}),
+  });
 }
 export function initialWorkspace() {
   return {
     interestScenarioVersion: 1,
+    preferenceTaskVersion: 1,
     opportunity: {
       ...initialOpportunity,
       interest: "interested",
@@ -46,45 +74,69 @@ export function initialWorkspace() {
         id: "certificates",
         title: "Check existing offshore certificates",
         done: false,
+        origin: "system",
       },
       {
         id: "responsibilities",
         title: "Discuss Eimhin’s maintenance experience",
         done: false,
+        origin: "system",
+      },
+      {
+        id: "career-preferences",
+        title: "Discuss Eimhin’s career and offshore working preferences",
+        done: false,
+        origin: "system",
       },
       {
         id: "prepare-referral",
         title: "Prepare candidate introduction",
         done: false,
+        origin: "system",
       },
     ],
+    verifications: {},
+    sentIntroductions: [],
     notes: [],
     reports: {},
+    workingPreferences: null,
+    excludedRecordIds: [],
     referral: null,
     ready: null,
   };
 }
-export function createReferral() {
+export function createReferral(excluded = [], verifications = {}) {
   return {
     format: 2,
-    why: "Eimhin’s lighthouse work includes practical maintenance of mechanical and electrical equipment. Carrowmore Array welcomes experience from other kinds of plant, making his background worth exploring for the Wind Turbine Technician role.",
+    why: excluded.length
+      ? summaryWithQualifications(selectedCandidateSummary(excluded), {
+          verifications,
+        })
+      : "Eimhin’s lighthouse work includes practical maintenance of mechanical and electrical equipment. Carrowmore Array welcomes experience from other kinds of plant, making his background worth exploring for the Wind Turbine Technician role.",
     ...Object.fromEntries(
-      claims.map((claim) => [claim.id, claim.introductionSummary]),
+      claims.map((claim) => [
+        claim.id,
+        selectedClaim(claim, excluded).introductionSummary,
+      ]),
     ),
-    qualifications:
-      "Sea-survival training is recorded, but complete offshore safety certification and medical fitness still need verification. Safety certification is required before mobilisation; the vacancy does not specify when medical fitness must be verified.",
+    qualifications: qualificationSummary({ verifications }),
     recommendation:
       "We recommend considering Eimhin for an initial technical interview to explore how his maintenance experience could transfer to offshore wind operations.",
     includedReports: [],
     editedFields: [],
     needsReview: false,
-    assessmentSignature: assessmentSignature(),
+    assessmentSignature: assessmentSignature(excluded, verifications),
     // Internal provenance never renders as part of the employer-facing document.
-    sourceIds: claims.flatMap((c) =>
-      getSources(c)
-        .filter((r) => c.sourceIds.includes(r.id) && r.date >= person.joined)
-        .map((r) => r.id),
-    ),
+    sourceIds: claims.flatMap((c) => {
+      const records = includedRecords(c, excluded).filter(
+        (r) => r.date >= person.joined,
+      );
+      return (
+        claimChanged(c, excluded)
+          ? records.slice(-3)
+          : records.filter((r) => c.sourceIds.includes(r.id))
+      ).map((r) => r.id);
+    }),
     qualificationIds: qualifications.map((q) => q.id),
   };
 }
@@ -106,6 +158,73 @@ const upsert = (items, item) =>
     : [...items, item];
 export function workspaceReducer(state, action) {
   switch (action.type) {
+    case "verification-save": {
+      if (
+        !requiredQualifications.some((q) => q.id === action.id) ||
+        !validVerification(action.record) ||
+        action.record.withdrawn ||
+        action.record.verifiedOn > today()
+      )
+        return state;
+      const history = state.verifications?.[action.id] ?? [];
+      return {
+        ...state,
+        verifications: {
+          ...state.verifications,
+          [action.id]: [
+            ...history,
+            { ...action.record, recordedAt: Date.now() },
+          ],
+        },
+        ready: null,
+        referral: state.referral
+          ? { ...state.referral, needsReview: true }
+          : null,
+      };
+    }
+    case "verification-withdraw": {
+      const history = state.verifications?.[action.id];
+      if (!history?.length || history.at(-1).withdrawn) return state;
+      return {
+        ...state,
+        verifications: {
+          ...state.verifications,
+          [action.id]: [
+            ...history,
+            { ...history.at(-1), withdrawn: true, recordedAt: Date.now() },
+          ],
+        },
+        ready: null,
+        referral: state.referral
+          ? { ...state.referral, needsReview: true }
+          : null,
+      };
+    }
+
+    case "record-inclusion": {
+      if (!recordIds.has(action.id) || typeof action.included !== "boolean")
+        return state;
+      const excluded = state.excludedRecordIds ?? [];
+      const next = action.included
+        ? excluded.filter((id) => id !== action.id)
+        : [...new Set([...excluded, action.id])];
+      if (JSON.stringify(next) === JSON.stringify(excluded)) return state;
+      return {
+        ...state,
+        excludedRecordIds: next,
+        ready: null,
+        referral: state.referral
+          ? {
+              ...state.referral,
+              needsReview: true,
+              sourceIds: state.referral.sourceIds.filter(
+                (id) => !next.includes(id),
+              ),
+            }
+          : null,
+      };
+    }
+
     case "opportunity": {
       const next = opportunityReducer(state.opportunity, action.action);
       const changed =
@@ -121,6 +240,32 @@ export function workspaceReducer(state, action) {
             : state.referral,
       };
     }
+    case "preferences-save": {
+      const preference = action.preference;
+      if (
+        !preference ||
+        !validDate(preference.date) ||
+        !string(preference.response) ||
+        !preference.response.trim() ||
+        !string(preference.concerns)
+      )
+        return state;
+      const saved = {
+        date: preference.date,
+        response: preference.response.trim(),
+        concerns: preference.concerns.trim(),
+      };
+      if (JSON.stringify(state.workingPreferences) === JSON.stringify(saved))
+        return state;
+      return {
+        ...state,
+        workingPreferences: saved,
+        ready: null,
+        referral: state.referral
+          ? { ...state.referral, needsReview: true }
+          : null,
+      };
+    }
     case "task-save":
       if (!action.task.title.trim()) return state;
       return {
@@ -128,13 +273,21 @@ export function workspaceReducer(state, action) {
         tasks: upsert(state.tasks, {
           ...action.task,
           title: action.task.title.trim(),
+          origin:
+            state.tasks.find((t) => t.id === action.task.id)?.title ===
+            action.task.title.trim()
+              ? (state.tasks.find((t) => t.id === action.task.id)?.origin ??
+                "manual")
+              : "manual",
         }),
       };
     case "task-toggle":
       return {
         ...state,
         tasks: state.tasks.map((t) =>
-          t.id === action.id ? { ...t, done: !t.done } : t,
+          t.id === action.id && !(t.origin === "system" && linkedTask(t))
+            ? { ...t, done: !t.done }
+            : t,
         ),
       };
     case "task-remove":
@@ -150,6 +303,7 @@ export function workspaceReducer(state, action) {
               {
                 id,
                 qualificationId: action.qualification.id,
+                origin: "system",
                 title: `Check ${action.qualification.title}`,
                 done: false,
               },
@@ -194,14 +348,45 @@ export function workspaceReducer(state, action) {
         return state;
       const referral = {
         ...action.referral,
+        sourceIds: action.referral.sourceIds.filter(
+          (id) => !(state.excludedRecordIds ?? []).includes(id),
+        ),
         format: 2,
         needsReview: false,
-        assessmentSignature: assessmentSignature(),
+        assessmentSignature: assessmentSignature(
+          state.excludedRecordIds,
+          state.verifications,
+        ),
       };
       const changed =
         JSON.stringify({ ...state.referral, needsReview: false }) !==
         JSON.stringify(referral);
       return { ...state, referral, ready: changed ? null : state.ready };
+    }
+    case "simulate-send": {
+      if (
+        action.approved !== true ||
+        !canSendIntroduction(state) ||
+        action.version !== introductionVersion(state.referral) ||
+        state.referral.assessmentSignature !==
+          assessmentSignature(state.excludedRecordIds, state.verifications)
+      )
+        return state;
+      return {
+        ...state,
+        sentIntroductions: [
+          ...(state.sentIntroductions ?? []),
+          {
+            id: crypto.randomUUID(),
+            recipient: "Carrowmore Array",
+            sentAt: new Date().toISOString(),
+            approved: true,
+            simulated: true,
+            version: action.version,
+            document: structuredClone(introductionDocument(state.referral)),
+          },
+        ],
+      };
     }
     case "ready":
       if (!readinessAllowed(state)) return state;
@@ -220,9 +405,48 @@ const list = (v, check) =>
   Array.isArray(v) &&
   v.every(check) &&
   new Set(v.map((i) => i.id)).size === v.length;
+function validVerification(r) {
+  return (
+    r &&
+    typeof r.issuer === "string" &&
+    !!r.issuer.trim() &&
+    typeof r.reference === "string" &&
+    !!r.reference.trim() &&
+    validDate(r.verifiedOn) &&
+    r.coverageConfirmed === true &&
+    typeof r.noExpiry === "boolean" &&
+    (r.noExpiry ? r.expiresOn === "" : validDate(r.expiresOn)) &&
+    (r.withdrawn == null || typeof r.withdrawn === "boolean")
+  );
+}
 function validWorkspace(w) {
   return (
     w &&
+    (w.sentIntroductions == null ||
+      (Array.isArray(w.sentIntroductions) &&
+        w.sentIntroductions.every(
+          (e) =>
+            e &&
+            string(e.id) &&
+            e.recipient === "Carrowmore Array" &&
+            e.approved === true &&
+            e.simulated === true &&
+            string(e.sentAt) &&
+            !Number.isNaN(Date.parse(e.sentAt)) &&
+            string(e.version) &&
+            e.document?.format === 2 &&
+            referralFields.every(([key]) => string(e.document[key])),
+        ))) &&
+    w.verifications &&
+    Object.entries(w.verifications).every(
+      ([id, history]) =>
+        requiredQualifications.some((q) => q.id === id) &&
+        Array.isArray(history) &&
+        history.every(validVerification),
+    ) &&
+    (w.excludedRecordIds == null ||
+      (Array.isArray(w.excludedRecordIds) &&
+        w.excludedRecordIds.every((id) => recordIds.has(id)))) &&
     w.opportunity &&
     w.opportunity.interest in keeperResponses &&
     w.opportunity.assessment in officerAssessments &&
@@ -246,6 +470,11 @@ function validWorkspace(w) {
         string(n.text) &&
         string(n.followup),
     ) &&
+    (w.workingPreferences == null ||
+      (validDate(w.workingPreferences.date) &&
+        string(w.workingPreferences.response) &&
+        !!w.workingPreferences.response.trim() &&
+        string(w.workingPreferences.concerns))) &&
     w.reports &&
     Object.entries(w.reports).every(
       ([id, r]) =>
@@ -307,6 +536,23 @@ export function loadWorkspace(storage) {
       }
       saved.workspace.interestScenarioVersion = 1;
     }
+    // Add the previously untracked follow-up once; later edits/removal remain respected.
+    if (
+      saved.workspace &&
+      Array.isArray(saved.workspace.tasks) &&
+      saved.workspace.preferenceTaskVersion !== 1
+    ) {
+      if (
+        !saved.workspace.tasks.some((task) => task?.id === "career-preferences")
+      ) {
+        saved.workspace.tasks.push({
+          id: "career-preferences",
+          title: "Discuss Eimhin’s career and offshore working preferences",
+          done: false,
+        });
+      }
+      saved.workspace.preferenceTaskVersion = 1;
+    }
     if (saved.version === 1 && saved.workspace) {
       // A previous referral decision is not the person's approval of an introduction.
       if (saved.workspace.referral) {
@@ -318,7 +564,11 @@ export function loadWorkspace(storage) {
     }
     if (
       saved.workspace?.referral?.format === 2 &&
-      saved.workspace.referral.assessmentSignature !== assessmentSignature()
+      saved.workspace.referral.assessmentSignature !==
+        assessmentSignature(
+          saved.workspace.excludedRecordIds,
+          saved.workspace.verifications,
+        )
     ) {
       saved.workspace.referral.needsReview = true;
       saved.workspace.ready = null;
@@ -329,6 +579,48 @@ export function loadWorkspace(storage) {
           ? { ...task, title: "Prepare candidate introduction" }
           : task,
       );
+    if (
+      saved.version === 2 &&
+      saved.workspace &&
+      Array.isArray(saved.workspace.tasks)
+    ) {
+      saved.workspace.verifications ??= {};
+      const defaults = initialWorkspace().tasks;
+      saved.workspace.tasks = saved.workspace.tasks.map((t) => {
+        const known =
+          defaults.find((d) => d.id === t.id)?.title ??
+          (t.qualificationId
+            ? `Check ${qualifications.find((q) => q.id === t.qualificationId)?.title}`
+            : null);
+        return {
+          ...t,
+          origin:
+            t.origin ??
+            (known === t.title &&
+            (!t.done ||
+              (linkedTask(t) && systemTaskComplete(t, saved.workspace)))
+              ? "system"
+              : "manual"),
+        };
+      });
+      saved.version = 3;
+    }
+    if (saved.version === 3 && saved.workspace) {
+      saved.workspace.sentIntroductions ??= [];
+      saved.version = 4;
+    }
+    if (saved.version === 4 && saved.workspace) {
+      saved.workspace.tasks = saved.workspace.tasks.map((task) =>
+        task.id === "certificates" ? { ...task, origin: "manual" } : task,
+      );
+      saved.version = 5;
+    }
+    if (saved.version === 5 && saved.workspace) {
+      saved.workspace.tasks = saved.workspace.tasks.map((task) =>
+        task.id === "certificates" ? { ...task, origin: "system" } : task,
+      );
+      saved.version = 6;
+    }
     const topicIds = [
       "career-preferences",
       "existing-certificates",
@@ -339,7 +631,7 @@ export function loadWorkspace(storage) {
       ...qualifications.map((q) => q.id),
     ];
     if (
-      saved.version !== 2 ||
+      saved.version !== 6 ||
       !validWorkspace(saved.workspace) ||
       !list(
         saved.drafts,
@@ -353,7 +645,8 @@ export function loadWorkspace(storage) {
             "opportunity-questions",
           ].includes(d.requirementId) &&
           string(d.title) &&
-          string(d.text),
+          string(d.text) &&
+          (d.completed === undefined || typeof d.completed === "boolean"),
       ) ||
       !Array.isArray(saved.recordFlags) ||
       !saved.recordFlags.every(string)
@@ -375,7 +668,7 @@ export function loadWorkspace(storage) {
 }
 export function persistWorkspace(storage, snapshot) {
   try {
-    storage.setItem(storageKey, JSON.stringify({ version: 2, ...snapshot }));
+    storage.setItem(storageKey, JSON.stringify({ ...snapshot, version: 6 }));
     return true;
   } catch {
     return false;

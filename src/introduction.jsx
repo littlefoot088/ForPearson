@@ -1,3 +1,8 @@
+import {
+  currentSend,
+  canSendIntroduction,
+  introductionVersion,
+} from "./workflowState";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Accordion,
@@ -18,7 +23,6 @@ import {
   assessmentSignature,
   createReferral,
   referralFields,
-  readinessAllowed,
 } from "./workspace";
 
 const experienceFields = referralFields.filter(([key]) =>
@@ -53,16 +57,17 @@ function DocumentPreview({ draft, previous = false }) {
           ) : (
             <>
               <Title order={2} size="h3">
-                {person.name}
+                {draft.candidateName ?? person.name}
               </Title>
               <Text size="sm" c="dimmed">
-                Current role: {person.role}
+                Current role: {draft.candidateRole ?? person.role}
               </Text>
               <Text mt="sm" size="sm">
                 For consideration
               </Text>
               <Text fw={600}>
-                {vacancy.title} · {vacancy.employer}
+                {draft.opportunityTitle ?? vacancy.title} ·{" "}
+                {draft.employer ?? vacancy.employer}
               </Text>
             </>
           )}
@@ -148,8 +153,21 @@ function PreviousDraft({ draft }) {
 export function CandidateIntroduction({ state, dispatch, storageFailed }) {
   const legacy = state.referral && state.referral.format !== 2;
   const [draft, setDraft] = useState(() =>
-    legacy ? null : (state.referral ?? createReferral()),
+    legacy
+      ? null
+      : (state.referral ??
+        createReferral(state.excludedRecordIds, state.verifications)),
   );
+  const [approved, setApproved] = useState(false);
+  const [reviewing, setReviewing] = useState(() =>
+    Boolean(state.ready && canSendIntroduction(state)),
+  );
+  const [sentView, setSentView] = useState(null);
+  const sent = currentSend(state);
+  useEffect(() => {
+    setApproved(false);
+    setReviewing(Boolean(state.ready && canSendIntroduction(state)));
+  }, [state.referral, state.opportunity]);
   const [editing, setEditing] = useState(false);
   const [working, setWorking] = useState(null);
   const [saved, setSaved] = useState(false);
@@ -179,12 +197,14 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
     });
   }
   function regenerate() {
+    setApproved(false);
+    setReviewing(false);
     // Keep the previous wording available without inserting it into the external document.
     const previous = draft ?? state.referral;
     const { previousDraft: ignored, ...snapshot } = previous ?? {};
     regenerated.current = true;
     setDraft({
-      ...createReferral(),
+      ...createReferral(state.excludedRecordIds, state.verifications),
       previousDraft: previous ? snapshot : null,
     });
     setEditing(false);
@@ -196,7 +216,11 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
     <Stack gap="md">
       <Group justify="space-between">
         <Badge color="gray" variant="light">
-          {!dirty && state.ready ? "Ready for Eimhin’s review" : "Draft"}
+          {!dirty && sent
+            ? "Simulated send recorded"
+            : !dirty && state.ready
+              ? "Ready for Eimhin’s review"
+              : "Draft"}
         </Badge>
         <Text
           size="xs"
@@ -205,7 +229,7 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
           tabIndex={-1}
           data-autofocus
         >
-          Not approved or submitted
+          {sent && !dirty ? "Sent to Carrowmore Array · simulated" : "Not sent"}
         </Text>
       </Group>
       {legacy && !draft && (
@@ -371,7 +395,7 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
             </Stack>
           ) : (
             <>
-              <DocumentPreview draft={draft} />
+              <DocumentPreview draft={!dirty && sent ? sent.document : draft} />
               <Group justify="space-between" align="flex-start">
                 <Text size="sm" c="dimmed">
                   Candidate CV: Not attached
@@ -380,6 +404,8 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                   variant="subtle"
                   size="compact-sm"
                   onClick={() => {
+                    setApproved(false);
+                    setReviewing(false);
                     setWorking(structuredClone(draft));
                     setEditing(true);
                   }}
@@ -415,7 +441,10 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                       const savedDraft = {
                         ...draft,
                         needsReview: false,
-                        assessmentSignature: assessmentSignature(),
+                        assessmentSignature: assessmentSignature(
+                          state.excludedRecordIds,
+                          state.verifications,
+                        ),
                       };
                       dispatch({ type: "referral-save", referral: savedDraft });
                       setDraft(savedDraft);
@@ -425,44 +454,106 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                     Save introduction draft
                   </Button>
                 )}
-                {!dirty &&
-                  state.referral?.format === 2 &&
-                  !state.referral.needsReview &&
-                  !state.ready && (
-                    <Button
-                      variant="light"
-                      disabled={!readinessAllowed(state)}
-                      onClick={() => dispatch({ type: "ready" })}
-                    >
-                      Mark ready for Eimhin’s review
-                    </Button>
-                  )}
-                {!dirty && state.ready && (
+                {!dirty && !sent && !reviewing && (
                   <Button
-                    variant="subtle"
-                    onClick={() => dispatch({ type: "unready" })}
+                    disabled={!canSendIntroduction(state)}
+                    onClick={() => {
+                      dispatch({ type: "ready" });
+                      setReviewing(true);
+                    }}
                   >
-                    Return to draft
+                    Review with Eimhin
                   </Button>
                 )}
               </Group>
-              <Text size="xs" c="dimmed">
-                Eimhin’s approval is required before sharing. Nothing is sent
-                here.
-              </Text>
+              {!dirty && !sent && reviewing && (
+                <Stack gap="sm">
+                  <Checkbox
+                    label="Eimhin has reviewed this introduction and agreed to share it with Carrowmore Array."
+                    checked={approved}
+                    onChange={(e) => setApproved(e.currentTarget.checked)}
+                  />
+                  <Text size="sm">Simulation only — nothing will be sent.</Text>
+                  <Button
+                    w="fit-content"
+                    disabled={!approved || !canSendIntroduction(state)}
+                    onClick={() => {
+                      dispatch({
+                        type: "simulate-send",
+                        approved,
+                        version: introductionVersion(state.referral),
+                      });
+                      setApproved(false);
+                      setReviewing(false);
+                    }}
+                  >
+                    Send to Carrowmore Array
+                  </Button>
+                </Stack>
+              )}
+              {!dirty && sent && (
+                <Text role="status" size="sm">
+                  Sent to Carrowmore Array · simulated ·{" "}
+                  {new Date(sent.sentAt).toLocaleDateString("en-GB")}. No
+                  message was sent.
+                </Text>
+              )}
+              {!dirty && !sent && !canSendIntroduction(state) && (
+                <Text size="sm">
+                  A positive suitability decision, recorded interest and a
+                  current saved introduction are required before sharing.
+                </Text>
+              )}
+              {(state.sentIntroductions?.length ?? 0) > 0 && (
+                <Stack gap="xs">
+                  <Text size="sm" fw={600}>
+                    Simulated send history
+                  </Text>
+                  {state.sentIntroductions.map((event) => (
+                    <Button
+                      key={event.id}
+                      variant="subtle"
+                      size="compact-sm"
+                      w="fit-content"
+                      onClick={() => setSentView(event)}
+                    >
+                      View sent introduction ·{" "}
+                      {new Date(event.sentAt).toLocaleString("en-GB")}
+                    </Button>
+                  ))}
+                </Stack>
+              )}
               <Button
                 variant="subtle"
                 size="compact-sm"
                 ref={resetTrigger}
                 onClick={() => setResetOpen(true)}
               >
-                Reset to assessment
+                Replace wording from assessment
               </Button>
               <PreviousDraft draft={draft.previousDraft} />
             </>
           )}
         </>
       )}
+      <Modal
+        opened={Boolean(sentView)}
+        onClose={() => setSentView(null)}
+        title="Sent introduction · simulation"
+        size="lg"
+        zIndex={300}
+      >
+        {sentView && (
+          <Stack>
+            <Text size="sm">
+              Carrowmore Array ·{" "}
+              {new Date(sentView.sentAt).toLocaleString("en-GB")} · Nothing was
+              sent.
+            </Text>
+            <DocumentPreview draft={sentView.document} />
+          </Stack>
+        )}
+      </Modal>
       <Modal
         opened={resetOpen}
         onClose={() => setResetOpen(false)}

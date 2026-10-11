@@ -52,7 +52,8 @@ export function opportunityReducer(state, action) {
       return {
         ...state,
         interest: action.value,
-        responseOrigin: action.value === "not-discussed" ? null : "manually-recorded",
+        responseOrigin:
+          action.value === "not-discussed" ? null : "manually-recorded",
         nominationDecision: changed ? null : state.nominationDecision,
         assessment:
           changed && state.assessment === "worth-nominating"
@@ -100,65 +101,3 @@ export const certificateContext = {
     "Do you already hold offshore safety certificates covering sea survival, fire, first aid and working at height? Please share any current certificates and expiry dates.",
 };
 export const discussionTopics = [careerContext, certificateContext];
-
-export function nextRecommendation(state) {
-  if (state.assessment === "not-suitable")
-    return {
-      action: "assessment",
-      label: "Update your assessment",
-      guidance: "This opportunity is on hold following your assessment.",
-    };
-  if (state.interest === "not-interested")
-    return {
-      action: "response",
-      label: "Review Eimhin’s response",
-      guidance: "Eimhin declined · no nomination",
-      detail:
-        "Respect Eimhin’s decision. Revisit this opportunity only if his interest changes.",
-    };
-  if (state.interest === "more-information")
-    return {
-      action: "clarify",
-      label: "Prepare follow-up discussion",
-      guidance:
-        "Prepare the information Eimhin needs before he decides whether to pursue the role.",
-    };
-  if (state.interest === "interested") {
-    if (state.nominationDecision)
-      return {
-        action: "nomination",
-        label: "Review nomination decision",
-        guidance:
-          state.nominationDecision.decision === "recommend"
-            ? "Nomination decision recorded · not submitted"
-            : "Nomination deferred · resolve outstanding questions",
-        detail:
-          state.nominationDecision.decision === "recommend"
-            ? "Review the recorded gaps and rationale before any employer referral."
-            : "Follow up the recorded questions before reconsidering nomination.",
-      };
-    return {
-      action: "nomination",
-      label: "Consider for nomination",
-      guidance:
-        "Eimhin’s interest is recorded. Review his responsibilities and qualification gaps before deciding whether to put him forward.",
-      detail:
-        "Safety certification must be in place before mobilisation; the vacancy does not make certificate verification an interview condition. Medical fitness is essential, with no verification stage specified.",
-    };
-  }
-  if (state.suggested)
-    return {
-      action: "response",
-      label: "Record Eimhin’s response",
-      guidance: "Awaiting Eimhin’s response",
-      detail:
-        "Discuss the opportunity with Eimhin and record whether he wants to pursue it.",
-    };
-  return {
-    action: "discussion",
-    label: "Prepare discussion",
-    guidance: "Discuss the role and Eimhin’s existing safety certificates.",
-    detail:
-      "Prepare editable questions for your conversation; saving them does not record a suggestion or response.",
-  };
-}

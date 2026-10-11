@@ -1,0 +1,17 @@
+Simulated sending validation — 11 October 2026
+
+67 tests passed (39 node, 28 UI); production build passed with existing bundle-size advisory.
+Isolated Chromium desktop 1440x1050 and mobile 390x844 validated:
+- Fixed decision controls, explicit Next action and no duplicate suitability button.
+- Draft save, review, unchecked approval and gated send.
+- Zero network requests from the simulated-send action.
+- Immutable public-document snapshot; private notes/provenance excluded.
+- Duplicate prevention, refresh persistence and consistent People result.
+- Revised wording requires fresh approval; original snapshot remains read-only in history.
+- Negative suitability blocks further sending and keeps existing documents.
+- Keyboard containment, Escape, focus restoration and no horizontal mobile overflow.
+- No browser page errors.
+
+Regression coverage includes source exclusion and qualification invalidation, regeneration, v3-to-v4 migration, manual tasks, notes and storage failure. No real sharing, delivery confirmation, employer acceptance or interview status is recorded.
+Screenshots reviewed: 01-unreviewed, 02-approval, 03-sent, 04-negative, 05-mobile.
+Limits: Chromium only; no physical-device or screen-reader audit. Existing neutral theme and lighthouse logo retained.

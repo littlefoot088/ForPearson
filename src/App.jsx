@@ -1,6 +1,13 @@
+import { summaryWithQualifications } from "./workflowState";
+import {
+  selectedCandidateSummary,
+  includedRecords,
+  claimChanged,
+} from "./evidenceSelection";
 import React, { useState, useReducer, useRef, useEffect } from "react";
 import {
   Accordion,
+  MantineProvider,
   Anchor,
   Avatar,
   Box,
@@ -22,7 +29,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { ChevronRight, Check, Pencil, Waves, Trash2 } from "lucide-react";
+import { ChevronRight, Check, Pencil, Trash2 } from "lucide-react";
 import {
   person,
   vacancy,
@@ -33,8 +40,10 @@ import {
   qualifications,
   trainingRecords,
   getSources,
+  dateLabel,
 } from "./data";
 import { Icon } from "./components";
+import { quietTheme, quietCssVariablesResolver } from "./theme";
 import { EvidenceContent } from "./EvidenceContent";
 import { RequirementRow, ExpandedAssessment } from "./assessment";
 
@@ -76,6 +85,12 @@ export default function App() {
     window.addEventListener("hashchange", changePage);
     return () => window.removeEventListener("hashchange", changePage);
   }, []);
+  useEffect(() => {
+    document.documentElement.dataset.carrowmoreIdentity = "quiet";
+    return () => {
+      delete document.documentElement.dataset.carrowmoreIdentity;
+    };
+  }, [page]);
   const previousPage = useRef(page);
   useEffect(() => {
     document.title =
@@ -108,7 +123,6 @@ export default function App() {
   const [storageFailed, setStorageFailed] = useState(false);
   const [workflowDialog, setWorkflowDialog] = useState(null);
   const [drawer, setDrawer] = useState(null);
-  const [index, setIndex] = useState(0);
   const [composer, setComposer] = useState(null);
   const [question, setQuestion] = useState("");
   const [drafts, setDrafts] = useState(loaded.drafts);
@@ -126,8 +140,9 @@ export default function App() {
       ),
     );
   }, [workspace, drafts, recordFlags]);
-  function openWorkspace(mode, item) {
+  function openWorkspace(mode, item, origin) {
     rememberFocus();
+    if (origin) focusOrigin.current = origin;
     setWorkspacePanel({ mode, item, session: crypto.randomUUID() });
     setWorkspaceOpen(true);
   }
@@ -149,13 +164,6 @@ export default function App() {
   }
   function inspect(item, type, requirement) {
     rememberFocus();
-    const records = type === "claim" ? getSources(item) : [];
-    setIndex(
-      Math.max(
-        0,
-        records.findIndex((record) => record.date >= person.joined),
-      ),
-    );
     setDrawer({ type, item, requirement });
   }
   function clarify(item, requirement, fromDraft = false) {
@@ -173,17 +181,19 @@ export default function App() {
   function saveDraft(e) {
     e.preventDefault();
     if (!question.trim()) return;
-    const draft = {
-      id: composer.item.id,
-      requirementId: composer.requirement.id,
-      title: composer.item.title,
-      text: question.trim(),
-    };
-    setDrafts((ds) =>
-      ds.some((d) => d.id === draft.id)
+    setDrafts((ds) => {
+      const existing = ds.find((d) => d.id === composer.item.id);
+      const draft = {
+        id: composer.item.id,
+        requirementId: composer.requirement.id,
+        title: composer.item.title,
+        text: question.trim(),
+        completed: existing?.completed ?? false,
+      };
+      return existing
         ? ds.map((d) => (d.id === draft.id ? draft : d))
-        : [...ds, draft],
-    );
+        : [...ds, draft];
+    });
     closeComposer();
     setNotice("Question saved in Next steps.");
   }
@@ -215,13 +225,16 @@ export default function App() {
   }
   const selectedSources =
     drawer?.type === "claim" ? getSources(drawer.item) : [];
-  const source = selectedSources[index];
   const training =
     drawer?.type === "qualification"
       ? trainingRecords.find((r) => r.id === drawer.item.recordId)
       : null;
   const mantineTheme = useMantineTheme();
   const narrow = useMediaQuery(`(max-width: ${mantineTheme.breakpoints.sm})`);
+  const mobileWorkspace = useMediaQuery(
+    `(max-width: ${mantineTheme.breakpoints.md})`,
+  );
+  const [progressTarget, setProgressTarget] = useState(null);
   const overlayActive = useRef(false);
   overlayActive.current = Boolean(
     drawer ||
@@ -265,25 +278,75 @@ export default function App() {
         : "CARROWMORE ARRAY · O&M";
 
   function renderAssessment(row) {
+    const claim = claims.find((c) => c.id === row.id);
+    if (claim && claimChanged(claim, workspace.excludedRecordIds)) {
+      const count = includedRecords(claim, workspace.excludedRecordIds).length;
+      row = {
+        ...row,
+        conclusion: `${count} logbook ${count === 1 ? "entry" : "entries"} included`,
+        assessment: count ? row.assessment : "unknown",
+      };
+    }
+
     const context = requirements.find(
       (r) => r.id === (row.sourceRequirementId ?? row.id),
     );
     return (
-      <RequirementRow key={row.id} requirement={row}>
-        {expanded === row.id && (
-          <ExpandedAssessment
-            requirement={row}
-            contextRequirement={context}
-            onInspect={inspect}
-            reports={workspace.reports}
-          />
-        )}
+      <RequirementRow key={row.id} requirement={row} workspace={workspace}>
+        {expanded === row.id &&
+          (row.id === "environment" ? (
+            <Stack gap="sm">
+              {workspace.workingPreferences ? (
+                <>
+                  <Text size="sm" className="source-quote">
+                    {workspace.workingPreferences.response}
+                  </Text>
+                  {workspace.workingPreferences.concerns && (
+                    <Text size="sm" className="source-quote">
+                      <strong>Concerns or conditions: </strong>
+                      {workspace.workingPreferences.concerns}
+                    </Text>
+                  )}
+                  <Text size="sm" c="dimmed">
+                    Reported by Eimhin ·{" "}
+                    {dateLabel(workspace.workingPreferences.date)}
+                  </Text>
+                </>
+              ) : (
+                <Text size="sm">{row.detail}</Text>
+              )}
+              <Button
+                variant="default"
+                size="sm"
+                w="fit-content"
+                onClick={() => openWorkspace("preferences")}
+              >
+                {workspace.workingPreferences
+                  ? "Edit working preferences"
+                  : "Record working preferences"}
+              </Button>
+            </Stack>
+          ) : (
+            <ExpandedAssessment
+              workspace={workspace}
+              onVerify={(q) => openWorkspace("verification", q)}
+              excludedRecordIds={workspace.excludedRecordIds}
+              requirement={row}
+              contextRequirement={context}
+              onInspect={inspect}
+              reports={workspace.reports}
+            />
+          ))}
       </RequirementRow>
     );
   }
 
   return (
-    <>
+    <MantineProvider
+      theme={quietTheme}
+      cssVariablesResolver={quietCssVariablesResolver}
+      forceColorScheme="light"
+    >
       <Anchor
         className="skip"
         href="#main"
@@ -297,27 +360,18 @@ export default function App() {
           ? "Skip to redeployment workspace"
           : "Skip to opportunity assessment"}
       </Anchor>
-      <Paper component="header" withBorder radius={0} p="md">
+      <Paper component="header" className="app-header" radius={0} p="md">
         <Container size="lg">
           <Group justify="space-between">
-            <Group gap="sm" wrap="nowrap">
-              <Box className="brand-mark" p="xs">
-                <Icon icon={Waves} size={24} />
-              </Box>
-              <div>
-                <Text fw={700} size="lg">
-                  carrowmore
-                </Text>
-                <Text size="xs" c="dimmed">
-                  LIGHT AUTHORITY
-                </Text>
-              </div>
-            </Group>
-            <Text c="dimmed" visibleFrom="sm">
-              Redeployment
-            </Text>
+            <img
+              src="/brand/carrowmore-lighthouse.svg?v=3"
+              alt="Carrowmore Light Authority"
+              width={228}
+              height={48}
+              style={{ display: "block", flexShrink: 0 }}
+            />
             <Group gap="sm">
-              <Text size="sm" c="dimmed" visibleFrom="xs">
+              <Text size="sm" c="carrowmore.7" visibleFrom="xs">
                 Your workspace
               </Text>
               <Avatar color="carrowmore" radius="xl">
@@ -352,132 +406,113 @@ export default function App() {
             </Breadcrumbs>
             <Grid gutter="lg" align="flex-start">
               <Grid.Col span={{ base: 12, md: 8 }}>
-                <Stack gap="md">
-                  <Paper
-                    component="section"
-                    withBorder
-                    radius="md"
-                    p="lg"
-                    bg="white"
-                    aria-labelledby="candidate-name"
-                  >
-                    <Grid gutter="xl" align="stretch">
-                      <Grid.Col span={12}>
-                        <Stack gap="sm">
+                <Stack gap="lg">
+                  <Paper className="assessment-surface" radius="lg" bg="white">
+                    <Paper
+                      component="section"
+                      className="assessment-section candidate-section"
+                      radius={0}
+                      p="lg"
+                      bg="white"
+                      aria-labelledby="candidate-name"
+                    >
+                      <Stack gap="lg">
+                        <Stack gap="xs">
                           <Title order={1} size="h2" id="candidate-name">
                             {person.name}
                           </Title>
                           <Text size="sm">
-                            <Text component="span" c="dimmed">
-                              Current role:{" "}
-                            </Text>
-                            Lighthouse keeper · Carrowmore Light Authority
+                            Current role: Lighthouse keeper · Carrowmore Light
+                            Authority
                           </Text>
                         </Stack>
-                      </Grid.Col>
-                      <Grid.Col span={12}>
-                        <Paper p="md" radius="sm" bg="gray.0">
+                        <Group justify="space-between" align="center" gap="sm">
                           <Stack gap="xs">
-                            <Text size="sm" c="dimmed" fw={600}>
+                            <Text size="sm" c="dimmed">
                               Opportunity being assessed
                             </Text>
-                            <Title order={2} size="h4">
+                            <Text size="sm">
                               {vacancy.title} · {vacancy.employer}
-                            </Title>
-                            <Text size="sm" c="dimmed">
-                              {vacancy.base} · {vacancy.pattern} · Based on the
-                              service operations vessel
-                            </Text>
-                            <Button
-                              variant="subtle"
-                              size="compact-sm"
-                              style={{ alignSelf: "flex-start" }}
-                              onClick={() => {
-                                rememberFocus();
-                                setJobOpen(true);
-                              }}
-                            >
-                              View role details
-                            </Button>
-                            <Group gap="xs">
-                              <Text size="sm" data-testid="keeper-interest">
-                                <strong>Eimhin’s interest:</strong>{" "}
-                                {interestLabel(opportunity)}
-                              </Text>
-                              <Button
-                                variant="subtle"
-                                size="compact-xs"
-                                onClick={() => openWorkflow("response")}
-                              >
-                                Edit response
-                              </Button>
-                            </Group>
-                            <Text size="xs" c="dimmed">
-                              {opportunity.responseOrigin ===
-                              "manually-recorded"
-                                ? "Response recorded by you."
-                                : opportunity.responseOrigin ===
-                                    "scenario-confirmed"
-                                  ? "Eimhin confirmed his interest in your earlier conversation (scenario context)."
-                                  : "No response recorded."}{" "}
-                              Career preferences remain unknown.
                             </Text>
                           </Stack>
-                        </Paper>
-                      </Grid.Col>
-                    </Grid>
+                          <Button
+                            variant="default"
+                            size="xs"
+                            onClick={() => {
+                              rememberFocus();
+                              setJobOpen(true);
+                            }}
+                          >
+                            View role details
+                          </Button>
+                        </Group>
+                      </Stack>
+                    </Paper>
+                    <Stack
+                      component={Paper}
+                      className="assessment-section"
+                      role="region"
+                      radius={0}
+                      p="lg"
+                      bg="white"
+                      gap="xs"
+                      aria-labelledby="summary-heading"
+                    >
+                      <Title order={2} size="h4" id="summary-heading">
+                        Why this could work
+                      </Title>
+                      <Text>
+                        {summaryWithQualifications(
+                          selectedCandidateSummary(workspace.excludedRecordIds),
+                          workspace,
+                        )}
+                      </Text>
+                    </Stack>
                   </Paper>
-                  <Stack
-                    component={Paper}
-                    role="region"
-                    withBorder
-                    radius="md"
-                    p="lg"
-                    bg="carrowmore.0"
-                    gap="xs"
-                    aria-labelledby="summary-heading"
-                  >
-                    <Title order={2} size="h3" id="summary-heading">
-                      Why consider Eimhin
-                    </Title>
-                    <Text>{candidateSummary.text}</Text>
-                  </Stack>
+                  <Box
+                    display={mobileWorkspace ? "block" : "none"}
+                    ref={setProgressTarget}
+                    className={
+                      mobileWorkspace ? "workspace-surface" : undefined
+                    }
+                  />
                   <Accordion value={expanded} onChange={setExpanded} order={3}>
-                    <Stack gap="md">
+                    <Stack gap="lg">
                       <Stack
                         component={Paper}
+                        className="assessment-section"
                         role="region"
-                        withBorder
-                        radius="md"
+                        radius="lg"
                         p="lg"
                         bg="white"
                         gap="sm"
                         aria-labelledby="experience-heading"
                       >
-                        <Title order={2} size="h3" id="experience-heading">
+                        <Title order={2} size="h4" id="experience-heading">
                           Relevant experience
                         </Title>
                         <Text size="sm" c="dimmed">
                           Mechanical or electrical maintenance can meet the
                           experience requirement.
                         </Text>
-                        <Box>
-                          {experienceRows
-                            .filter((row) => row.id !== "safety")
-                            .map(renderAssessment)}
-                        </Box>
+                        <Box>{experienceRows.map(renderAssessment)}</Box>
                       </Stack>
                       <Stack
                         component={Paper}
+                        className="assessment-section"
                         role="region"
-                        withBorder
-                        radius="md"
+                        radius="lg"
                         p="lg"
                         bg="white"
                         gap="sm"
                         aria-labelledby="qualifications-heading"
                       >
-                        <Title order={2} size="h3" id="qualifications-heading">
+                        <Title
+                          order={2}
+                          size="h4"
+                          id="qualifications-heading"
+                          tabIndex={-1}
+                        >
                           Safety certificates and medical fitness
                         </Title>
                         <Text size="sm" c="dimmed">
@@ -490,50 +525,18 @@ export default function App() {
                             .filter((r) => r.type === "qualification")
                             .map(renderAssessment)}
                         </Box>
-                      </Stack>
-                      <Stack
-                        component={Paper}
-                        role="region"
-                        withBorder
-                        radius="md"
-                        p="lg"
-                        bg="white"
-                        gap="sm"
-                        aria-labelledby="preferences-heading"
-                      >
-                        <Title order={2} size="h3" id="preferences-heading">
-                          Additional employer preferences
-                        </Title>
+                        {renderAssessment({
+                          ...requirements.find((r) => r.id === "environment"),
+                          text: "Working conditions",
+                          conclusion: workspace.workingPreferences
+                            ? "Preferences recorded"
+                            : "Not yet discussed",
+                          detail:
+                            "Eimhin’s comfort at height, in enclosed spaces and on boats in a swell has not yet been discussed.",
+                        })}
                         <Text size="sm" c="dimmed">
-                          Valued experience, rather than essential requirements.
+                          Missing records do not mean a qualification is absent.
                         </Text>
-                        <Box>
-                          {experienceRows
-                            .filter((row) => row.id === "safety")
-                            .map(renderAssessment)}
-                          {requirements
-                            .filter((r) => r.id === "mentoring")
-                            .map(renderAssessment)}
-                        </Box>
-                      </Stack>
-                      <Stack
-                        component={Paper}
-                        role="region"
-                        withBorder
-                        radius="md"
-                        p="lg"
-                        bg="white"
-                        gap="sm"
-                        aria-labelledby="interest-heading"
-                      >
-                        <Title order={2} size="h3" id="interest-heading">
-                          Offshore working conditions
-                        </Title>
-                        <Box>
-                          {requirements
-                            .filter((r) => r.id === "environment")
-                            .map(renderAssessment)}
-                        </Box>
                       </Stack>
                     </Stack>
                   </Accordion>
@@ -547,34 +550,53 @@ export default function App() {
                 tabIndex={0}
               >
                 <Workspace
+                  progressTarget={mobileWorkspace ? progressTarget : null}
                   state={workspace}
                   dispatch={dispatchWorkspace}
                   onOpen={openWorkspace}
                   onWorkflow={openWorkflow}
                   drafts={drafts}
-                  onDiscussion={() => {
+                  onDraftToggle={(id) =>
+                    setDrafts((items) =>
+                      items.map((draft) =>
+                        draft.id === id
+                          ? { ...draft, completed: !draft.completed }
+                          : draft,
+                      ),
+                    )
+                  }
+                  onEditDraft={editDraft}
+                  onRemoveDraft={(id) => {
+                    setDrafts((items) =>
+                      items.filter((draft) => draft.id !== id),
+                    );
+                    setNotice("Question removed from the discussion.");
+                  }}
+                  onDiscussion={(origin) => {
                     rememberFocus();
+                    if (origin instanceof HTMLElement)
+                      focusOrigin.current = origin;
                     setDraftOpen(true);
                   }}
                 />
               </Grid.Col>
             </Grid>
             <Group component="footer" justify="space-between" gap="xs">
-              <Text size="xs" c="dimmed">
+              <Text size="sm" c="dimmed">
                 CARROWMORE LIGHT AUTHORITY / EMPLOYEE REDEPLOYMENT
               </Text>
-              <Text size="xs" c="dimmed">
-                Saved on this browser only. Nothing is sent.
+              <Text size="sm" c="dimmed">
+                Changes saved. Nothing shared.
               </Text>
               <Button
                 variant="subtle"
-                size="compact-xs"
+                size="xs"
                 onClick={() => {
                   rememberFocus();
                   setResetOpen(true);
                 }}
               >
-                Reset prototype workspace
+                Reset workspace
               </Button>
             </Group>
             {storageFailed && (
@@ -632,7 +654,7 @@ export default function App() {
       <Modal
         opened={resetOpen}
         onClose={() => setResetOpen(false)}
-        title="Reset prototype workspace?"
+        title="Reset workspace?"
         returnFocus={false}
         onExitTransitionEnd={restoreFocus}
       >
@@ -640,7 +662,7 @@ export default function App() {
           <Text>
             This removes saved notes, tasks, accounts, discussion questions,
             flags and referral decisions from this browser. The initial tasks
-            will be restored, with Eimhin interested as agreed in the scenario.
+            will be restored.
           </Text>
           <Group justify="flex-end">
             <Button variant="default" onClick={() => setResetOpen(false)}>
@@ -655,7 +677,7 @@ export default function App() {
                 setExpanded(null);
                 setWorkspacePanel(null);
                 setResetOpen(false);
-                setNotice("Prototype workspace reset.");
+                setNotice("Workspace reset.");
               }}
             >
               Reset workspace
@@ -672,7 +694,7 @@ export default function App() {
         onExitTransitionEnd={restoreFocus}
         title={
           <span>
-            <Text component="span" display="block" size="xs" c="dimmed">
+            <Text component="span" display="block" size="sm" c="dimmed">
               {drawer?.type === "claim"
                 ? "SUPPORTING EVIDENCE"
                 : "QUALIFICATION RECORD"}
@@ -686,12 +708,15 @@ export default function App() {
       >
         {drawer && (
           <EvidenceContent
+            workspace={workspace}
             drawer={drawer}
             records={selectedSources}
-            index={index}
-            setIndex={setIndex}
             training={training}
-            flagged={recordFlags.includes(source?.id)}
+            recordFlags={recordFlags}
+            excludedRecordIds={workspace.excludedRecordIds ?? []}
+            onInclusion={(id, included) =>
+              dispatchWorkspace({ type: "record-inclusion", id, included })
+            }
             onFlag={(id) =>
               setRecordFlags((flags) =>
                 flags.includes(id)
@@ -719,7 +744,7 @@ export default function App() {
         onExitTransitionEnd={restoreFocus}
         title={
           <span>
-            <Text component="span" display="block" size="xs" c="dimmed">
+            <Text component="span" display="block" size="sm" c="dimmed">
               {overlayContext}
             </Text>
             <Text component="span" fw={600}>
@@ -888,6 +913,9 @@ export default function App() {
               Generating plant, electrical fault-finding, permit systems and
               supporting younger colleagues.
             </Text>
+            <Text size="sm">
+              {requirements.find((r) => r.id === "mentoring").detail}
+            </Text>
             <Title order={4}>Prior wind experience is not required</Title>
             <Text>
               The employer offers training and pays for safety renewals, but
@@ -900,6 +928,6 @@ export default function App() {
           </Stack>
         )}
       </Drawer>
-    </>
+    </MantineProvider>
   );
 }

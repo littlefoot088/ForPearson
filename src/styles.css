@@ -1,11 +1,4 @@
 /* Purpose-specific layout only; component styling and all scales belong to Mantine. */
-.brand-mark {
-  display: flex;
-  color: var(--mantine-color-white);
-  background: var(--mantine-primary-color-filled);
-  border-radius: var(--mantine-radius-default);
-}
-
 .skip {
   position: fixed;
   top: var(--mantine-spacing-xs);
@@ -79,6 +72,180 @@
 
 .assessment-control[data-active] {
   background: var(--mantine-color-gray-0);
-  border-bottom: 1px solid var(--mantine-color-gray-3);
   margin-bottom: var(--mantine-spacing-md);
+}
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/fonts/IBMPlexSans-Variable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 100 700;
+  font-display: swap;
+}
+
+/* Quiet Authority: shared identity. Layout spacing remains Mantine-owned. */
+[data-carrowmore-identity="quiet"] {
+  font-optical-sizing: auto;
+}
+[data-carrowmore-identity="quiet"] .app-header {
+  background: var(--mantine-color-white);
+  color: var(--mantine-color-carrowmore-7);
+  /* An inset rule preserves the existing header height. */
+  box-shadow: inset 0 -1px 0 var(--carrowmore-header-border);
+}
+[data-carrowmore-identity="quiet"] .assessment-surface {
+  overflow: hidden;
+}
+[data-carrowmore-identity="quiet"] .requirement-label {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+[data-carrowmore-identity="quiet"] .assessment-control[data-active] {
+  background: var(--mantine-color-evidence-0);
+}
+[data-carrowmore-identity="quiet"] .workspace-surface {
+  background: var(--carrowmore-workspace);
+  border-radius: var(--mantine-radius-sm);
+}
+[data-carrowmore-identity="quiet"] .workspace-surface > section + section {
+  border-top: 1px solid var(--mantine-color-gray-3);
+}
+[data-carrowmore-identity="quiet"] :focus-visible {
+  outline: 2px solid var(--mantine-color-carrowmore-7);
+  outline-offset: 3px;
+}
+[data-carrowmore-identity="quiet"]
+  .mantine-Button-root[data-variant="subtle"]:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* One continuous chronology; each date and quotation share a timeline item. */
+.evidence-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 var(--mantine-spacing-md);
+}
+.evidence-timeline > li {
+  position: relative;
+  border-inline-start: 1px solid var(--mantine-color-gray-3);
+  padding: 0 0 var(--mantine-spacing-xl) var(--mantine-spacing-lg);
+}
+.evidence-timeline > li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -4px;
+  top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mantine-color-evidence-7);
+}
+.evidence-timeline > li:last-child {
+  padding-bottom: 0;
+}
+
+@media (max-width: $mantine-breakpoint-sm) {
+  [data-carrowmore-identity="quiet"] .requirement-label {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-carrowmore-identity="quiet"] *,
+  [data-carrowmore-identity="quiet"] *::before,
+  [data-carrowmore-identity="quiet"] *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* UI craft proof: qualification rows and opportunity workspace only. */
+.qualification-row {
+  border: 0;
+  margin-block: 0;
+}
+.qualification-row .assessment-control {
+  border-radius: var(--mantine-radius-sm);
+  padding-block: 0;
+}
+.qualification-row .assessment-control[data-active] {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+.qualification-row .assessment-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+.qualification-row .assessment-control:hover {
+  background: var(--mantine-color-evidence-0);
+}
+[data-carrowmore-identity="quiet"] .crafted-workspace > section + section {
+  border-top: 0;
+}
+.crafted-workspace {
+  padding-bottom: var(--mantine-spacing-sm);
+}
+.crafted-workspace > section {
+  padding-bottom: 0;
+}
+.workspace-task[data-complete] .source-text {
+  text-decoration: line-through;
+  color: var(--mantine-color-dimmed);
+}
+
+/* Group the assessment by headings and spacing, without repeated row rules. */
+.assessment-row {
+  border: 0;
+}
+.assessment-row .assessment-control {
+  border-radius: var(--mantine-radius-sm);
+}
+
+/* Theme component classes: one control family, no layout changes. */
+.ui-button[data-variant="default"] {
+  color: var(--mantine-color-carrowmore-7);
+}
+.ui-button[data-variant="default"]:hover:not(:disabled) {
+  border-color: var(--mantine-color-carrowmore-7);
+}
+.ui-button[data-disabled],
+.ui-button:disabled {
+  border-color: var(--mantine-color-gray-3);
+}
+.ui-input:hover:not(:disabled):not([data-error]):not(:focus) {
+  border-color: var(--mantine-color-gray-6);
+}
+.ui-input:focus,
+.ui-input:focus-within {
+  outline: 2px solid var(--mantine-color-carrowmore-7);
+  outline-offset: 2px;
+}
+.ui-input[data-error] {
+  --input-bd: var(--mantine-color-red-6);
+  --input-color: var(--mantine-color-text);
+}
+.ui-checkbox:hover:not(:disabled) {
+  border-color: var(--mantine-color-carrowmore-7);
+}
+.ui-menu-item:hover:not([data-disabled]),
+.ui-menu-item[data-hovered]:not([data-disabled]) {
+  background: var(--menu-item-hover, var(--mantine-color-evidence-0));
+}
+.ui-disclosure:hover {
+  background: var(--mantine-color-evidence-0);
+}
+.ui-link {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+}
+.lucide {
+  stroke-width: 1.7;
+}
+.source-quote,
+.reference-position,
+input[type="date"] {
+  font-variant-numeric: tabular-nums;
 }
