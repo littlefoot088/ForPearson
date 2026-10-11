@@ -6,7 +6,6 @@ import {
   Stack,
   Text,
   Title,
-  SimpleGrid,
   Paper,
 } from "@mantine/core";
 import {
@@ -29,6 +28,8 @@ import {
   getSources,
   dateLabel,
   reviewDate,
+  person,
+  requirementNextSteps,
 } from "./data";
 
 const statusIcons = {
@@ -62,6 +63,9 @@ export function RequirementRow({ requirement, children }) {
             <Icon icon={statusIcons[status.icon]} />
             {status.label}
           </Text>
+          <Text component="span" size="sm" c="dimmed">
+            {requirementNextSteps[requirement.id]}
+          </Text>
         </span>
       </Accordion.Control>
       <Accordion.Panel aria-labelledby={"requirement-" + requirement.id}>
@@ -73,8 +77,6 @@ export function RequirementRow({ requirement, children }) {
 
 function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
   const records = getSources(claim);
-  const first = records[0],
-    latest = records[records.length - 1];
   return (
     <Paper
       component="section"
@@ -91,31 +93,16 @@ function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
             {claim.involvement}
           </Text>
         </Group>
-        <Text>{claim.summary}</Text>
-        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md" component="dl" m={0}>
-          {[
-            [
-              "Selected supporting records",
-              `${records.length} · ${claim.pattern}`,
-            ],
-            [
-              "Documented span",
-              `${dateLabel(first.date)} – ${dateLabel(latest.date)}`,
-            ],
-            ["Latest selected activity", dateLabel(latest.date)],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <Text component="dt" size="sm" c="dimmed">
-                {label}
-              </Text>
-              <Text component="dd" m={0} size="sm">
-                {value}
-              </Text>
-            </div>
-          ))}
-        </SimpleGrid>
-        <Text size="sm" c="clarification.7">
-          <strong>To clarify:</strong> {claim.limitation}
+        <Text>
+          <strong>What we found:</strong> {claim.summary}
+        </Text>
+        <Text size="sm" c="dimmed">
+          {records.length} selected records
+          {records.some((r) => r.date < person.joined) &&
+            " · 1 needs attribution checking"}
+        </Text>
+        <Text size="sm">
+          <strong>Needs checking:</strong> {claim.limitation}
         </Text>
         <Group gap="xs">
           <Button
@@ -123,14 +110,14 @@ function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
             rightSection={<Icon icon={ArrowUpRight} />}
             onClick={() => onInspect(claim)}
           >
-            Inspect {records.length} records
+            View supporting records ({records.length})
           </Button>
           <Button
             variant="subtle"
             leftSection={<Icon icon={Pencil} />}
             onClick={() => onClarify(claim)}
           >
-            {drafted ? "Edit clarification" : "Ask for clarification"}
+            {drafted ? "Edit discussion question" : "Add to discussion"}
           </Button>
         </Group>
       </Stack>
@@ -160,17 +147,13 @@ function QualificationDetail({
       </Group>
       <Text>{q.detail}</Text>
       {!supporting && (
-        <Text size="sm" c="clarification.7">
+        <Text size="sm">
+          <strong>Needs checking:</strong>{" "}
           {q.id === "medical"
-            ? "Current offshore clearance needs confirmation. Clinical details are not required."
-            : "The required certificate has not been established. Check existing documentation and employer acceptance before identifying any training need."}
-        </Text>
-      )}
-      {q.id === "height" && (
-        <Text size="sm" c="clarification.7">
-          The vacancy includes height coverage; the supplied offshore scheme
-          lists it separately. Confirm the accepted combination with Carrowmore
-          Array.
+            ? "Confirm current offshore clearance; clinical details are not needed."
+            : q.id === "height"
+              ? "Confirm the certificate and height coverage Carrowmore Array accepts."
+              : "Check the complete certificate and its current coverage."}
         </Text>
       )}
       <Group gap="xs">
@@ -188,7 +171,7 @@ function QualificationDetail({
           leftSection={<Icon icon={Pencil} />}
           onClick={() => onClarify(q)}
         >
-          {drafted ? "Edit verification question" : "Ask for verification"}
+          {drafted ? "Edit discussion question" : "Add to discussion"}
         </Button>
         <Button
           variant={flagged ? "light" : "subtle"}
@@ -197,9 +180,16 @@ function QualificationDetail({
           leftSection={<Icon icon={flagged ? Check : Flag} />}
           onClick={() => onFlag(q)}
         >
-          {flagged ? "Flagged for verification" : "Flag for verification"}
+          {flagged ? "Qualification check added" : "Check qualification"}
         </Button>
       </Group>
+      {flagged && (
+        <Text size="sm" c="dimmed">
+          Check with Eimhin, Authority training records or the provider. Select
+          “Qualification check added” again to undo. This tracks the check, not
+          its outcome.
+        </Text>
+      )}
     </Stack>
   );
 }
@@ -243,13 +233,6 @@ export function ExpandedAssessment({
           drafted={hasDraft(claim.id)}
         />
       ))}
-      {linkedClaims.length > 0 && (
-        <Text size="sm" c="dimmed">
-          These are selected records, not counts of every occasion the work was
-          performed. The evidence supports potential; it does not independently
-          verify present competence.
-        </Text>
-      )}
       {requirement.type === "experience" && linkedQualifications.length > 0 ? (
         <Accordion variant="contained" order={4}>
           <Accordion.Item value="training">
@@ -282,8 +265,8 @@ export function ExpandedAssessment({
             }
           >
             {hasDraft(requirement.id)
-              ? "Edit clarification"
-              : "Ask for clarification"}
+              ? "Edit discussion question"
+              : "Add to discussion"}
           </Button>
         </Group>
       )}

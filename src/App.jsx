@@ -1,18 +1,15 @@
 import React, { useState, useReducer, useRef, useEffect } from "react";
 import {
   Accordion,
-  ActionIcon,
   Anchor,
   Avatar,
   Box,
   Breadcrumbs,
   Button,
   Container,
-  Divider,
   Drawer,
   Group,
   List,
-  Mark,
   Modal,
   Notification,
   Paper,
@@ -26,7 +23,6 @@ import { useMediaQuery } from "@mantine/hooks";
 import {
   ArrowUpRight,
   ChevronRight,
-  ChevronLeft,
   Check,
   Pencil,
   Waves,
@@ -40,11 +36,10 @@ import {
   claims,
   qualifications,
   trainingRecords,
-  interpretations,
   getSources,
-  dateLabel,
 } from "./data";
-import { Icon, Highlight, RecordFields } from "./components";
+import { Icon } from "./components";
+import { EvidenceContent } from "./EvidenceContent";
 import { RequirementRow, ExpandedAssessment } from "./assessment";
 
 import {
@@ -82,6 +77,7 @@ export default function App() {
   const [notice, setNotice] = useState("");
   const [jobOpen, setJobOpen] = useState(false);
   const [verifications, setVerifications] = useState([]);
+  const [recordFlags, setRecordFlags] = useState([]);
   const focusOrigin = useRef(null);
   function rememberFocus() {
     if (!drawer && !composer && !draftOpen && !jobOpen && !workflowDialog)
@@ -119,7 +115,7 @@ export default function App() {
         : [...ds, draft],
     );
     closeComposer();
-    setNotice("Clarification draft saved. Nothing has been sent.");
+    setNotice("Question saved to Discussion with Eimhin.");
   }
   function editDraft(draft) {
     const requirement = clarificationContexts.find(
@@ -136,8 +132,8 @@ export default function App() {
     );
     setNotice(
       verifications.includes(q.id)
-        ? "Verification flag removed."
-        : "Flagged for verification. The evidence status is unchanged.",
+        ? "Qualification check removed."
+        : "Qualification check added.",
     );
   }
   function openWorkflow(mode) {
@@ -184,9 +180,9 @@ export default function App() {
     }
   }
   const modalTitle = composer
-    ? "Draft a clarification"
+    ? "Add to discussion"
     : draftOpen
-      ? "Clarification draft"
+      ? "Discussion with Eimhin"
       : workflowDialog
         ? workflowTitles[workflowDialog]
         : "Wind Turbine Technician";
@@ -263,18 +259,6 @@ export default function App() {
                 <Text c="dimmed">Lighthouse keeper</Text>
               </Box>
             </Group>
-            <Stack gap="xs">
-              <Title order={2} size="h4">
-                Review focus
-              </Title>
-              <Text>
-                Repeated pump repairs, electrical fault-finding and permit
-                responsibility make this opportunity worth exploring. Clarify
-                independent work and current authority; verify offshore
-                qualifications and working conditions. Career preferences also
-                need discussion.
-              </Text>
-            </Stack>
             <Paper withBorder p="md">
               <Group justify="space-between">
                 <div>
@@ -283,10 +267,6 @@ export default function App() {
                   </Text>
                   <Text>
                     <strong>{vacancy.title}</strong> · {vacancy.employer}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    Keeper interest: {interestLabel(opportunity)}
-                    {opportunity.responseOrigin && " · simulated response"}
                   </Text>
                 </div>
                 <Button
@@ -301,6 +281,38 @@ export default function App() {
                 </Button>
               </Group>
             </Paper>
+            <Stack gap="xs" aria-label="Quick assessment">
+              <Text size="sm">
+                <strong>Experience:</strong> Relevant maintenance experience
+                recorded.
+              </Text>
+              <Text size="sm">
+                <strong>Qualifications:</strong> Offshore safety certificates
+                and medical clearance need checking.
+              </Text>
+              <Text size="sm">
+                <strong>Interest:</strong> {interestLabel(opportunity)}
+                {opportunity.responseOrigin && " · simulated response"}
+              </Text>
+              <Text size="sm">
+                <strong>Next step:</strong>{" "}
+                {opportunity.assessment === "not-suitable"
+                  ? "Reconsider the assessment before suggesting this opportunity."
+                  : opportunity.nominationDecision?.decision === "defer"
+                    ? "Follow up the outstanding questions before reconsidering nomination."
+                    : opportunity.nominationDecision
+                      ? "Review the recorded gaps before any employer referral."
+                      : opportunity.interest === "interested"
+                        ? "Review outstanding requirements before deciding whether to nominate Eimhin."
+                        : opportunity.interest === "not-interested"
+                          ? "Respect Eimhin’s decision; revisit this opportunity only if his interest changes."
+                          : opportunity.interest === "more-information"
+                            ? "Prepare the information Eimhin needs to decide."
+                            : opportunity.suggested
+                              ? "Discuss the opportunity and record Eimhin’s response."
+                              : "Discuss offshore working preferences and check which safety certificates Eimhin already holds."}
+              </Text>
+            </Stack>
             <Group justify="space-between" align="center" gap="sm">
               <div>
                 <Text size="sm">
@@ -316,7 +328,7 @@ export default function App() {
                 leftSection={<Icon icon={Pencil} />}
                 onClick={() => clarify(careerContext, careerContext)}
               >
-                Discuss preferences
+                Add preferences to discussion
               </Button>
             </Group>
           </Stack>
@@ -428,193 +440,21 @@ export default function App() {
         closeButtonProps={{ "aria-label": "Close evidence" }}
       >
         {drawer && (
-          <Stack gap="md">
-            <Text size="sm" c="dimmed">
-              {drawer.requirement.text} / Supporting evidence
-            </Text>
-            {source ? (
-              <>
-                <Text>Read the record behind the suggestion.</Text>
-                <Group gap="xs" aria-label="Select supporting record">
-                  {selectedSources.map((s, i) => (
-                    <Button
-                      key={s.id}
-                      size="xs"
-                      variant={index === i ? "filled" : "default"}
-                      aria-pressed={index === i}
-                      onClick={() => setIndex(i)}
-                    >
-                      {dateLabel(s.date)}
-                    </Button>
-                  ))}
-                </Group>
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
-                    Record {index + 1} of {selectedSources.length}
-                  </Text>
-                  <Group gap="xs">
-                    <ActionIcon
-                      variant="default"
-                      disabled={index === 0}
-                      aria-label="Previous evidence record"
-                      onClick={() => setIndex(index - 1)}
-                    >
-                      <Icon icon={ChevronLeft} />
-                    </ActionIcon>
-                    <ActionIcon
-                      variant="default"
-                      disabled={index === selectedSources.length - 1}
-                      aria-label="Next evidence record"
-                      onClick={() => setIndex(index + 1)}
-                    >
-                      <Icon icon={ChevronRight} />
-                    </ActionIcon>
-                  </Group>
-                </Group>
-                <div>
-                  <Text size="xs" c="dimmed" mb="xs">
-                    ORIGINAL RECORD · VERBATIM
-                  </Text>
-                  <Paper
-                    component="blockquote"
-                    withBorder
-                    p="md"
-                    m={0}
-                    className="source-quote"
-                  >
-                    <Highlight
-                      text={source.original}
-                      passage={source.highlight}
-                    />
-                  </Paper>
-                </div>
-                <RecordFields
-                  fields={[
-                    [
-                      "Date",
-                      <>
-                        {dateLabel(source.date)}{" "}
-                        <Text component="span" size="sm" c="dimmed">
-                          (recorded as {source.rawDate})
-                        </Text>
-                      </>,
-                    ],
-                    ["Station", source.station],
-                    ["Source file", source.source],
-                    ["Record", source.recordId],
-                    ["Person reference", source.personRef],
-                  ]}
-                />
-                {source.date < person.joined && (
-                  <Paper withBorder p="md">
-                    <Text fw={600} size="sm">
-                      Employment-date context
-                    </Text>
-                    <Text size="sm">
-                      This entry carries keeper code {person.id} and predates
-                      the personnel joining date of {dateLabel(person.joined)}.
-                      It is included as relevant experience evidence. The reason
-                      for the date difference is not established; earlier
-                      contract or part-time service is one possible explanation.
-                    </Text>
-                  </Paper>
-                )}
-                <Divider />
-                <div>
-                  <Text size="xs" c="dimmed" mb="xs">
-                    SYSTEM INTERPRETATION
-                  </Text>
-                  <Text>{interpretations[source.id]}</Text>
-                </div>
-                <Paper p="md" bg="clarification.0">
-                  <Text fw={600} c="clarification.7">
-                    What this does not establish
-                  </Text>
-                  <Text size="sm" c="clarification.7">
-                    {drawer.item.limitation}
-                  </Text>
-                </Paper>
-                <Accordion variant="contained">
-                  <Accordion.Item value="raw">
-                    <Accordion.Control>
-                      View original record fields
-                    </Accordion.Control>
-                    <Accordion.Panel>
-                      <Text
-                        component="pre"
-                        size="sm"
-                        className="source-quote"
-                        m={0}
-                      >
-                        {typeof source.rawRecord === "string"
-                          ? source.rawRecord
-                          : JSON.stringify(source.rawRecord, null, 2)}
-                      </Text>
-                    </Accordion.Panel>
-                  </Accordion.Item>
-                </Accordion>
-                <Text size="sm" c="dimmed">
-                  Identity linked using personnel postings and LearnHub’s
-                  keeper-code / payroll-reference pair. Attribution is curated,
-                  not live verification.
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text fw={600}>{drawer.item.status}</Text>
-                <Text>{drawer.item.detail}</Text>
-                {training && (
-                  <>
-                    <Text size="xs" c="dimmed">
-                      ORIGINAL LEARNHUB RECORD
-                    </Text>
-                    <RecordFields
-                      fields={[
-                        ["Record ID", training.id],
-                        ["Title", training.title],
-                        [
-                          "Outcome",
-                          <Mark color="clarification.2">
-                            {training.outcome}
-                          </Mark>,
-                        ],
-                        ["Completed on", dateLabel(training.completed_on)],
-                        ["Expiry field", dateLabel(training.expires_on)],
-                        ["Keeper code", training.keeper_code],
-                        [
-                          "Source",
-                          "raw/training/vendor-c-learnhub-2017-2026.json",
-                        ],
-                      ]}
-                    />
-                  </>
-                )}
-                <Paper p="md" bg="clarification.0">
-                  <Text fw={600} c="clarification.7">
-                    Interpretation and limits
-                  </Text>
-                  <Text size="sm" c="clarification.7">
-                    A recorded module is not a complete certificate. Attendance
-                    does not establish a pass, and an expiry field cannot
-                    establish completion. No external verification has taken
-                    place.
-                  </Text>
-                </Paper>
-              </>
-            )}
-            <Divider />
-            <Group>
-              <Button
-                leftSection={<Icon icon={Pencil} />}
-                onClick={() => clarify(drawer.item, drawer.requirement)}
-              >
-                Draft a clarification
-              </Button>
-              <Text size="sm" c="dimmed">
-                Draft only · not sent.
-              </Text>
-            </Group>
-          </Stack>
+          <EvidenceContent
+            drawer={drawer}
+            records={selectedSources}
+            index={index}
+            setIndex={setIndex}
+            training={training}
+            flagged={recordFlags.includes(source?.id)}
+            onFlag={(id) =>
+              setRecordFlags((flags) =>
+                flags.includes(id)
+                  ? flags.filter((flag) => flag !== id)
+                  : [...flags, id],
+              )
+            }
+          />
         )}
       </Drawer>
       <Modal
@@ -646,7 +486,7 @@ export default function App() {
         {draftOpen && (
           <Stack gap="md">
             <Text>
-              Review your questions before any future contact. Nothing has been
+              Prepare for your discussion. Questions are saved locally, not
               sent.
             </Text>
             {drafts.map((draft) => (
@@ -681,7 +521,7 @@ export default function App() {
                           setDraftOpen(false);
                         }
                         setDrafts((ds) => ds.filter((d) => d.id !== draft.id));
-                        setNotice("Question removed from the draft.");
+                        setNotice("Question removed from the discussion.");
                       }}
                     >
                       Remove
@@ -700,7 +540,7 @@ export default function App() {
               data-autofocus
               label="Question for the keeper"
               autosize
-              minRows={6}
+              minRows={3}
               maxRows={12}
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
@@ -708,8 +548,7 @@ export default function App() {
               maxLength={2000}
             />
             <Text size="sm" c="dimmed">
-              This creates an editable local draft. It will not send a message
-              or change the review decision.
+              For your discussion with Eimhin. Saving does not send a message.
             </Text>
             <Group justify="flex-end">
               <Button variant="default" onClick={closeComposer}>
@@ -720,7 +559,7 @@ export default function App() {
                 disabled={!question.trim()}
                 rightSection={<Icon icon={Check} />}
               >
-                Save draft
+                Save question
               </Button>
             </Group>
           </Stack>
@@ -731,7 +570,6 @@ export default function App() {
             mode={workflowDialog}
             state={opportunity}
             onSave={saveWorkflow}
-            onOpen={openWorkflow}
             onCancel={() => setWorkflowDialog(null)}
           />
         )}

@@ -29,7 +29,7 @@ const maintenance = /Mechanical or electrical maintenance.*Evidence found/;
 async function openPump(user) {
   await user.click(requirement(maintenance));
   const inspect = await screen.findByRole("button", {
-    name: "Inspect 5 records",
+    name: "View supporting records (5)",
   });
   await user.click(inspect);
   return inspect;
@@ -39,7 +39,7 @@ describe("Mantine review interactions", () => {
   it("starts collapsed and opens one named assessment across all groups", async () => {
     const user = setup();
     expect(
-      screen.queryByRole("button", { name: "Inspect 5 records" }),
+      screen.queryByRole("button", { name: "View supporting records (5)" }),
     ).not.toBeInTheDocument();
     const control = requirement(maintenance);
     control.focus();
@@ -49,17 +49,19 @@ describe("Mantine review interactions", () => {
       screen.getByRole("region", { name: maintenance }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Inspect 4 records" }),
+      screen.getByRole("button", { name: "View supporting records (4)" }),
     ).toBeVisible();
     await user.click(
       requirement(/Permit-system experience.*Needs clarification/),
     );
     expect(control).toHaveAttribute("aria-expanded", "false");
     expect(
-      screen.queryByRole("button", { name: "Inspect 5 records" }),
+      screen.queryByRole("button", { name: "View supporting records (5)" }),
     ).not.toBeInTheDocument();
     expect(
-      await screen.findByRole("button", { name: "Inspect 2 records" }),
+      await screen.findByRole("button", {
+        name: "View supporting records (2)",
+      }),
     ).toBeVisible();
   });
 
@@ -70,7 +72,25 @@ describe("Mantine review interactions", () => {
     await waitFor(() =>
       expect(within(dialog).getByText("Record 1 of 5")).toBeVisible(),
     );
-    expect(within(dialog).getByText("Employment-date context")).toBeVisible();
+    expect(within(dialog).getByText("Needs checking:")).toBeVisible();
+    expect(
+      within(dialog).getByText(
+        /5 selected supporting records.*1 needs attribution/,
+      ),
+    ).toBeVisible();
+    expect(
+      within(dialog).getByRole("button", { name: "View source details" }),
+    ).toHaveAttribute("aria-expanded", "false");
+    await user.click(
+      within(dialog).getByRole("button", { name: "Flag record for review" }),
+    );
+    expect(
+      within(dialog).getByRole("button", { name: "Record flagged · undo" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(within(dialog).getByText(/Confirm it belongs to him/)).toBeVisible();
+    await user.click(
+      within(dialog).getByRole("button", { name: "Record flagged · undo" }),
+    );
     const quote = dialog.querySelector("blockquote");
     const original = sourceRecords.find(
       (r) => r.original === quote.textContent,
@@ -89,7 +109,7 @@ describe("Mantine review interactions", () => {
     );
     await user.click(
       within(dialog).getByRole("button", {
-        name: "View original record fields",
+        name: "View source details",
       }),
     );
     await waitFor(() => expect(dialog.querySelector("pre")).toBeVisible());
@@ -106,30 +126,34 @@ describe("Mantine review interactions", () => {
 
   it("saves, edits and removes a draft without altering assessment or interest", async () => {
     const user = setup();
-    await openPump(user);
+    await user.click(requirement(maintenance));
     await user.click(
-      await screen.findByRole("button", { name: "Draft a clarification" }),
+      (await screen.findAllByRole("button", { name: "Add to discussion" }))[0],
     );
     let input = await screen.findByRole("textbox", {
       name: "Question for the keeper",
     });
     await user.clear(input);
-    expect(screen.getByRole("button", { name: "Save draft" })).toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: "Save question" }),
+    ).toBeDisabled();
     await user.type(
       input,
       "Which pump repairs did you complete independently?",
     );
-    await user.click(screen.getByRole("button", { name: "Save draft" }));
+    await user.click(screen.getByRole("button", { name: "Save question" }));
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     expect(
       screen.getByText(/Officer assessment:/).parentElement,
     ).toHaveTextContent("Not reviewed");
-    expect(screen.getByText(/Keeper interest:/)).toHaveTextContent(
+    expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
       "Not yet discussed",
     );
-    await user.click(screen.getByRole("button", { name: "Review draft (1)" }));
+    await user.click(
+      screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
+    );
     await user.click(
       await screen.findByRole("button", { name: "Edit question" }),
     );
@@ -141,7 +165,7 @@ describe("Mantine review interactions", () => {
     );
     expect(input).toHaveFocus();
     await user.type(input, " Please give an example.");
-    await user.click(screen.getByRole("button", { name: "Save draft" }));
+    await user.click(screen.getByRole("button", { name: "Save question" }));
     expect(
       screen.getByText(
         "Which pump repairs did you complete independently? Please give an example.",
@@ -150,7 +174,7 @@ describe("Mantine review interactions", () => {
     await user.click(screen.getByRole("button", { name: "Remove" }));
     await waitFor(() => expect(requirement(maintenance)).toHaveFocus());
     expect(
-      screen.queryByRole("button", { name: "Review draft (1)" }),
+      screen.queryByRole("button", { name: "Discussion with Eimhin (1)" }),
     ).not.toBeInTheDocument();
   });
 
@@ -158,13 +182,16 @@ describe("Mantine review interactions", () => {
     const user = setup();
     await user.click(requirement(/Sea survival.*Module recorded/));
     await user.click(
-      await screen.findByRole("button", { name: "Flag for verification" }),
+      await screen.findByRole("button", { name: "Check qualification" }),
     );
     expect(
-      screen.getByRole("button", { name: "Flagged for verification" }),
+      screen.getByRole("button", { name: "Qualification check added" }),
     ).toHaveAttribute("aria-pressed", "true");
     await user.click(
       screen.getByRole("button", { name: "View training record" }),
+    );
+    await user.click(
+      await screen.findByRole("button", { name: "View source details" }),
     );
     await waitFor(() => expect(screen.getByText("LH500010")).toBeVisible());
     await user.keyboard("{Escape}");
@@ -172,10 +199,10 @@ describe("Mantine review interactions", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     await user.click(
-      screen.getByRole("button", { name: "Flagged for verification" }),
+      screen.getByRole("button", { name: "Qualification check added" }),
     );
     expect(
-      screen.getByRole("button", { name: "Flag for verification" }),
+      screen.getByRole("button", { name: "Check qualification" }),
     ).toHaveAttribute("aria-pressed", "false");
     await user.click(requirement(maintenance));
     await user.click(
@@ -189,7 +216,9 @@ describe("Mantine review interactions", () => {
   });
   it("keeps career preferences unknown while allowing a contextual discussion draft", async () => {
     const user = setup();
-    const discuss = screen.getByRole("button", { name: "Discuss preferences" });
+    const discuss = screen.getByRole("button", {
+      name: "Add preferences to discussion",
+    });
     expect(
       screen.getByText("Career preferences not yet discussed"),
     ).toBeVisible();
@@ -198,12 +227,14 @@ describe("Mantine review interactions", () => {
       name: "Question for the keeper",
     });
     expect(input.value).toContain("What would you like to do next");
-    await user.click(screen.getByRole("button", { name: "Save draft" }));
+    await user.click(screen.getByRole("button", { name: "Save question" }));
     await waitFor(() => expect(discuss).toHaveFocus());
     expect(
       screen.getByText("Career preferences not yet discussed"),
     ).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Review draft (1)" }));
+    await user.click(
+      screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
+    );
     await user.click(await screen.findByRole("button", { name: "Remove" }));
     await waitFor(() => expect(discuss).toHaveFocus());
   });
@@ -218,7 +249,7 @@ describe("Mantine review interactions", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     expect(screen.getByText("Awaiting keeper response")).toBeVisible();
-    expect(screen.getByText(/Keeper interest:/)).toHaveTextContent(
+    expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
       "Suggested to keeper",
     );
     expect(
@@ -239,7 +270,7 @@ describe("Mantine review interactions", () => {
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    expect(screen.getByText(/Keeper interest:/)).toHaveTextContent(
+    expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
       "Interested · simulated response",
     );
     expect(
@@ -277,11 +308,8 @@ describe("Mantine review interactions", () => {
       requirement(/Offshore medical fitness.*Not established/),
     ).toBeVisible();
     await user.click(
-      screen.getByRole("button", { name: "More opportunity actions" }),
-    );
-    await user.click(
       await screen.findByRole("button", {
-        name: "Record or revise keeper response",
+        name: "Record keeper response",
       }),
     );
     await user.selectOptions(
@@ -305,9 +333,6 @@ describe("Mantine review interactions", () => {
   it("records officer judgement separately and follows up a request for more information", async () => {
     const user = setup();
     await user.click(
-      screen.getByRole("button", { name: "More opportunity actions" }),
-    );
-    await user.click(
       await screen.findByRole("button", {
         name: "Update officer assessment",
       }),
@@ -322,21 +347,18 @@ describe("Mantine review interactions", () => {
     );
     await waitFor(() =>
       expect(
-        screen.getByRole("button", { name: "More opportunity actions" }),
+        screen.getByRole("button", { name: "Update officer assessment" }),
       ).toHaveFocus(),
     );
     expect(
       screen.getByText(/Officer assessment:/).parentElement,
     ).toHaveTextContent("Worth discussing");
-    expect(screen.getByText(/Keeper interest:/)).toHaveTextContent(
+    expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
       "Not yet discussed",
     );
     await user.click(
-      screen.getByRole("button", { name: "More opportunity actions" }),
-    );
-    await user.click(
       await screen.findByRole("button", {
-        name: "Record or revise keeper response",
+        name: "Record keeper response",
       }),
     );
     await user.selectOptions(
@@ -351,10 +373,91 @@ describe("Mantine review interactions", () => {
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    await user.click(screen.getByRole("button", { name: "Draft follow-up" }));
+    await user.click(
+      screen.getByRole("button", { name: "Prepare follow-up discussion" }),
+    );
     expect(
       (await screen.findByRole("textbox", { name: "Question for the keeper" }))
         .value,
     ).toContain("What more would you like to know");
   });
+});
+
+it("keeps discussion topics unique and distinct from qualification checks", async () => {
+  const user = setup();
+  await user.click(requirement(/Sea survival.*Module recorded/));
+  await user.click(
+    await screen.findByRole("button", { name: "Check qualification" }),
+  );
+  await user.click(screen.getByRole("button", { name: "Add to discussion" }));
+  await user.click(
+    await screen.findByRole("button", { name: "Save question" }),
+  );
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Edit discussion question" }),
+  );
+  const input = await screen.findByRole("textbox", {
+    name: "Question for the keeper",
+  });
+  await user.clear(input);
+  await user.type(input, "Which current offshore certificates do you hold?");
+  await user.click(screen.getByRole("button", { name: "Save question" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
+  expect(
+    screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
+  ).toBeVisible();
+  expect(
+    screen.getByRole("button", { name: "Qualification check added" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect(requirement(/Sea survival.*Module recorded/)).toBeVisible();
+  expect(screen.getByText(/Interest:/).parentElement).toHaveTextContent(
+    "Not yet discussed",
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByText("Which current offshore certificates do you hold?"),
+    ).toBeVisible(),
+  );
+});
+
+it("opens every selected log with its exact highlight through the requirement assessment", async () => {
+  const user = setup();
+  for (const [row, count, prefix] of [
+    [maintenance, 5, "pump_"],
+    [maintenance, 4, "electrical_"],
+    [/Permit-system experience.*Needs clarification/, 2, "safety_"],
+  ]) {
+    const control = requirement(row);
+    if (control.getAttribute("aria-expanded") !== "true")
+      await user.click(control);
+    await user.click(
+      await screen.findByRole("button", {
+        name: `View supporting records (${count})`,
+      }),
+    );
+    const dialog = await screen.findByRole("dialog");
+    for (const record of sourceRecords
+      .filter((r) => r.id.startsWith(prefix))
+      .sort((a, b) => a.date.localeCompare(b.date))) {
+      const quote = dialog.querySelector("blockquote");
+      expect(quote.textContent).toBe(record.original);
+      expect(quote.querySelector("mark").textContent).toBe(record.highlight);
+      const next = within(dialog).getByRole("button", {
+        name: "Next evidence record",
+      });
+      if (!next.disabled) await user.click(next);
+    }
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+  }
 });

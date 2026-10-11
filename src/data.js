@@ -55,7 +55,7 @@ export const requirements = [
     type: "clarification",
     assessment: "clarify",
     detail:
-      "The role involves tower climbs, enclosed turbine spaces and transfers from a moving vessel. The selected records do not establish Eimhin’s current comfort with these conditions.",
+      "Eimhin’s comfort with offshore working conditions has not been discussed.",
     question:
       "Are you comfortable working at height, in enclosed spaces and on small boats in a swell? Please describe relevant recent experience and any working conditions you would like to discuss.",
   },
@@ -112,8 +112,7 @@ export const requirements = [
     type: "experience",
     assessment: "clarify",
     claimIds: ["safety"],
-    detail:
-      "The employer values permit-system experience. Planning and permit-issuing responsibility are recorded; the scope and currency of that authority need clarification.",
+    detail: "Permit-system experience is an employer preference.",
   },
   {
     id: "mentoring",
@@ -123,7 +122,7 @@ export const requirements = [
     type: "clarification",
     assessment: "unknown",
     detail:
-      "The employer values people who have trained and supported younger colleagues. This is not established by the selected records; it is not evidence that Eimhin lacks this experience.",
+      "No supporting records were selected. Ask about this employer preference if Eimhin wants to pursue the role.",
     question:
       "Have you trained or supported less experienced colleagues? Please describe your role and a recent example.",
   },
@@ -141,9 +140,9 @@ export const claims = [
       "Relevant to maintaining pumps and replacing worn turbine components.",
     involvement: "Hands-on work recorded",
     limitation:
-      "The entries describe repairs, but do not establish how independently Eimhin worked or his present competence.",
+      "Confirm which repairs Eimhin carried out independently and whether this was a regular responsibility.",
     question:
-      "The records describe pump repairs from 2009 to 2026. Was this a regular responsibility? Which repairs did you carry out independently, and when did you last do this work?",
+      "Was pump maintenance a regular responsibility? Which repairs did you carry out independently, and when did you last do this work?",
     sourceIds: [
       "pump_2009-03-13",
       "pump_2010-08-06",
@@ -164,9 +163,9 @@ export const claims = [
       "Relevant to diagnosing faults and maintaining electrical plant.",
     involvement: "Hands-on work recorded",
     limitation:
-      "Transfer to turbine systems needs assessment. These records do not establish 33kV competence or authorisation.",
+      "Confirm Eimhin’s regular fault-finding duties and independent responsibilities.",
     question:
-      "Which electrical systems and voltages have you worked on? Please describe your independent fault-finding responsibilities and the limits of your authorisation.",
+      "Was electrical maintenance part of your regular duties? Which faults did you diagnose and repair independently?",
     sourceIds: [
       "electrical_2009-05-27",
       "electrical_2011-09-21",
@@ -186,7 +185,7 @@ export const claims = [
       "Relevant to the employer’s preference for permit-system experience.",
     involvement: "Planning / issuing authority",
     limitation:
-      "Planning or authorising a task does not establish who performed it. Current authority and its scope need confirmation.",
+      "Confirm the scope of Eimhin’s permit authority and whether it is current.",
     question:
       "A 2025 entry records you acting as issuing authority for three permits. What did your authorisation cover, and is it still current?",
     sourceIds: ["safety_2014-04-15", "safety_2025-08-19"],
@@ -275,15 +274,14 @@ export const qualifications = [
 ];
 export const interpretations = {
   "pump_2009-03-13":
-    "Describes replacing a fire-pump seal and re-aligning its coupling. This remains relevant maintenance evidence despite preceding the personnel joining date.",
+    "Describes replacing a fire-pump seal and re-aligning its coupling.",
   "electrical_2009-05-27":
-    "Describes identifying an incorrect charger setting and recording the correction. The personnel joining date does not invalidate this recorded work.",
+    "Describes identifying an incorrect charger setting and recording the correction.",
   "pump_2010-08-06":
     "Describes replacing a fire-pump seal and re-aligning its coupling.",
   "pump_2024-09-27":
     "A later record again describes seal replacement and coupling alignment.",
-  "pump_2025-10-10":
-    "Describes hands-on repair. The source is marked “self”; this is not independent competence verification.",
+  "pump_2025-10-10": "Describes repairing a pump; the entry is marked “self”.",
   "pump_2026-04-21":
     "Describes a pump rebuild and a recorded return of delivery pressure.",
   "electrical_2011-09-21":
@@ -311,3 +309,14 @@ export function dateLabel(date) {
   }).format(new Date(date + "T12:00:00Z"));
 }
 export { sources, trainingRecords };
+
+export const requirementNextSteps = {
+  maintenance: "Discuss responsibilities",
+  environment: "Discuss working preferences",
+  sea: "Verify full certificate",
+  fire: "Confirm completion",
+  "first-aid": "Check certificate",
+  height: "Check accepted coverage",
+  medical: "Check clearance",
+  permits: "Confirm current authority",
+};

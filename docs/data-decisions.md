@@ -12,7 +12,7 @@ The selected records demonstrate repeated repairs, older and recent electrical w
 
 LearnHub records, including LH500003, LH500008 and LH500010, explicitly contain both K0104 and payroll reference 0012801. Across LearnHub, the selected reference links to K0104 only. This supports linking the selected recent spreadsheet entries bearing 0012801 or the leading-zero-stripped 12801. Their stations fit the personnel postings: ERR in 2022–2024 and GOW in 2025–2026. This corroborated attribution is documented rather than treated as external identity verification. The raw pack README’s general warning about a missing payroll mapping is not silently ignored; the selected LearnHub rows provide a specific cross-reference.
 
-The user chose **31 December 2026** as the fictional review date. The pack’s stated March preparation date and February LearnHub extraction date conflict with later records. Those metadata conflicts remain a known limitation; neither date has been presented as a reliable snapshot boundary. The fixture deliberately includes the approved later 2026 entries. Entries preceding the personnel joining date remain eligible as experience evidence. That date does not establish the start of all work: earlier part-time or contract service is possible, but is not confirmed. Two relevant 2009 examples carrying K0104 are included and annotated in the evidence inspector; no adverse competence inference is made from the date difference.
+The user chose **31 December 2026** as the fictional review date. The pack’s stated March preparation date and February LearnHub extraction date conflict with later records. Those metadata conflicts remain a known limitation; neither date has been presented as a reliable snapshot boundary. The fixture deliberately includes the approved later 2026 entries. Both 2009 entries remain in the selected-record counts at the user’s request, with one attribution caveat on each affected experience area. They are accessible evidence candidates, not confirmed experience attributed to Eimhin until checked. The date discrepancy is unresolved; the UI offers an independent internal record-review flag and does not invent a reason for it. Flagging or unflagging does not resolve attribution.
 
 Selected mixed-format dates are unambiguous (for example 12/26/2026). Normalised dates are shown alongside raw dates. Original text, spelling, capitalisation and punctuation remain unchanged. Raw data-row locations count parsed CSV records starting at one, excluding the header; they are not invented source record IDs.
 
@@ -55,7 +55,7 @@ The NOSF Offshore Wind Turbine Technician occupation was inspected for context, 
 
 ## Simplifications and boundaries
 
-`src/data.js` separates the person, vacancy, job requirements, experience claims, interpretations and qualification requirements. `src/records.js` separates source and training records. Clarification drafts and verification flags live in React state. Opportunity-specific workflow state is managed separately in `src/workflow.js`. Claims refer to requirements and source IDs; qualifications refer to training record IDs where present.
+`src/data.js` separates the person, vacancy, job requirements, experience claims, interpretations and qualification requirements. `src/records.js` separates source and training records. Discussion questions, qualification checks and internal record-review flags live in separate React state. Opportunity-specific workflow state is managed separately in `src/workflow.js`. Claims refer to requirements and source IDs; qualifications refer to training record IDs where present.
 
 This is curated decision support, not live inference, certification validation or matching. No raw personnel or appraisal corpus is shipped. No expensive training is recommended from missing evidence. All review changes reset on refresh, and neither interest nor a local nomination decision establishes offshore eligibility.
 
@@ -67,7 +67,7 @@ The collapsed labels describe evidence states. Evidence found means relevant wor
 
 The offshore-working-conditions and mentoring rows represent actual employer requirements/preferences. No new evidence has been invented for them. All expiry interpretations still use the agreed fictional review date, 31 December 2026, shown in qualification detail rather than the overview.
 
-Officer assessment, opportunity suggestion, keeper response and nomination decision are distinct from requirement evidence labels, local drafts and verification flags. These states do not recalculate or override evidence. Employer progression remains Not submitted in this prototype.
+Officer assessment, opportunity suggestion, keeper response and nomination decision are distinct from requirement evidence labels, discussion questions and verification checks. These states do not recalculate or override evidence. Employer progression remains Not submitted in this prototype.
 
 ## Mantine presentation migration
 
@@ -80,3 +80,9 @@ Mantine theme colours express the existing evidence states; they do not calculat
 Eimhin’s career intention is explicitly unknown and career preferences are null. These are absence-of-information states, not facts inferred from age, tenure or historical appraisals. The preference discussion question is authored prototype copy, not a source quotation. Opportunity responses entered through the UI are explicitly simulated and never written into personnel or evidence fixtures.
 
 The user approved local nomination decisions with outstanding gaps, provided interest is recorded and the officer supplies a rationale and acknowledges unresolved requirements. A saved recommendation means an officer decision for possible employer consideration; it never marks an employer submission or interview. Retirement filtering and the illustrative Fintan Ó Ceallaigh example exist only in the information-architecture proposal and are not source-derived personnel data.
+
+## Decision-focused presentation
+
+The page separates experience, qualifications and interest in a compact summary. Each requirement offers a current position and a next step where useful; mentoring has no automatic immediate action. Detailed source counts describe selected records, not total work frequency. Recency, span and involvement are available in the inspector. Technical identifiers, original dates, identity notes and raw fields sit under View source details; original passages and highlights remain unchanged. The inspector identifies the fictional assessment date.
+
+Discussion with Eimhin collects editable questions by experience area or topic, with one item per stable ID. No source-level question drafts or outgoing messages are created. Check qualification tracks a reversible local task to obtain evidence from the keeper, Authority training records or provider. It never certifies a qualification or creates a training recommendation. Internal record-review flags are keyed by source ID and remain independent of qualification checks, discussion questions and opportunity progression.

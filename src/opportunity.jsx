@@ -9,13 +9,12 @@ import {
   Text,
   Textarea,
 } from "@mantine/core";
-import { ArrowRight, Check, ClipboardList, MoreHorizontal } from "lucide-react";
+import { ArrowRight, Check, ClipboardList } from "lucide-react";
 import { Icon } from "./components";
 import { officerAssessments, keeperResponses } from "./workflow";
 import { vacancy } from "./data";
 
 export const workflowTitles = {
-  actions: "Review actions",
   suggest: "Suggest this opportunity to Eimhin",
   response: "Record keeper response",
   assessment: "Officer assessment",
@@ -38,7 +37,7 @@ export function OpportunityActions({
       : "Consider for nomination";
   } else if (state.interest === "more-information") {
     action = "clarify";
-    label = "Draft follow-up";
+    label = "Prepare follow-up discussion";
   } else if (state.interest === "not-interested") {
     action = "response";
     label = "Review keeper response";
@@ -91,7 +90,7 @@ export function OpportunityActions({
               leftSection={<Icon icon={ClipboardList} />}
               onClick={onReviewDrafts}
             >
-              Review draft ({drafts.length})
+              Discussion with Eimhin ({drafts.length})
             </Button>
           )}
           <Button
@@ -103,22 +102,23 @@ export function OpportunityActions({
           >
             {label}
           </Button>
-          <Button
-            id="opportunity-more-actions"
-            variant="default"
-            aria-label="More opportunity actions"
-            leftSection={<Icon icon={MoreHorizontal} />}
-            onClick={() => onOpen("actions")}
-          >
-            Review actions
-          </Button>
+          {action !== "assessment" && (
+            <Button variant="subtle" onClick={() => onOpen("assessment")}>
+              Update officer assessment
+            </Button>
+          )}
+          {action !== "response" && (
+            <Button variant="subtle" onClick={() => onOpen("response")}>
+              Record keeper response
+            </Button>
+          )}
         </Group>
       </Group>
     </Paper>
   );
 }
 
-export function WorkflowForm({ mode, state, onSave, onCancel, onOpen }) {
+export function WorkflowForm({ mode, state, onSave, onCancel }) {
   const fieldRef = useRef(null);
   useEffect(() => {
     fieldRef.current?.focus();
@@ -147,21 +147,6 @@ export function WorkflowForm({ mode, state, onSave, onCancel, onOpen }) {
         !rationale.trim() ||
         (decision === "recommend" && !acknowledged)
       : mode === "assessment" && assessment === "worth-nominating";
-  if (mode === "actions")
-    return (
-      <Stack gap="sm">
-        <Button
-          data-autofocus
-          variant="light"
-          onClick={() => onOpen("assessment")}
-        >
-          Update officer assessment
-        </Button>
-        <Button variant="light" onClick={() => onOpen("response")}>
-          Record or revise keeper response
-        </Button>
-      </Stack>
-    );
   return (
     <Stack component="form" gap="md" onSubmit={save}>
       {mode === "suggest" && (
