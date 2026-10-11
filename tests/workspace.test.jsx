@@ -102,70 +102,77 @@ it("saves dated private notes with follow-up, edits them and excludes their text
     screen.getByText("Private conversation reminder — updated"),
   ).toBeVisible();
   expect(screen.getByText(/Ask about travel/)).toBeVisible();
-  await user.click(screen.getByRole("button", { name: "Prepare referral" }));
+  await user.click(
+    screen.getByRole("button", { name: "Prepare candidate introduction" }),
+  );
   const dialog = await screen.findByRole("dialog");
-  expect(
-    [...dialog.querySelectorAll("textarea")].map((t) => t.value).join(" "),
-  ).not.toContain("Private conversation");
+  expect(within(dialog).getByRole("article")).not.toHaveTextContent(
+    "Private conversation",
+  );
 });
-it("preserves referral edits through source inspection, saves separately from readiness and invalidates on response change", async () => {
+it("previews a concise document, supports edit/review/save and marks ready only for Eimhin's review", async () => {
   const user = userEvent.setup();
   mount();
-  const launch = screen.getByRole("button", { name: "Prepare referral" });
+  const launch = screen.getByRole("button", {
+    name: "Prepare candidate introduction",
+  });
   await user.click(launch);
-  const why = await screen.findByRole("textbox", {
-    name: "Why consider Eimhin",
-  });
-  await user.type(why, " Additional employer-facing context.");
-  await user.click(
-    screen.getByRole("button", {
-      name: "Sources behind the draft · for your review",
-    }),
-  );
-  const source = await screen.findByRole("button", {
-    name: "Pump maintenance & repair · inspect records",
-  });
-  await user.click(source);
-  await waitFor(() =>
-    expect(screen.getByRole("dialog")).toHaveTextContent("Record 2 of 5"),
-  );
-  await user.keyboard("{Escape}");
-  await waitFor(() => expect(source).toHaveFocus());
-  expect(
-    screen.getByRole("textbox", { name: "Why consider Eimhin" }).value,
-  ).toContain("Additional employer-facing context.");
-  await user.click(screen.getByRole("button", { name: "Save referral draft" }));
-  await close(user);
-  expect(screen.getByText("Assessing referral readiness")).toBeVisible();
-  await user.click(
-    screen.getByRole("button", { name: "Mark ready for referral" }),
-  );
   let dialog = await screen.findByRole("dialog");
-  const save = within(dialog).getByRole("button", {
-    name: "Mark ready for referral",
+  expect(within(dialog).queryByRole("textbox")).not.toBeInTheDocument();
+  const preview = within(dialog).getByRole("article", {
+    name: "Candidate introduction preview",
   });
-  expect(save).toBeDisabled();
-  await user.type(
-    within(dialog).getByRole("textbox", {
-      name: "Rationale for referral readiness",
-    }),
-    "Relevant maintenance; unresolved requirements disclosed.",
+  expect(preview).toHaveTextContent("Current role: Lighthouse keeper");
+  expect(preview).not.toHaveTextContent(
+    /LH500|selected records|attribution|KLOG/,
   );
-  expect(save).toBeDisabled();
+  expect(preview.textContent.split(/\s+/).length).toBeLessThan(240);
+  await waitFor(() =>
+    expect(
+      within(dialog).getByText("Candidate CV: Not attached"),
+    ).toBeVisible(),
+  );
   await user.click(
-    within(dialog).getByRole("checkbox", { name: /I acknowledge/ }),
+    within(dialog).getByRole("button", { name: "Edit introduction" }),
   );
-  await user.click(save);
+  const why = await screen.findByRole("textbox", {
+    name: "Why we recommend Eimhin",
+  });
+  expect(why).toHaveFocus();
+  await user.type(why, " Discuss practical examples at interview.");
+  await user.click(screen.getByRole("button", { name: "Review introduction" }));
+  expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+  expect(screen.getByRole("article")).toHaveTextContent(
+    "Discuss practical examples at interview.",
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Save introduction draft" }),
+  );
+  expect(
+    screen.getByText("Candidate introduction saved on this browser."),
+  ).toBeVisible();
+  await close(user);
+  expect(screen.getByText("Preparing candidate introduction")).toBeVisible();
+  await user.click(
+    screen.getByRole("button", { name: "Mark ready for Eimhin’s review" }),
+  );
+  dialog = await screen.findByRole("dialog");
+  expect(within(dialog).queryByRole("textbox")).not.toBeInTheDocument();
+  await user.click(
+    within(dialog).getByRole("button", {
+      name: "Mark ready for Eimhin’s review",
+    }),
+  );
   await waitFor(() =>
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
-  expect(screen.getByText("Ready for referral")).toBeVisible();
+  expect(screen.getByText("Ready for Eimhin’s review")).toBeVisible();
   await user.click(
     screen.getByRole("checkbox", {
       name: "Check existing offshore certificates",
     }),
   );
-  expect(screen.getByText("Ready for referral")).toBeVisible();
+  expect(screen.getByText("Ready for Eimhin’s review")).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Edit response" }));
   await user.selectOptions(
     await screen.findByRole("combobox", {
@@ -179,16 +186,18 @@ it("preserves referral edits through source inspection, saves separately from re
   await waitFor(() =>
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
-  expect(screen.getByText("Referral on hold")).toBeVisible();
-  expect(screen.queryByText("Ready for referral")).not.toBeInTheDocument();
+  expect(screen.getByText("Introduction on hold")).toBeVisible();
   const snapshot = JSON.parse(localStorage.getItem(storageKey));
+  expect(snapshot.workspace.ready).toBeNull();
   expect(snapshot.workspace.opportunity.employerProgression).toBe(
     "not-submitted",
   );
   expect(snapshot.workspace.referral.why).toContain(
-    "Additional employer-facing context.",
+    "Discuss practical examples at interview.",
   );
+  expect(snapshot.workspace.referral.editedFields).toContain("why");
 });
+
 it("records responsibilities separately and includes them only on explicit selection", async () => {
   const user = userEvent.setup();
   mount();
@@ -216,7 +225,17 @@ it("records responsibilities separately and includes them only on explicit selec
   expect(
     screen.getByText(/Recorded by you; not independently verified/),
   ).toBeVisible();
-  await user.click(screen.getByRole("button", { name: "Prepare referral" }));
+  await user.click(
+    screen.getByRole("button", { name: "Prepare candidate introduction" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "Edit introduction" }),
+  );
+  await user.click(
+    screen.getByRole("button", {
+      name: "Include Eimhin-reported responsibilities (optional)",
+    }),
+  );
   const include = await screen.findByRole("checkbox", {
     name: /Include Eimhin’s account/,
   });
@@ -224,10 +243,13 @@ it("records responsibilities separately and includes them only on explicit selec
   await user.click(include);
   expect(
     screen.getByRole("textbox", {
-      name: "Referral wording: Pump maintenance & repair",
+      name: "Eimhin-reported wording: Pump maintenance & repair",
     }),
   ).toHaveValue("I replaced pump seals independently.");
-  await user.click(screen.getByRole("button", { name: "Save referral draft" }));
+  await user.click(screen.getByRole("button", { name: "Review introduction" }));
+  await user.click(
+    screen.getByRole("button", { name: "Save introduction draft" }),
+  );
   expect(
     JSON.parse(localStorage.getItem(storageKey)).workspace.referral
       .includedReports,
@@ -240,7 +262,7 @@ it("confirms reset, clears persisted review data and restores the illustrative s
   const user = userEvent.setup();
   mount();
   await user.click(
-    screen.getByRole("checkbox", { name: "Prepare the referral" }),
+    screen.getByRole("checkbox", { name: "Prepare candidate introduction" }),
   );
   await user.click(
     screen.getByRole("button", { name: "Reset prototype workspace" }),
@@ -251,7 +273,7 @@ it("confirms reset, clears persisted review data and restores the illustrative s
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
   expect(
-    screen.getByRole("checkbox", { name: "Prepare the referral" }),
+    screen.getByRole("checkbox", { name: "Prepare candidate introduction" }),
   ).toBeChecked();
   await user.click(
     screen.getByRole("button", { name: "Reset prototype workspace" }),
@@ -264,7 +286,7 @@ it("confirms reset, clears persisted review data and restores the illustrative s
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
   expect(
-    screen.getByRole("checkbox", { name: "Prepare the referral" }),
+    screen.getByRole("checkbox", { name: "Prepare candidate introduction" }),
   ).not.toBeChecked();
   expect(
     screen.getByText(/Interested is illustrative scenario data/),
@@ -279,6 +301,142 @@ it("keeps the app usable when browser persistence is unavailable", () => {
     "will not survive refresh",
   );
   expect(
-    screen.getByRole("button", { name: "Prepare referral" }),
+    screen.getByRole("button", { name: "Prepare candidate introduction" }),
   ).toBeVisible();
+});
+
+it("cancels edits, confirms regeneration and preserves previous manual wording across refresh", async () => {
+  const user = userEvent.setup();
+  let view = mount();
+  await user.click(
+    screen.getByRole("button", { name: "Prepare candidate introduction" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "Edit introduction" }),
+  );
+  const field = screen.getByRole("textbox", { name: "Recommendation" });
+  await user.clear(field);
+  await user.type(
+    field,
+    "Please explore his independent repair responsibilities at interview.",
+  );
+  await user.click(screen.getByRole("button", { name: "Review introduction" }));
+  await user.click(
+    screen.getByRole("button", { name: "Save introduction draft" }),
+  );
+  await close(user);
+  view.unmount();
+  view = mount();
+  await user.click(
+    screen.getByRole("button", { name: "Review candidate introduction" }),
+  );
+  expect(await screen.findByRole("article")).toHaveTextContent(
+    "Please explore his independent repair responsibilities at interview.",
+  );
+  await user.click(screen.getByRole("button", { name: "Edit introduction" }));
+  await user.clear(screen.getByRole("textbox", { name: "Recommendation" }));
+  await user.type(
+    screen.getByRole("textbox", { name: "Recommendation" }),
+    "Discard me",
+  );
+  await user.click(screen.getByRole("button", { name: "Cancel edits" }));
+  expect(screen.getByRole("article")).not.toHaveTextContent("Discard me");
+  await user.click(screen.getByRole("button", { name: "Reset to assessment" }));
+  const confirm = await screen.findByRole("dialog", {
+    name: "Replace introduction wording?",
+  });
+  await user.click(
+    within(confirm).getByRole("button", { name: "Replace wording" }),
+  );
+  await waitFor(() =>
+    expect(
+      screen.queryByRole("dialog", { name: "Replace introduction wording?" }),
+    ).not.toBeInTheDocument(),
+  );
+  expect(screen.getByRole("article")).not.toHaveTextContent(
+    "Please explore his independent repair responsibilities at interview.",
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Previous draft · internal reference" }),
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByText(
+        "Please explore his independent repair responsibilities at interview.",
+      ),
+    ).toBeVisible(),
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Save introduction draft" }),
+  );
+  const stored = JSON.parse(localStorage.getItem(storageKey));
+  expect(stored.workspace.referral.previousDraft.recommendation).toContain(
+    "Please explore",
+  );
+  expect(stored.workspace.ready).toBeNull();
+});
+
+it("does not replace a legacy referral until explicitly requested", async () => {
+  const { initialWorkspace } = await import("../src/workspace");
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify({
+      version: 1,
+      workspace: {
+        ...initialWorkspace(),
+        referral: {
+          candidate: "Eimhin",
+          why: "Original manual wording",
+          experience: "Original experience",
+          qualifications: "Original qualifications",
+          questions: "Original questions",
+          includedReports: [],
+          sourceIds: [],
+        },
+      },
+      drafts: [],
+      recordFlags: [],
+    }),
+  );
+  const user = userEvent.setup();
+  mount();
+  await user.click(
+    screen.getByRole("button", { name: "Review candidate introduction" }),
+  );
+  await waitFor(() =>
+    expect(
+      screen.getByText(/previous referral draft has been retained/),
+    ).toBeVisible(),
+  );
+  expect(screen.queryByRole("article")).not.toBeInTheDocument();
+  expect(
+    JSON.parse(localStorage.getItem(storageKey)).workspace.referral.why,
+  ).toBe("Original manual wording");
+  await user.click(
+    screen.getByRole("button", { name: "Create introduction from assessment" }),
+  );
+  const modal = await screen.findByRole("dialog", {
+    name: "Create a shorter introduction?",
+  });
+  await user.click(
+    within(modal).getByRole("button", { name: "Create introduction" }),
+  );
+  await waitFor(() =>
+    expect(
+      screen.queryByRole("dialog", { name: "Create a shorter introduction?" }),
+    ).not.toBeInTheDocument(),
+  );
+  await waitFor(() =>
+    expect(screen.getByRole("dialog")).toContainElement(document.activeElement),
+  );
+  expect(screen.getByRole("article")).toHaveTextContent(
+    "Why we recommend Eimhin",
+  );
+  await user.click(
+    screen.getByRole("button", { name: "Save introduction draft" }),
+  );
+  expect(
+    JSON.parse(localStorage.getItem(storageKey)).workspace.referral
+      .previousDraft.why,
+  ).toBe("Original manual wording");
 });

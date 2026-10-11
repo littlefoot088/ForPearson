@@ -70,20 +70,22 @@ Conceptually, an explicit retirement intention leaves a keeper visible in People
 
 The left column explains suitability: compact current/prospective role context and interest, a grounded Why consider Eimhin narrative, relevant experience, formal qualifications, employer preferences and offshore conditions. The right column is a sticky workspace for one person/opportunity: progress, next steps and recent conversation. It stacks below the assessment on smaller screens. The two entry points would share this same pair-level workspace.
 
-Opportunity progress starts at **Assessing referral readiness**, with **Prepare referral** as the primary action. Interest appears only in the candidate context. Your assessment is editable beside its status. There is no full progress tracker for stages outside the implemented moment.
+Opportunity progress starts at **Preparing candidate introduction**, with **Prepare candidate introduction** as the primary action. Interest appears only in the candidate context. Your assessment is editable beside its status. There is no full progress tracker for stages outside the implemented moment.
 
 | Proposed stage                     | Meaning and implementation                                                                                          |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Opportunity identified / suggested | Conceptual upstream recommendation; no matching or messaging.                                                       |
 | Interested                         | Illustrative initial state; editable manual prototype response. Does not establish suitability or sharing approval. |
 | Assessment                         | Implemented investigation of evidence and gaps; prepare questions, tasks, notes and a referral draft.               |
-| Ready for referral                 | Implemented local judgement after explicit safeguards; not a submission.                                            |
+| Ready for Eimhin’s review          | Implemented preparation status for the saved introduction; no approval or submission.                               |
 | Submitted for consideration        | Conceptual external referral, only after the person approves the information to share.                              |
 | Interview invited                  | Conceptual employer decision; never inferred from readiness or nomination.                                          |
 | Interview completed                | Conceptual event; future support could record preparation and interview date.                                       |
 | Outcome recorded                   | Conceptual employer outcome and employee transition, including requests for information or declined referrals.      |
 
-Saving an editable referral does not mark it ready. Readiness requires interest, a saved/reviewed draft, a rationale, acknowledgement of unresolved requirements and an assessment other than Not currently suitable. Changed response, assessment, saved wording or included reported information invalidates readiness while retaining the draft. The officer can also return a ready draft to assessment. Declined/unknown interest or an unsuitable assessment holds progression; a draft can still be reviewed without enabling readiness.
+The candidate introduction has two implemented states: Draft and Ready for Eimhin’s review. Marking it ready requires a reviewed saved introduction and recorded interest only. The previous nomination-style rationale and acknowledgement gate has been removed for this document-preparation action. Approval for sharing and actual employer submission remain separate conceptual events. Neither a saved draft nor Eimhin’s opportunity interest provides sharing consent.
+
+Changed response, assessment, saved wording or included reported information clears readiness while retaining the draft. The user can return it to Draft. The introduction remains editable regardless of interest; readiness for Eimhin’s review requires Interested. This does not alter the internal officer assessment or any qualification status.
 
 This is a design proposal for operational validation, not a claimed existing business process. A production service would need policies for consent, access, record retention, approval, audit history and employer submissions.
 
@@ -97,7 +99,9 @@ Discussion with Eimhin retains one editable question per topic. Mechanical and e
 
 Record Eimhin’s account is the single implemented new-information example. Dated responsibilities are labelled Reported by Eimhin; recorded by you. They supplement source evidence without replacing it and can be explicitly included as self-reported content in the referral. No certificate upload or verification-outcome editor is introduced.
 
-The referral is initialised from curated, attributed experience and accurate qualification interpretations. It is editable for the receiving employer and separates historical experience, qualification readiness, material questions and optional reported responsibilities. Private notes, tasks, discussion questions and irrelevant personnel information never enter it automatically. Changes to source context do not overwrite saved edits; the reviewer is prompted to review and save again.
+The candidate introduction opens as a concise document preview: identity/opportunity, a short recommendation, three experience points, significant qualification checks and a recommendation for an initial technical interview. Editing is behind one Edit introduction action. Review introduction returns to the complete preview; Save introduction draft persists explicitly. User-edited fields remain identifiable internally. Candidate CV: Not attached is a non-blocking indicator.
+
+Historical detail and source records stay in the main assessment, not the document. Optional Eimhin-reported responsibilities require explicit inclusion and remain labelled as his account. Private notes, tasks and discussion questions never populate the introduction. Material limitations remain concise: independent responsibility, current permit authority and unverified offshore certification/medical fitness. Version 1 referrals are retained rather than silently rewritten; explicit creation or Reset to assessment confirms replacement and keeps earlier wording available internally.
 
 ## Evidence and qualification timing
 
@@ -109,7 +113,7 @@ Two records predating the joining date remain counted with attribution caveats. 
 
 Workspace state persists in versioned browser localStorage for this person/opportunity pair. Reset requires confirmation and returns to the illustrative interested scenario. Storage failure is disclosed while session work remains usable. This replaces the earlier reset-on-refresh decision. Evidence fixtures stay immutable; there is no backend, account system or cross-device sync.
 
-Mantine owns typography, spacing, sizing and accessible controls. Right-hand drawers handle evidence, roles and editors; modals handle short destructive confirmations only. The desktop workspace has bounded internal scrolling so it stays usable alongside the assessment. Closing drawers restores focus; source inspection from a referral returns to the same draft and source control without losing edits. See [design system](design-system.md).
+Mantine owns typography, spacing, sizing and accessible controls. Right-hand drawers handle evidence, roles and editors; modals handle short destructive confirmations only. The desktop workspace has bounded internal scrolling so it stays usable alongside the assessment. Closing drawers restores focus. The introduction uses a preview/edit flow within its drawer; evidence inspection remains in the main assessment. See [design system](design-system.md).
 
 ## Conceptual features and potential business value
 

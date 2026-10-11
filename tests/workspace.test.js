@@ -34,16 +34,16 @@ test("initial interest is illustrative; referral provenance excludes both disput
   assert.equal(draft.sourceIds.length, 9);
   for (const id of draft.sourceIds)
     assert.ok(sources.find((s) => s.id === id).date >= person.joined);
-  assert.match(draft.qualifications, /attendance recorded/i);
+  assert.match(draft.qualifications, /Sea-survival training is recorded/);
   assert.match(
     draft.qualifications,
-    /No complete required qualification has been verified/,
+    /complete offshore safety certification and medical fitness still need verification/,
   );
   assert.match(draft.qualifications, /before mobilisation/);
-  assert.match(draft.qualifications, /expired 14 July 2022/);
+  assert.doesNotMatch(draft.qualifications, /2022|2028|LH500/);
   assert.deepEqual(draft.includedReports, []);
 });
-test("saving a draft never grants readiness; guards require interest, rationale and gap acknowledgement", () => {
+test("saving a draft never grants review readiness; a saved introduction and interest are required", () => {
   const state = draftState();
   assert.equal(state.ready, null);
   assert.equal(
@@ -64,22 +64,13 @@ test("saving a draft never grants readiness; guards require interest, rationale 
         .ready,
       null,
     );
-  assert.equal(
+  assert.ok(
     markReady({
       ...state,
       opportunity: { ...state.opportunity, assessment: "not-suitable" },
     }).ready,
-    null,
   );
-  assert.equal(
-    reduce(state, { type: "ready", rationale: " ", acknowledged: true }).ready,
-    null,
-  );
-  assert.equal(
-    reduce(state, { type: "ready", rationale: "reviewed", acknowledged: false })
-      .ready,
-    null,
-  );
+  assert.ok(reduce(state, { type: "ready" }).ready);
   assert.ok(markReady(state).ready);
   assert.equal(
     markReady(state).opportunity.employerProgression,
@@ -219,4 +210,57 @@ test("versioned storage round-trips workspace state; corruption and unavailable 
     reduce(snapshot.workspace, { type: "reset" }),
     initialWorkspace(),
   );
+});
+
+test("legacy referrals retain their wording and never become approved or ready for person review automatically", () => {
+  const old = {
+    candidate: "Eimhin",
+    why: "My manually written recommendation",
+    experience: "Previous detailed wording",
+    qualifications: "Previous checks",
+    questions: "Private assessment questions",
+    includedReports: [],
+    sourceIds: [],
+  };
+  const payload = {
+    version: 1,
+    workspace: {
+      ...initialWorkspace(),
+      referral: old,
+      ready: { rationale: "Old referral rationale", acknowledged: true },
+    },
+    drafts: [],
+    recordFlags: [],
+  };
+  const loaded = loadWorkspace({ getItem: () => JSON.stringify(payload) });
+  assert.equal(loaded.message, "");
+  assert.equal(loaded.workspace.referral.why, old.why);
+  assert.equal(
+    loaded.workspace.referral.previousReadiness.rationale,
+    "Old referral rationale",
+  );
+  assert.equal(loaded.workspace.ready, null);
+  assert.equal(readinessAllowed(loaded.workspace), false);
+  assert.equal(
+    loaded.workspace.opportunity.employerProgression,
+    "not-submitted",
+  );
+});
+test("changed fixture context requests review without overwriting edited introduction text", () => {
+  const state = markReady(draftState());
+  state.referral.why = "Officer-authored wording";
+  state.referral.assessmentSignature = "previous fixture";
+  const loaded = loadWorkspace({
+    getItem: () =>
+      JSON.stringify({
+        version: 2,
+        workspace: state,
+        drafts: [],
+        recordFlags: [],
+      }),
+  });
+  assert.equal(loaded.message, "");
+  assert.equal(loaded.workspace.referral.why, "Officer-authored wording");
+  assert.equal(loaded.workspace.referral.needsReview, true);
+  assert.equal(loaded.workspace.ready, null);
 });

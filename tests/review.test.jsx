@@ -242,7 +242,7 @@ describe("Mantine review interactions", () => {
       screen.getByText("Opportunity being assessed").parentElement,
     ).toHaveTextContent("Wind Turbine Technician · Carrowmore Array");
     expect(
-      screen.getByRole("button", { name: "Prepare referral" }),
+      screen.getByRole("button", { name: "Prepare candidate introduction" }),
     ).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Suggest to Eimhin" }),
@@ -258,7 +258,9 @@ describe("Mantine review interactions", () => {
     );
     await user.click(screen.getByRole("button", { name: "Save assessment" }));
     await waitFor(() => expect(edit).toHaveFocus());
-    expect(screen.getByText("Referral on hold")).toBeVisible();
+    expect(
+      screen.getByText(/Your assessment:/).parentElement,
+    ).toHaveTextContent("Not currently suitable");
     await user.click(screen.getByRole("button", { name: "Edit response" }));
     await user.selectOptions(
       await screen.findByRole("combobox", {

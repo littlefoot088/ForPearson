@@ -1,7 +1,6 @@
 import {
   person,
   vacancy,
-  candidateSummary,
   claims,
   getSources,
   qualifications,
@@ -15,13 +14,25 @@ import {
 } from "./workflow.js";
 
 export const storageKey = `carrowmore:workspace:v1:${person.id}:${vacancy.id}`;
+// Internal field names remain stable at the workspace boundary; the document is format 2.
 export const referralFields = [
-  ["candidate", "Candidate and opportunity"],
-  ["why", "Why consider Eimhin"],
-  ["experience", "Relevant documented experience"],
-  ["qualifications", "Qualification readiness"],
-  ["questions", "Items to confirm"],
+  ["why", "Why we recommend Eimhin"],
+  ["pump", "Mechanical maintenance"],
+  ["electrical", "Electrical fault-finding"],
+  ["safety", "Safe-working procedures"],
+  ["qualifications", "Qualifications and readiness"],
+  ["recommendation", "Recommendation"],
 ];
+const legacyFields = [
+  "candidate",
+  "why",
+  "experience",
+  "qualifications",
+  "questions",
+];
+export function assessmentSignature() {
+  return JSON.stringify({ claims, qualifications, vacancy });
+}
 export function initialWorkspace() {
   return {
     opportunity: {
@@ -40,7 +51,11 @@ export function initialWorkspace() {
         title: "Clarify independent maintenance responsibilities",
         done: false,
       },
-      { id: "prepare-referral", title: "Prepare the referral", done: false },
+      {
+        id: "prepare-referral",
+        title: "Prepare candidate introduction",
+        done: false,
+      },
     ],
     notes: [],
     reports: {},
@@ -50,30 +65,33 @@ export function initialWorkspace() {
 }
 export function createReferral() {
   return {
-    candidate: `${person.name}\nCurrent role: ${person.role}\nOpportunity: ${vacancy.title} · ${vacancy.employer}`,
-    why: candidateSummary.text,
-    experience:
-      "Historical records document pump seal replacement, coupling alignment and pump rebuilding, alongside electrical control work and fault-finding. These provide a practical basis for discussing transferable maintenance experience. Separate records show safe-work planning and permit-issuing responsibility; they do not establish current authority. Independent responsibility still needs clarification.",
+    format: 2,
+    why: "Eimhin’s lighthouse work includes practical maintenance of mechanical and electrical equipment. Carrowmore Array welcomes experience from other kinds of plant, making his background worth exploring for the Wind Turbine Technician role.",
+    ...Object.fromEntries(
+      claims.map((claim) => [claim.id, claim.introductionSummary]),
+    ),
     qualifications:
-      "As of 31 December 2026: sea-survival module pass recorded, expiry 3 May 2028; complete certification needs checking. Fire-response attendance recorded, with a past expiry field; completion is not established. First-aid and working-at-height certificates and offshore medical fitness are not established by the selected records. No complete required qualification has been verified in this assessment. Supporting training includes a pumped-systems module pass (expiry 5 December 2028) and a generator-control module pass (expired 14 July 2022). These modules are not complete certificates. Safety certification is required before mobilisation. Medical fitness is essential; the vacancy does not specify its verification stage.",
-    questions:
-      "Confirm which maintenance Eimhin carried out independently and his current permit authority. Discuss comfort at height, in enclosed spaces and on boats in a swell. Check complete safety certificates, employer acceptance of height coverage and offshore medical clearance. Missing documentation does not establish that a qualification is absent.",
+      "Sea-survival training is recorded, but complete offshore safety certification and medical fitness still need verification. Safety certification is required before mobilisation; the vacancy does not specify when medical fitness must be verified.",
+    recommendation:
+      "We recommend considering Eimhin for an initial technical interview to explore how his maintenance experience could transfer to offshore wind operations and clarify his independent responsibilities.",
     includedReports: [],
+    editedFields: [],
     needsReview: false,
-    // Provenance is for the officer, separate from editable employer-facing prose.
+    assessmentSignature: assessmentSignature(),
+    // Internal provenance never renders as part of the employer-facing document.
     sourceIds: claims.flatMap((c) =>
       getSources(c)
         .filter((r) => r.date >= person.joined)
         .map((r) => r.id),
     ),
+    qualificationIds: qualifications.map((q) => q.id),
   };
 }
 export function readinessAllowed(state) {
   return Boolean(
-    state.referral &&
+    state.referral?.format === 2 &&
     !state.referral.needsReview &&
-    state.opportunity.interest === "interested" &&
-    state.opportunity.assessment !== "not-suitable",
+    state.opportunity.interest === "interested",
   );
 }
 const validDate = (value) =>
@@ -173,23 +191,20 @@ export function workspaceReducer(state, action) {
     case "referral-save": {
       if (!referralFields.every(([key]) => action.referral[key]?.trim()))
         return state;
-      const referral = { ...action.referral, needsReview: false };
+      const referral = {
+        ...action.referral,
+        format: 2,
+        needsReview: false,
+        assessmentSignature: assessmentSignature(),
+      };
       const changed =
         JSON.stringify({ ...state.referral, needsReview: false }) !==
         JSON.stringify(referral);
       return { ...state, referral, ready: changed ? null : state.ready };
     }
     case "ready":
-      if (
-        !readinessAllowed(state) ||
-        !action.rationale.trim() ||
-        !action.acknowledged
-      )
-        return state;
-      return {
-        ...state,
-        ready: { rationale: action.rationale.trim(), acknowledged: true },
-      };
+      if (!readinessAllowed(state)) return state;
+      return { ...state, ready: { stage: "awaiting-person-review" } };
     case "unready":
       return { ...state, ready: null };
     case "reset":
@@ -240,7 +255,11 @@ function validWorkspace(w) {
     ) &&
     (w.referral === null ||
       (w.referral &&
-        referralFields.every(([key]) => string(w.referral[key])) &&
+        (w.referral.format === 2
+          ? referralFields.every(([key]) => string(w.referral[key])) &&
+            Array.isArray(w.referral.editedFields) &&
+            w.referral.editedFields.every(string)
+          : legacyFields.every((key) => string(w.referral[key]))) &&
         Array.isArray(w.referral.sourceIds) &&
         w.referral.sourceIds.every(string) &&
         list(
@@ -252,10 +271,7 @@ function validWorkspace(w) {
             validDate(r.date),
         ))) &&
     (w.ready === null ||
-      (readinessAllowed(w) &&
-        string(w.ready.rationale) &&
-        w.ready.rationale.trim() &&
-        w.ready.acknowledged === true))
+      (readinessAllowed(w) && w.ready.stage === "awaiting-person-review"))
   );
 }
 export function loadWorkspace(storage) {
@@ -268,6 +284,28 @@ export function loadWorkspace(storage) {
     const raw = storage.getItem(storageKey);
     if (!raw) return { ...fallback, message: "" };
     const saved = JSON.parse(raw);
+    if (saved.version === 1 && saved.workspace) {
+      // A previous referral decision is not the person's approval of an introduction.
+      if (saved.workspace.referral) {
+        saved.workspace.referral.previousReadiness = saved.workspace.ready;
+        saved.workspace.referral.needsReview = true;
+      }
+      saved.workspace.ready = null;
+      saved.version = 2;
+    }
+    if (
+      saved.workspace?.referral?.format === 2 &&
+      saved.workspace.referral.assessmentSignature !== assessmentSignature()
+    ) {
+      saved.workspace.referral.needsReview = true;
+      saved.workspace.ready = null;
+    }
+    if (Array.isArray(saved.workspace?.tasks))
+      saved.workspace.tasks = saved.workspace.tasks.map((task) =>
+        task?.id === "prepare-referral" && task.title === "Prepare the referral"
+          ? { ...task, title: "Prepare candidate introduction" }
+          : task,
+      );
     const topicIds = [
       "career-preferences",
       "existing-certificates",
@@ -278,7 +316,7 @@ export function loadWorkspace(storage) {
       ...qualifications.map((q) => q.id),
     ];
     if (
-      saved.version !== 1 ||
+      saved.version !== 2 ||
       !validWorkspace(saved.workspace) ||
       !list(
         saved.drafts,
@@ -309,7 +347,7 @@ export function loadWorkspace(storage) {
 }
 export function persistWorkspace(storage, snapshot) {
   try {
-    storage.setItem(storageKey, JSON.stringify({ version: 1, ...snapshot }));
+    storage.setItem(storageKey, JSON.stringify({ version: 2, ...snapshot }));
     return true;
   } catch {
     return false;

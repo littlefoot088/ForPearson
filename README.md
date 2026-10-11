@@ -1,6 +1,6 @@
 # Carrowmore opportunity assessment
 
-React + JavaScript + Vite prototype for one redeployment officer assessing Eimhin Mac Neidhe against Carrowmore Array’s Wind Turbine Technician opportunity. The outcome is a defensible local referral draft, not an employer submission.
+React + JavaScript + Vite prototype for one redeployment officer assessing Eimhin Mac Neidhe against Carrowmore Array’s Wind Turbine Technician opportunity. The outcome is a concise, evidence-backed candidate introduction, not an employer submission.
 
 ## Run
 
@@ -22,8 +22,9 @@ The development URL is printed by Vite (normally http://127.0.0.1:5173). Keep th
 - Opportunity progress, editable/completable tasks and dated private conversation notes with optional follow-up reminders.
 - Qualification checks as linked tasks, independent of evidence outcomes. Completing a task does not verify a qualification.
 - Editable Discussion with Eimhin questions, deduplicated by topic. Separately recorded responsibilities attributed to Eimhin, not treated as independent proof.
-- An editable employer-facing referral, with explicit optional inclusion of reported responsibilities. Private notes and tasks never populate it automatically.
-- Separate referral readiness decision: saved and reviewed draft, interest, suitable officer assessment, rationale and explicit acknowledgement of unresolved requirements. Readiness is local and does not imply approval to share, submission or interview.
+- **Prepare candidate introduction** opens a document preview of approximately 200 words, with a short recommendation, three experience points, qualification readiness and an interview recommendation. Candidate CV: Not attached is informational only.
+- **Edit introduction → Review introduction → Save introduction draft** separates editing, previewing and explicit local saving. Wording edited by the user is identified internally. Optional reported responsibilities retain their self-reported label.
+- **Ready for Eimhin’s review** requires a saved, reviewed introduction and recorded interest only. It does not require a rationale or gap acknowledgement because it is preparation for the person's review, not a nomination decision. No approval or submission is simulated.
 
 ## State and evidence
 
@@ -31,7 +32,7 @@ The fictional assessment date is **31 December 2026**. Safety certification is r
 
 Workspace changes persist in versioned localStorage for `K0104` + `array-om`. Reset prototype workspace asks for confirmation and restores the initial interested scenario and tasks. Storage failure leaves the session usable with an explicit warning. No backend, authentication or cross-device synchronisation is provided. Only explicit saves retain editor changes; closing an unsaved editor discards them.
 
-`src/records.js` holds unchanged original fixtures; `src/data.js` holds curated interpretations and relationships. `src/workspace.js` owns task/note/report/referral state, guards and persistence; `src/workspace.jsx` presents the workspace and editors. `src/workflow.js` retains the underlying opportunity response and judgement model. Evidence inspection remains independent.
+`src/records.js` holds unchanged original fixtures; `src/data.js` holds curated interpretations and relationships. `src/workspace.js` owns task/note/report/referral state, review-readiness guards and persistence; `src/workspace.jsx` presents the workspace; `src/introduction.jsx` owns the document preview and edit/review interaction. `src/workflow.js` retains the underlying opportunity response and judgement model. Evidence inspection remains independent.
 
 Mantine owns typography, spacing, sizing, radii, responsive components and overlay behaviour. Contextual work uses drawers; short destructive confirmations use modals. Custom CSS is limited to branding, evidence formatting, status alignment, notices and sticky layout. See [design system](docs/design-system.md), [information architecture](docs/information-architecture.md) and [data decisions](docs/data-decisions.md).
 
@@ -39,6 +40,10 @@ Mantine owns typography, spacing, sizing, radii, responsive components and overl
 
 The initial interest is clearly labelled illustrative, not extracted from records or an invented conversation. Actual sharing requires Eimhin’s approval of the information. Sharing approval, submission, employer outcomes and interview preparation remain conceptual, as do directories and the wider redeployment platform.
 
-Tests cover fixture integrity/reachability, source highlights, disclosure, discussion editing, independent checks, task and note editing, storage recovery/reset, referral privacy, reported-information inclusion, readiness safeguards and focus transitions. jsdom component tests do not verify rendered layout. Browser verification results are reported with delivery; no physical-device or full screen-reader audit is claimed.
+Tests cover fixture integrity/reachability, source highlights, disclosure, discussion editing, independent checks, task and note editing, storage recovery/reset, introduction privacy, reported-information inclusion, review-readiness guards and focus transitions. jsdom component tests do not verify rendered layout. Browser verification results are reported with delivery; no physical-device or full screen-reader audit is claimed.
 
-Verification for this iteration: 37 tests pass (19 fixture/state tests and 18 component tests), and the production build passes. Chrome checks covered the two-column desktop view, sticky workspace, local referral save, Escape/return focus, stacked controls at 250% zoom and full-width referral drawer. Zoom was restored to 100%. Persistence/remount, task/note editing, reset, reported-account inclusion and readiness combinations have automated coverage. A physical mobile device and full screen-reader audit were not tested.
+The candidate introduction uses the same attributed claim relationships as the internal assessment, excluding the two early uncertain records. Full training details and audit metadata remain internal. The document is curated from fixtures, with no live AI service.
+
+Storage envelopes now use version 2 under the existing pair-specific key. Version 1 drafts are retained and require an explicit, confirmed creation step for the shorter format; previous wording remains an internal reference. Old referral-readiness decisions never become person approval. Reset to assessment also requires confirmation and preserves previous wording. Changes to assessment context flag a draft for review without overwriting edits.
+
+This iteration passes 41 tests (21 fixture/state tests and 20 component tests), plus the production build. Chrome checks covered the document preview, explicit legacy conversion, edit/cancel transitions, confirmation return focus, Escape and return focus to the workspace trigger. At 250% zoom, the drawer becomes full-width and its text and controls remain within the viewport. This zoom-based narrow-layout check is not a physical mobile-device test; no full screen-reader audit is claimed. Saving, persistence and readiness combinations were verified by automated tests.

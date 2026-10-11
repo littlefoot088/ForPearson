@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Accordion,
   ActionIcon,
   Badge,
   Button,
@@ -17,11 +16,11 @@ import {
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { claims, dateLabel, qualifications } from "./data";
 import { officerAssessments } from "./workflow";
-import { createReferral, readinessAllowed, referralFields } from "./workspace";
+import { CandidateIntroduction, IntroductionReview } from "./introduction";
 
 export const workspaceTitles = {
-  referral: "Prepare referral",
-  ready: "Referral readiness decision",
+  referral: "Prepare candidate introduction",
+  ready: "Eimhin’s review",
   task: "Next step",
   notes: "Conversation notes",
   report: "Eimhin’s account",
@@ -38,9 +37,7 @@ export function Workspace({
     (a, b) =>
       b.date.localeCompare(a.date) || (b.recordedAt ?? 0) - (a.recordedAt ?? 0),
   )[0];
-  const held =
-    state.opportunity.assessment === "not-suitable" ||
-    state.opportunity.interest !== "interested";
+  const held = state.opportunity.interest !== "interested";
   const tasks = [...state.tasks].sort(
     (a, b) => Number(a.done) - Number(b.done),
   );
@@ -61,35 +58,37 @@ export function Workspace({
           </Title>
           <Text fw={600}>
             {held
-              ? "Referral on hold"
+              ? "Introduction on hold"
               : state.ready
-                ? "Ready for referral"
-                : "Assessing referral readiness"}
+                ? "Ready for Eimhin’s review"
+                : "Preparing candidate introduction"}
           </Text>
           <Text size="sm" c="dimmed">
             {held
               ? "Review the assessment and Eimhin’s response before progressing."
               : state.ready
-                ? "Internal decision recorded. Nothing has been submitted."
+                ? "Prepared for Eimhin to check. Not approved or submitted."
                 : "Review the evidence and prepare a recommendation for Carrowmore Array."}
           </Text>
           <Button onClick={() => onOpen("referral")}>
-            {state.referral ? "Review referral draft" : "Prepare referral"}
+            {state.referral
+              ? "Review candidate introduction"
+              : "Prepare candidate introduction"}
           </Button>
-          {state.referral && (
+          {state.referral?.format === 2 && (
             <Button
               variant="subtle"
               size="compact-sm"
               onClick={() => onOpen("ready")}
             >
               {state.ready
-                ? "Review readiness decision"
-                : "Mark ready for referral"}
+                ? "Review preparation status"
+                : "Mark ready for Eimhin’s review"}
             </Button>
           )}
-          {state.referral?.needsReview && (
+          {state.referral?.format === 2 && state.referral.needsReview && (
             <Text size="sm" c="clarification.8">
-              Assessment information changed. Review and save the referral
+              Assessment information changed. Review and save the introduction
               again.
             </Text>
           )}
@@ -239,14 +238,20 @@ export function WorkspacePanel({
   state,
   dispatch,
   onClose,
-  onInspect,
+  storageFailed,
 }) {
   if (mode === "referral")
     return (
-      <ReferralEditor state={state} dispatch={dispatch} onInspect={onInspect} />
+      <CandidateIntroduction
+        state={state}
+        dispatch={dispatch}
+        storageFailed={storageFailed}
+      />
     );
   if (mode === "ready")
-    return <ReadyEditor state={state} dispatch={dispatch} onClose={onClose} />;
+    return (
+      <IntroductionReview state={state} dispatch={dispatch} onClose={onClose} />
+    );
   if (mode === "notes")
     return (
       <NotesEditor
@@ -475,261 +480,11 @@ function ReportEditor({ id, report, onSave }) {
       />
       <Text size="sm" c="dimmed">
         Saved separately from private notes. You can choose whether to include
-        this account in the referral.
+        this account in the candidate introduction.
       </Text>
       <Button type="submit" disabled={!value.date || !value.text.trim()}>
         Save Eimhin’s account
       </Button>
-    </Stack>
-  );
-}
-function ReferralEditor({ state, dispatch, onInspect }) {
-  const [draft, setDraft] = useState(() => state.referral ?? createReferral());
-  const [saved, setSaved] = useState(false);
-  const reports = Object.values(state.reports);
-  const dirty =
-    JSON.stringify({ ...draft, needsReview: false }) !==
-    JSON.stringify(state.referral);
-  function includeReport(report, include) {
-    setSaved(false);
-    setDraft({
-      ...draft,
-      includedReports: include
-        ? [
-            ...draft.includedReports.filter((r) => r.id !== report.id),
-            { ...report },
-          ]
-        : draft.includedReports.filter((r) => r.id !== report.id),
-    });
-  }
-  return (
-    <Stack
-      component="form"
-      gap="md"
-      onSubmit={(e) => {
-        e.preventDefault();
-        dispatch({ type: "referral-save", referral: draft });
-        setDraft({ ...draft, needsReview: false });
-        setSaved(true);
-      }}
-    >
-      <Text size="sm" c="dimmed" tabIndex={-1} data-autofocus>
-        Editable recommendation for Carrowmore Array. Saved on this browser;
-        nothing is sent. Eimhin must approve the information before external
-        sharing.
-      </Text>
-      {state.referral?.needsReview && (
-        <Paper p="sm" bg="clarification.0">
-          <Text size="sm">
-            Assessment information changed. Review the wording and any included
-            account, then save again. Your edits have been retained.
-          </Text>
-        </Paper>
-      )}
-      {referralFields.map(([key, label]) => (
-        <Textarea
-          key={key}
-          label={label}
-          required
-          autosize
-          minRows={2}
-          maxRows={10}
-          maxLength={6000}
-          value={draft[key]}
-          onChange={(e) => {
-            setDraft({ ...draft, [key]: e.currentTarget.value });
-            setSaved(false);
-          }}
-        />
-      ))}
-      {reports.length > 0 && (
-        <Stack gap="sm">
-          <Title order={3} size="h5">
-            Eimhin-reported responsibilities
-          </Title>
-          <Text size="sm" c="dimmed">
-            Optional, self-reported information. Select explicitly to include
-            it.
-          </Text>
-          {reports.map((report) => {
-            const included = draft.includedReports.find(
-              (r) => r.id === report.id,
-            );
-            return (
-              <Paper key={report.id} withBorder p="sm">
-                <Stack gap="xs">
-                  <Checkbox
-                    checked={Boolean(included)}
-                    label={`Include Eimhin’s account: ${claims.find((c) => c.id === report.id).title}`}
-                    onChange={(e) =>
-                      includeReport(report, e.currentTarget.checked)
-                    }
-                  />
-                  <Text size="sm">
-                    Reported by Eimhin on {dateLabel(report.date)}; recorded by
-                    you.
-                  </Text>
-                  <Text size="sm" className="source-quote">
-                    {report.text}
-                  </Text>
-                  {included && (
-                    <>
-                      <Textarea
-                        label={`Referral wording: ${claims.find((c) => c.id === report.id).title}`}
-                        autosize
-                        minRows={2}
-                        required
-                        value={included.text}
-                        onChange={(e) => {
-                          setDraft({
-                            ...draft,
-                            includedReports: draft.includedReports.map((r) =>
-                              r.id === report.id
-                                ? { ...r, text: e.currentTarget.value }
-                                : r,
-                            ),
-                          });
-                          setSaved(false);
-                        }}
-                      />
-                      <Button
-                        variant="subtle"
-                        size="compact-sm"
-                        onClick={() => includeReport(report, true)}
-                      >
-                        Use latest reported account
-                      </Button>
-                      <Text size="xs" c="dimmed">
-                        Included as self-reported, dated{" "}
-                        {dateLabel(included.date)}. This is not verified
-                        experience.
-                      </Text>
-                    </>
-                  )}
-                </Stack>
-              </Paper>
-            );
-          })}
-        </Stack>
-      )}
-      <Accordion>
-        <Accordion.Item value="sources">
-          <Accordion.Control>
-            Sources behind the draft · for your review
-          </Accordion.Control>
-          <Accordion.Panel>
-            <Stack gap="sm">
-              <Text size="sm">
-                Historical claims use attributed records. Two early records
-                remain accessible with attribution caveats and are excluded from
-                the recommendation. Source links and private working notes are
-                not part of the employer-facing draft.
-              </Text>
-              {claims.map((claim) => (
-                <Button
-                  variant="subtle"
-                  key={claim.id}
-                  onClick={() => onInspect(claim)}
-                >
-                  {claim.title} · inspect records
-                </Button>
-              ))}
-              <Text size="xs" c="dimmed">
-                Qualification wording reflects the four training records and the
-                selected requirements; none establishes a complete verified
-                offshore qualification.
-              </Text>
-            </Stack>
-          </Accordion.Panel>
-        </Accordion.Item>
-      </Accordion>
-      {saved && (
-        <Text size="sm" role="status">
-          Referral draft saved locally. Readiness has not been granted by
-          saving.
-        </Text>
-      )}
-      <Text size="xs" c="dimmed">
-        {dirty
-          ? "Unsaved edits. Save before closing to retain them."
-          : "Saved draft. Readiness is a separate decision."}
-      </Text>
-      <Button
-        type="submit"
-        disabled={
-          !referralFields.every(([key]) => draft[key].trim()) ||
-          draft.includedReports.some((r) => !r.text.trim())
-        }
-      >
-        Save referral draft
-      </Button>
-    </Stack>
-  );
-}
-function ReadyEditor({ state, dispatch, onClose }) {
-  const [rationale, setRationale] = useState(state.ready?.rationale ?? "");
-  const [ack, setAck] = useState(false);
-  return (
-    <Stack
-      component="form"
-      gap="md"
-      onSubmit={(e) => {
-        e.preventDefault();
-        dispatch({ type: "ready", rationale, acknowledged: ack });
-        onClose();
-      }}
-    >
-      <Text>
-        This records an internal recommendation for employer consideration.
-        Nothing is submitted. Eimhin’s approval of the information is still
-        required before sharing.
-      </Text>
-      <Paper bg="clarification.0" p="md">
-        <Text size="sm">
-          Outstanding: independent responsibilities, current permit authority,
-          offshore working conditions, complete safety certification and medical
-          clearance. Safety coverage is required before mobilisation; the
-          medical verification stage is unspecified.
-        </Text>
-      </Paper>
-      {!readinessAllowed(state) && (
-        <Text role="alert" c="clarification.8">
-          A reviewed, saved draft, recorded interest and an assessment other
-          than “Not currently suitable” are required.
-        </Text>
-      )}
-      <Textarea
-        data-autofocus
-        label="Rationale for referral readiness"
-        required
-        autosize
-        minRows={3}
-        maxLength={3000}
-        value={rationale}
-        onChange={(e) => setRationale(e.currentTarget.value)}
-      />
-      <Checkbox
-        label="I acknowledge the unresolved requirements and have considered them in this recommendation."
-        checked={ack}
-        onChange={(e) => setAck(e.currentTarget.checked)}
-      />
-      <Button
-        type="submit"
-        disabled={!readinessAllowed(state) || !rationale.trim() || !ack}
-      >
-        Mark ready for referral
-      </Button>
-      {state.ready && (
-        <Button
-          variant="default"
-          onClick={() => {
-            dispatch({ type: "unready" });
-            onClose();
-          }}
-        >
-          Return to assessment
-        </Button>
-      )}
     </Stack>
   );
 }

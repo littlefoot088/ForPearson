@@ -32,8 +32,14 @@ From Mantine’s md breakpoint, the right-hand review workspace stays visible wi
 
 Expanded experience uses a neutral evidence panel (recorded activity, role relevance, selected-record count with attribution caveat, source inspection) and a separate amber clarification panel with its own discussion action. Date range, latest selected activity and involvement are disclosed through Record coverage and involvement. Related training stays secondary, with compact module details and optional follow-up actions behind a disclosure. Expiry context stays with the module. Source fixtures and qualification semantics are unchanged.
 
-## Referral workspace hierarchy
+## Candidate introduction
 
-One primary action prepares or reviews the referral. Readiness is a secondary decision after saving. Keep the current stage distinct from interest and from employer progression. Use compact task rows with labelled edit/remove icons; completion does not use qualification-success styling. Recent conversation is a dated preview with an Add note action, not a permanent textarea. Full editing uses drawers.
+Prepare candidate introduction opens a professional document preview, not a form. Use one white Paper for the whole document, with compact candidate/opportunity context, heading hierarchy and short paragraphs; do not put cards around individual sections. The generated introduction is about 200 words. Existing Mantine typography and spacing apply.
 
-Referral editing uses Mantine labelled textareas and explicit save actions. Source access is disclosed separately from employer-facing content. Returning from source inspection preserves unsaved draft edits and focus. Reported responsibilities require explicit inclusion and visible self-reported provenance. Private notes never appear in the referral automatically.
+Editing is explicit through Edit introduction. Basic labelled textareas appear only in edit mode; Review introduction returns to the complete preview, and Save introduction draft is a separate explicit action. Candidate CV: Not attached is informational, with no upload or required field. Internal status and authorship messages sit outside the employer-facing document.
+
+Only Draft and Ready for Eimhin’s review are actionable states. The latter requires a saved introduction and recorded interest; it is not approval, nomination or submission. Do not show a fake send button. Reported responsibilities are opt-in and retain visible self-reported provenance.
+
+Reset to assessment uses a short confirmation modal because it replaces working text. Restore focus to the document after replacement, or the trigger after cancellation. Retain previous wording behind an internal disclosure, outside the employer-facing preview. Source records remain accessible through the unchanged main assessment.
+
+The workspace retains its task and conversation layout. Only introduction-related controls/status labels change in this iteration. Task completion does not use qualification-success styling. Recent conversation remains a dated preview, with editing in a drawer.

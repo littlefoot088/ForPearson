@@ -130,6 +130,8 @@ export const requirements = [
 export const claims = [
   {
     id: "pump",
+    introductionSummary:
+      "Pump rebuilding, seal replacement and coupling alignment.",
     number: "01",
     title: "Pump maintenance & repair",
     summary:
@@ -153,6 +155,8 @@ export const claims = [
   },
   {
     id: "electrical",
+    introductionSummary:
+      "Control-system repairs, earth-fault tracing and charger fault correction.",
     number: "02",
     title: "Electrical fault-finding & control",
     summary:
@@ -175,6 +179,8 @@ export const claims = [
   },
   {
     id: "safety",
+    introductionSummary:
+      "Work planning and permit issuing; current authority needs confirmation.",
     number: "03",
     title: "Safe-work planning & permits",
     summary:

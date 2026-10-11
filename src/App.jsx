@@ -70,7 +70,6 @@ export default function App() {
   const opportunity = workspace.opportunity;
   const [workspacePanel, setWorkspacePanel] = useState(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
-  const [returnToWorkspace, setReturnToWorkspace] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [storageFailed, setStorageFailed] = useState(false);
   const [workflowDialog, setWorkflowDialog] = useState(null);
@@ -102,13 +101,8 @@ export default function App() {
   }
   function closeEvidence() {
     setDrawer(null);
-    if (returnToWorkspace) {
-      setWorkspaceOpen(true);
-      setReturnToWorkspace(false);
-    }
   }
   const focusOrigin = useRef(null);
-  const referralSourceFocus = useRef(null);
   function rememberFocus() {
     if (
       !drawer &&
@@ -568,13 +562,6 @@ export default function App() {
         onClose={() => setWorkspaceOpen(false)}
         position="right"
         size={narrow ? "100%" : "lg"}
-        keepMounted={workspacePanel?.mode === "referral"}
-        onEnterTransitionEnd={() => {
-          if (referralSourceFocus.current) {
-            referralSourceFocus.current.focus();
-            referralSourceFocus.current = null;
-          }
-        }}
         returnFocus={false}
         onExitTransitionEnd={restoreFocus}
         title={workspaceTitles[workspacePanel?.mode]}
@@ -583,21 +570,12 @@ export default function App() {
         {workspacePanel && (
           <WorkspacePanel
             key={workspacePanel.session}
+            storageFailed={storageFailed}
             mode={workspacePanel.mode}
             item={workspacePanel.item}
             state={workspace}
             dispatch={dispatchWorkspace}
             onClose={() => setWorkspaceOpen(false)}
-            onInspect={(claim) => {
-              referralSourceFocus.current = document.activeElement;
-              setWorkspaceOpen(false);
-              setReturnToWorkspace(true);
-              inspect(
-                claim,
-                "claim",
-                requirements.find((r) => r.claimIds?.includes(claim.id)),
-              );
-            }}
           />
         )}
       </Drawer>
