@@ -4,7 +4,7 @@
 
 Eimhin Mac Neidhe, keeper code **K0104**, is reviewed against `employers/carrowmore-array-om-technician.md`. The brief asks for 40 potential interview candidates, not 40 available openings. The vacancy requires hands-on maintenance, offshore safety coverage, medical fitness and comfort in the offshore working environment. It values permit experience; it does not require prior wind experience or the separate HV Authorised Person award.
 
-The selected records demonstrate repeated repairs, older and recent electrical work, and planning/permit responsibility. No observation or supervision label has been invented where the records do not establish it. “Hands-on work recorded” does not claim independent performance.
+The selected records demonstrate repeated repairs, older and recent electrical work, and planning/permit responsibility. No observation or supervision label has been invented where the records do not establish it. Repair descriptions support practical involvement; the entries do not describe assistance or supervision. A `verified_by` value of `self` is not evidence of working alone.
 
 ## Identity and date decisions
 
@@ -94,3 +94,5 @@ The people list is a separate illustrative fixture in `src/people.js`, not evide
 The interaction simplification changes no evidence fixtures, storage schema or identifiers. Both early records remain in counts with attribution caveats. Module checks, questions, source flags and reported accounts remain independent; moving their controls does not change their semantics.
 
 Content conventions: use plain statements about what the records show, without headings that repeat the open requirement. “No certificate was found in the selected records” does not mean the person lacks one. Fire training shows a past listed expiry and attendance; whether attendance satisfies the requirement is unknown, not an assumed failed or incomplete course. Keep the fictional review date internal; display actual expiry dates. Assessment actions use bordered Mantine buttons rather than unbounded text resembling headings. Original source wording remains unchanged.
+
+Source recheck: the supplied ZIP confirms that both early 2009 entries contain K0104 and MAC NEIDHE E. The observed conflict is the personnel joining date, not a different name or person code. The UI states this precise discrepancy rather than suggesting the record belongs to another person. Both entries remain in the selected count, with the existing conservative exclusion from the introduction unchanged. No explanation for the date conflict is inferred.

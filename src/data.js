@@ -140,7 +140,7 @@ export const claims = [
     requirementId: "maintenance",
     relevance:
       "This work is relevant to the role’s mechanical maintenance duties.",
-    involvement: "Hands-on work recorded",
+    involvement: "Repair work described",
     limitation:
       "Confirm which repairs Eimhin carried out independently and whether this was a regular responsibility.",
     question:
@@ -165,7 +165,7 @@ export const claims = [
     requirementId: "maintenance",
     relevance:
       "This work is relevant to the role’s electrical maintenance duties.",
-    involvement: "Hands-on work recorded",
+    involvement: "Repair work described",
     limitation:
       "Confirm Eimhin’s regular fault-finding duties and independent responsibilities.",
     question:

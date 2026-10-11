@@ -75,7 +75,9 @@ export function RequirementRow({ requirement, children }) {
         </span>
       </Accordion.Control>
       <Accordion.Panel aria-labelledby={"requirement-" + requirement.id}>
-        <Stack gap="md">{children}</Stack>
+        <Stack gap="md" className="assessment-detail">
+          {children}
+        </Stack>
       </Accordion.Panel>
     </Accordion.Item>
   );
@@ -138,13 +140,16 @@ export function ExpandedAssessment({
               </Text>
               {records.some((r) => r.date < person.joined) && (
                 <Text size="sm" c="clarification.8">
-                  One of these records may not belong to Eimhin.
+                  The {dateLabel(records[0].date)} entry uses Eimhin’s name and
+                  code, but predates his recorded joining date (
+                  {dateLabel(person.joined)}). The date discrepancy is
+                  unresolved.
                 </Text>
               )}
               <Text size="sm" c="dimmed">
                 {claim.id === "safety"
                   ? "The records do not show whether Eimhin’s permit authority is still current."
-                  : "The records do not show which work Eimhin carried out independently."}
+                  : "The entries describe the work, but not whether anyone assisted or supervised."}
               </Text>
               <Button
                 variant="light"

@@ -42,7 +42,7 @@ export function EvidenceContent({
           <Text size="sm">
             {records.length} selected supporting records
             {records.some((r) => r.date < person.joined) &&
-              " · 1 may not belong to Eimhin"}
+              " · 1 predates the recorded joining date"}
           </Text>
           <Text fw={600}>
             {dateLabel(source.date)} · {source.station} Station
@@ -69,8 +69,9 @@ export function EvidenceContent({
           </div>
           {early && (
             <Text size="sm" c="clarification.7">
-              <strong>Needs checking:</strong> This record predates Eimhin’s
-              documented joining date. Confirm it belongs to him.
+              <strong>Needs checking:</strong> This entry names MAC NEIDHE E and
+              uses code K0104. It predates the recorded joining date of{" "}
+              {dateLabel(person.joined)}; the date discrepancy is unresolved.
             </Text>
           )}
           <Group justify="space-between">
@@ -156,7 +157,7 @@ export function EvidenceContent({
               Identity linked using personnel postings and LearnHub’s
               keeper-code / payroll-reference pair.{" "}
               {early
-                ? `This entry carries ${person.id}; attribution needs checking because it predates the personnel joining date of ${dateLabel(person.joined)}.`
+                ? `This entry carries ${person.id}; its date conflicts with the personnel joining date of ${dateLabel(person.joined)}.`
                 : "Attribution is curated, not externally verified."}
             </Text>
           </>

@@ -97,16 +97,14 @@ describe("Mantine review interactions", () => {
       expect(within(dialog).getByText("Record 2 of 5")).toBeVisible(),
     );
     expect(
-      within(dialog).queryByText(/Confirm it belongs to him/),
+      within(dialog).queryByText(/date discrepancy is unresolved/),
     ).not.toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", { name: "Previous evidence record" }),
     );
     expect(within(dialog).getByText("Needs checking:")).toBeVisible();
     expect(
-      within(dialog).getByText(
-        /5 selected supporting records.*1 may not belong/,
-      ),
+      within(dialog).getByText(/5 selected supporting records.*1 predates/),
     ).toBeVisible();
     expect(within(dialog).getByText("Source details")).toBeVisible();
     await user.click(
@@ -115,7 +113,7 @@ describe("Mantine review interactions", () => {
     expect(
       within(dialog).getByRole("button", { name: "Record flagged · undo" }),
     ).toBeVisible();
-    expect(within(dialog).getByText(/Confirm it belongs to him/)).toBeVisible();
+    expect(within(dialog).getByText(/date discrepancy is unresolved/)).toBeVisible();
     await user.click(
       within(dialog).getByRole("button", { name: "Record flagged · undo" }),
     );
@@ -353,7 +351,7 @@ it("shows experience facts directly and keeps supporting-module actions in the i
   const panel = await screen.findByRole("region", { name: maintenance });
   expect(within(panel).getByText(/5 supporting records/)).toBeVisible();
   expect(
-    within(panel).getByText(/One of these records may not belong/),
+    within(panel).getByText(/entry uses Eimhin’s name and code/),
   ).toBeVisible();
   expect(
     within(panel).queryByRole("button", {

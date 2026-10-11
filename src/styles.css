@@ -82,3 +82,16 @@
   border-bottom: 1px solid var(--mantine-color-gray-3);
   margin-bottom: var(--mantine-spacing-md);
 }
+
+/* Expanded content sits beneath, rather than level with, its row heading. */
+.assessment-detail {
+  margin-inline-start: var(--mantine-spacing-md);
+  padding-inline-start: var(--mantine-spacing-md);
+  border-inline-start: 2px solid var(--mantine-color-gray-3);
+}
+@media (max-width: $mantine-breakpoint-sm) {
+  .assessment-detail {
+    margin-inline-start: 0;
+    padding-inline-start: var(--mantine-spacing-sm);
+  }
+}
