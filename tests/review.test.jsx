@@ -628,3 +628,40 @@ it("saves editable personal notes independently of the assessment and Eimhin’s
   expect(input).toHaveValue("");
   expect(save).toBeDisabled();
 });
+
+it("separates experience clarification from source coverage and optional module follow-up", async () => {
+  const user = setup();
+  await user.click(requirement(maintenance));
+  const panel = await screen.findByRole("region", { name: maintenance });
+  expect(
+    within(panel).getByRole("heading", { name: "Experience recorded" }),
+  ).toBeVisible();
+  expect(
+    within(panel).getByRole("heading", { name: "What to clarify with Eimhin" }),
+  ).toBeVisible();
+  const coverage = within(panel).getByRole("button", {
+    name: "Record coverage and involvement",
+  });
+  expect(coverage).toHaveAttribute("aria-expanded", "false");
+  await user.click(coverage);
+  await waitFor(() => expect(within(panel).getByText("Selected date range")).toBeVisible());
+  await user.click(
+    within(panel).getByRole("button", { name: "Related training (1)" }),
+  );
+  const followup = await within(panel).findByRole("button", {
+    name: "Follow up this module",
+  });
+  expect(followup).toHaveAttribute("aria-expanded", "false");
+  await user.click(followup);
+  await user.click(
+    await within(panel).findByRole("button", {
+      name: "Add qualification check",
+    }),
+  );
+  expect(
+    within(panel).getByRole("button", { name: "Qualification check added" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
+    "Not yet discussed",
+  );
+});

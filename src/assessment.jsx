@@ -1,5 +1,14 @@
 import React from "react";
-import { Accordion, Button, Group, Stack, Text, Title } from "@mantine/core";
+import {
+  Accordion,
+  Button,
+  Group,
+  Stack,
+  Text,
+  Title,
+  Paper,
+  SimpleGrid,
+} from "@mantine/core";
 import {
   FileText,
   Files,
@@ -78,43 +87,85 @@ export function RequirementRow({ requirement, children }) {
 function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
   const records = getSources(claim);
   return (
-    <Stack component="section" aria-label={claim.title}>
-      <Stack gap="sm">
-        <Text size="sm" c="dimmed">
-          {claim.involvement}
-        </Text>
-        <Text>
-          <strong>What we found:</strong> {claim.summary}
-        </Text>
-        <Text size="sm" c="dimmed">
-          {records.length} selected records
-          {records.some((r) => r.date < person.joined) &&
-            " · 1 needs attribution checking"}
-        </Text>
-        <Text size="sm" c="dimmed">
-          {dateLabel(records[0].date)} – {dateLabel(records.at(-1).date)} ·
-          Latest selected activity: {dateLabel(records.at(-1).date)}
-        </Text>
-        <Text size="sm">
-          <strong>Needs checking:</strong> {claim.limitation}
-        </Text>
-        <Group gap="xs">
-          <Button
-            variant="light"
-            rightSection={<Icon icon={ArrowUpRight} />}
-            onClick={() => onInspect(claim)}
-          >
-            View supporting records ({records.length})
-          </Button>
-          <Button
-            variant="subtle"
-            leftSection={<Icon icon={Pencil} />}
-            onClick={() => onClarify(claim)}
-          >
-            {drafted ? "Edit discussion question" : "Add to discussion"}
-          </Button>
-        </Group>
-      </Stack>
+    <Stack component="section" gap="md" aria-label={claim.title}>
+      <Paper p="md" radius="sm" bg="gray.0">
+        <Stack gap="sm">
+          <Title order={4} size="h5">
+            Experience recorded
+          </Title>
+          <Text>{claim.summary}</Text>
+          <Text size="sm">
+            <Text component="span" fw={600}>
+              Relevance to this role:{" "}
+            </Text>
+            {claim.relevance}
+          </Text>
+          <Text size="sm" c="dimmed">
+            {records.length} selected records
+            {records.some((r) => r.date < person.joined) &&
+              " · 1 needs attribution checking"}
+          </Text>
+          <Group>
+            <Button
+              variant="light"
+              leftSection={<Icon icon={FileText} />}
+              onClick={() => onInspect(claim)}
+            >
+              View supporting records ({records.length})
+            </Button>
+          </Group>
+          <Accordion variant="default" order={5}>
+            <Accordion.Item value="coverage">
+              <Accordion.Control>
+                <Text component="span" size="sm">
+                  Record coverage and involvement
+                </Text>
+              </Accordion.Control>
+              <Accordion.Panel>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                  <div>
+                    <Text size="xs" c="dimmed">
+                      Selected date range
+                    </Text>
+                    <Text size="sm">
+                      {dateLabel(records[0].date)} –{" "}
+                      {dateLabel(records.at(-1).date)}
+                    </Text>
+                  </div>
+                  <div>
+                    <Text size="xs" c="dimmed">
+                      Latest selected activity
+                    </Text>
+                    <Text size="sm">{dateLabel(records.at(-1).date)}</Text>
+                  </div>
+                </SimpleGrid>
+                <Text size="sm" mt="sm">
+                  <strong>Involvement: </strong>
+                  {claim.involvement}
+                </Text>
+              </Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
+        </Stack>
+      </Paper>
+      <Paper p="md" radius="sm" bg="clarification.0">
+        <Stack gap="xs">
+          <Title order={4} size="h5">
+            What to clarify with Eimhin
+          </Title>
+          <Text size="sm">{claim.limitation}</Text>
+          <Group>
+            <Button
+              variant="subtle"
+              size="compact-sm"
+              leftSection={<Icon icon={Pencil} />}
+              onClick={() => onClarify(claim)}
+            >
+              {drafted ? "Edit discussion question" : "Add to discussion"}
+            </Button>
+          </Group>
+        </Stack>
+      </Paper>
     </Stack>
   );
 }
@@ -128,6 +179,78 @@ function QualificationDetail({
   drafted,
   supporting = false,
 }) {
+  if (supporting)
+    return (
+      <Stack gap="sm" component="section" aria-label={q.title}>
+        <Text fw={600} size="sm">
+          {q.title}
+        </Text>
+        <Text size="sm">{q.status}</Text>
+        <Text size="sm" c="dimmed">
+          {q.detail}
+        </Text>
+        <Text size="xs" c="dimmed">
+          Expiry interpreted as of {dateLabel(reviewDate)}.
+        </Text>
+        <Group>
+          <Button
+            variant="subtle"
+            size="compact-sm"
+            leftSection={<Icon icon={FileText} />}
+            onClick={() => onInspect(q)}
+          >
+            View training record
+          </Button>
+        </Group>
+        <Accordion variant="default" order={5}>
+          <Accordion.Item value="followup">
+            <Accordion.Control>
+              <Text component="span" size="sm">
+                Follow up this module
+                {flagged
+                  ? " · check added"
+                  : drafted
+                    ? " · question saved"
+                    : ""}
+              </Text>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="xs">
+                <Text size="sm" c="dimmed">
+                  Optional actions for this supporting module.
+                </Text>
+                <Group gap="xs">
+                  <Button
+                    variant="subtle"
+                    size="compact-sm"
+                    onClick={() => onClarify(q)}
+                  >
+                    {drafted ? "Edit discussion question" : "Add to discussion"}
+                  </Button>
+                  <Button
+                    variant="subtle"
+                    size="compact-sm"
+                    aria-pressed={flagged}
+                    onClick={() => onFlag(q)}
+                  >
+                    {flagged
+                      ? "Qualification check added"
+                      : "Add qualification check"}
+                  </Button>
+                </Group>
+                {flagged && (
+                  <Text size="xs" c="dimmed">
+                    Check with Eimhin, Authority training records or the
+                    provider. Select again to undo; this does not verify the
+                    module.
+                  </Text>
+                )}
+              </Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
+      </Stack>
+    );
   return (
     <Stack component="section" gap="sm" aria-label={q.title}>
       {supporting && <Title order={5}>{q.title}</Title>}
@@ -218,7 +341,9 @@ export function ExpandedAssessment({
   ));
   return (
     <>
-      {requirement.detail && <Text c="dimmed">{requirement.detail}</Text>}
+      {requirement.detail && linkedClaims.length === 0 && (
+        <Text c="dimmed">{requirement.detail}</Text>
+      )}
       {linkedClaims.map((claim) => (
         <ExperienceDetail
           key={claim.id}
@@ -229,10 +354,12 @@ export function ExpandedAssessment({
         />
       ))}
       {requirement.type === "experience" && linkedQualifications.length > 0 ? (
-        <Accordion variant="contained" order={4}>
+        <Accordion variant="default" order={4}>
           <Accordion.Item value="training">
             <Accordion.Control>
-              Related training ({linkedQualifications.length})
+              <Text component="span" size="sm" fw={600}>
+                Related training ({linkedQualifications.length})
+              </Text>
             </Accordion.Control>
             <Accordion.Panel>
               <Stack gap="lg">{trainingDetails}</Stack>
@@ -242,7 +369,7 @@ export function ExpandedAssessment({
       ) : (
         trainingDetails
       )}
-      {linkedQualifications.length > 0 && (
+      {linkedQualifications.length > 0 && requirement.type !== "experience" && (
         <Text size="sm" c="dimmed">
           Expiry interpretation as of {dateLabel(reviewDate)}.
         </Text>
