@@ -112,6 +112,9 @@ describe("Mantine review interactions", () => {
       within(dialog).getByText(/18 matching logbook entries/),
     ).toBeVisible();
     expect(within(dialog).getByText("Source details")).toBeVisible();
+    expect(within(dialog).getByText("Latest manager review")).toBeVisible();
+    expect(within(dialog).getByText(/AP000013/)).toBeVisible();
+    expect(within(dialog).queryByText(/AP000004|AP000005|AP000006|AP000007/)).not.toBeInTheDocument();
     await user.click(
       within(dialog).getByRole("button", { name: "Flag record for review" }),
     );
@@ -174,7 +177,7 @@ describe("Mantine review interactions", () => {
     ).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Remove" }));
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
-      "Not yet discussed",
+      "Interested",
     );
   });
 
@@ -189,12 +192,12 @@ describe("Mantine review interactions", () => {
       screen.queryByRole("button", { name: /qualification check/i }),
     ).not.toBeInTheDocument();
   });
-  it("keeps missing interest unknown and keeps current and prospective roles explicit", async () => {
+  it("shows interest from the agreed conversation scenario and keeps current and prospective roles explicit", async () => {
     setup();
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
-      "Not yet discussed",
+      "Interested",
     );
-    expect(screen.getByText(/No response recorded/)).toBeVisible();
+    expect(screen.getByText(/Eimhin confirmed his interest/)).toBeVisible();
     expect(screen.getByText(/Current role:/).parentElement).toHaveTextContent(
       "Lighthouse keeper · Carrowmore Light Authority",
     );
@@ -299,7 +302,7 @@ it("keeps optional discussion prompts available after saving a contextual questi
     screen.getByRole("button", { name: "Discussion with Eimhin (2)" }),
   ).toBeVisible();
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
-    "Not yet discussed",
+    "Interested",
   );
 });
 

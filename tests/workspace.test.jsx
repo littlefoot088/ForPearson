@@ -78,7 +78,7 @@ it("adds, edits, completes, reopens and removes a task and persists across remou
     screen.queryByRole("checkbox", { name: "Ask the provider" }),
   ).not.toBeInTheDocument();
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
-    "Not yet discussed",
+    "Interested",
   );
 });
 it("saves dated private notes with follow-up, edits them and excludes their text from referrals", async () => {
@@ -290,7 +290,7 @@ it("records responsibilities separately and includes them only on explicit selec
     JSON.parse(localStorage.getItem(storageKey)).workspace.notes,
   ).toHaveLength(0);
 });
-it("confirms reset, clears persisted review data and restores unknown interest", async () => {
+it("confirms reset, clears persisted review data and restores the agreed interest scenario", async () => {
   const user = userEvent.setup();
   mount();
   await user.click(
@@ -320,7 +320,7 @@ it("confirms reset, clears persisted review data and restores unknown interest",
   expect(
     screen.getByRole("checkbox", { name: "Prepare candidate introduction" }),
   ).not.toBeChecked();
-  expect(screen.getByText(/No response recorded/)).toBeVisible();
+  expect(screen.getByText(/Eimhin confirmed his interest/)).toBeVisible();
 });
 it("keeps the app usable when browser persistence is unavailable", () => {
   vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {

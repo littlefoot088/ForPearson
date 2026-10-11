@@ -14,7 +14,7 @@ import {
 test("workspace uses pair tasks and progress without inferring overall intention", () => {
   let state = initialWorkspace();
   assert.deepEqual(assessmentOverview(state), {
-    progress: "Not yet discussed",
+    progress: "Interested",
     nextAction: "Check existing offshore certificates",
   });
   assert.equal(peopleForWorkspace(state)[0].intention, "Not yet discussed");

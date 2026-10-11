@@ -416,7 +416,10 @@ export default function App() {
                               {opportunity.responseOrigin ===
                               "manually-recorded"
                                 ? "Response recorded by you."
-                                : "No response recorded."}{" "}
+                                : opportunity.responseOrigin ===
+                                    "scenario-confirmed"
+                                  ? "Eimhin confirmed his interest in your earlier conversation (scenario context)."
+                                  : "No response recorded."}{" "}
                               Career preferences remain unknown.
                             </Text>
                           </Stack>
@@ -637,7 +640,7 @@ export default function App() {
           <Text>
             This removes saved notes, tasks, accounts, discussion questions,
             flags and referral decisions from this browser. The initial tasks
-            will be restored, with no interest recorded.
+            will be restored, with Eimhin interested as agreed in the scenario.
           </Text>
           <Group justify="flex-end">
             <Button variant="default" onClick={() => setResetOpen(false)}>

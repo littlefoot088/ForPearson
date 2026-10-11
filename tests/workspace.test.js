@@ -30,10 +30,10 @@ const markReady = (state) =>
     acknowledged: true,
   });
 
-test("initial interest is unknown; referral provenance excludes both disputed early records", () => {
+test("initial interest reflects the agreed conversation scenario; referral provenance excludes both disputed early records", () => {
   const state = initialWorkspace();
-  assert.equal(state.opportunity.responseOrigin, null);
-  assert.equal(state.opportunity.interest, "not-discussed");
+  assert.equal(state.opportunity.responseOrigin, "scenario-confirmed");
+  assert.equal(state.opportunity.interest, "interested");
   assert.deepEqual(state.notes, []);
   assert.deepEqual(state.reports, {});
   const draft = createReferral();
@@ -190,7 +190,7 @@ test("versioned storage round-trips workspace state; corruption and unavailable 
     assert.match(loadWorkspace(storage).message, /could not be loaded/);
     assert.equal(
       loadWorkspace(storage).workspace.opportunity.responseOrigin,
-      null,
+      "scenario-confirmed",
     );
   }
   assert.equal(
@@ -292,4 +292,33 @@ test("legacy example responses are cleared without discarding saved work; manual
     if (origin !== "manually-recorded")
       assert.equal(loaded.workspace.ready, null);
   }
+});
+
+test("agreed interest restores the previous blank scenario once without replacing later responses", () => {
+  const saved = {
+    version: 2,
+    workspace: initialWorkspace(),
+    drafts: [],
+    recordFlags: [],
+  };
+  delete saved.workspace.interestScenarioVersion;
+  saved.workspace.opportunity.interest = "not-discussed";
+  saved.workspace.opportunity.responseOrigin = null;
+  const load = (value) =>
+    loadWorkspace({ getItem: () => JSON.stringify(value) });
+  const restored = load(saved);
+  assert.equal(restored.workspace.opportunity.interest, "interested");
+  assert.equal(
+    restored.workspace.opportunity.responseOrigin,
+    "scenario-confirmed",
+  );
+  assert.equal(restored.workspace.ready, null);
+  restored.workspace = reduce(restored.workspace, {
+    type: "opportunity",
+    action: { type: "response", value: "not-discussed" },
+  });
+  assert.equal(load(restored).workspace.opportunity.interest, "not-discussed");
+  saved.workspace.opportunity.interest = "not-interested";
+  saved.workspace.opportunity.responseOrigin = "manually-recorded";
+  assert.equal(load(saved).workspace.opportunity.interest, "not-interested");
 });

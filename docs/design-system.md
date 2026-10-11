@@ -77,3 +77,5 @@ For larger evidence sets, use a labelled record selector alongside previous/next
 ## Data trust
 
 Do not populate the product with invented career intentions, opportunity associations or candidate responses. Unknown information stays unknown. Source records, dated manager opinions, curated interpretation and reviewer-entered information must remain distinguishable. Describe changes in feedback chronologically: earlier concerns followed by later praise suggest improvement; do not flatten them into a timeless “mixed” label or assert independently verified competence.
+
+Show only the latest relevant manager review in assessment content and the evidence inspector, with its date and source. Preserve historical reviews in the underlying audit. Explicitly agreed scenario facts (the prior conversation confirming interest) must be distinguished from employment-record evidence and must never override later recorded responses.

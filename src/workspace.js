@@ -35,8 +35,11 @@ export function assessmentSignature() {
 }
 export function initialWorkspace() {
   return {
+    interestScenarioVersion: 1,
     opportunity: {
       ...initialOpportunity,
+      interest: "interested",
+      responseOrigin: "scenario-confirmed",
     },
     tasks: [
       {
@@ -294,6 +297,16 @@ export function loadWorkspace(storage) {
       saved.workspace.ready = null;
       if (saved.workspace.referral) saved.workspace.referral.needsReview = true;
     }
+    if (saved.workspace && saved.workspace.interestScenarioVersion !== 1) {
+      if (
+        saved.workspace.opportunity?.interest === "not-discussed" &&
+        !saved.workspace.opportunity.responseOrigin
+      ) {
+        saved.workspace.opportunity.interest = "interested";
+        saved.workspace.opportunity.responseOrigin = "scenario-confirmed";
+      }
+      saved.workspace.interestScenarioVersion = 1;
+    }
     if (saved.version === 1 && saved.workspace) {
       // A previous referral decision is not the person's approval of an introduction.
       if (saved.workspace.referral) {
@@ -349,7 +362,7 @@ export function loadWorkspace(storage) {
     return {
       ...saved,
       message: removedIllustration
-        ? "The example response has been removed. Eimhin’s response is not recorded; your saved work is retained."
+        ? "Eimhin’s interest reflects the agreed conversation scenario. Your saved work is retained."
         : "",
     };
   } catch {

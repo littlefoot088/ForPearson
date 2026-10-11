@@ -155,30 +155,9 @@ export function EvidenceContent({
       {source && ["pump", "electrical"].includes(drawer.item.id) && (
         <Stack gap="sm">
           <Divider />
-          <Text fw={600}>Manager feedback</Text>
-          <Text size="sm">
-            Manager observations are shown in date order so changes over time
-            remain visible.
-          </Text>
+          <Text fw={600}>Latest manager review</Text>
           {evidenceAudit.appraisals
-            .filter((r) =>
-              drawer.item.id === "pump"
-                ? [
-                    "AP000004",
-                    "AP000005",
-                    "AP000006",
-                    "AP000007",
-                    "AP000013",
-                  ].includes(r.record_id)
-                : [
-                    "AP000002",
-                    "AP000003",
-                    "AP000008",
-                    "AP000009",
-                    "AP000010",
-                    "AP000013",
-                  ].includes(r.record_id),
-            )
+            .filter((r) => r.record_id === "AP000013")
             .map((r) => (
               <Stack gap="xs" key={r.record_id}>
                 <Text size="sm" fw={600}>

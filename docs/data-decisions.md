@@ -108,3 +108,7 @@ The earlier eleven-entry selection is no longer the basis for frequency wording.
 ## Source-grounded defaults (supersedes illustrative scenarios)
 
 The current workspace contains only the source-grounded Eimhin assessment. Invented people/intentions/opportunity progress have been removed. Initial interest is unknown. Existing `illustrative` or `simulated` responses are cleared on load, with a notice; dependent readiness is cleared while saved notes, tasks and introduction wording remain. New responses are labelled as manually recorded by the reviewer and must represent what Eimhin actually said, not generated consent. Pump appraisal copy now preserves the chronology of 2014–2018 concerns followed by positive 2026 feedback. It does not claim a measured improvement in competence. The agreed December 2026 review scenario and unchanged source quotations remain in place.
+
+## Confirmed conversation scenario and latest appraisal
+
+The user confirmed that this assessment follows a conversation in which Eimhin expressed interest. Initial/reset interest is therefore Interested, labelled as conversation scenario context rather than an employment-record fact. A one-time migration restores that scenario for previously blank interest; later manually recorded responses remain authoritative. Interest never grants sharing approval or readiness. The assessment and inspector show only the latest relevant manager review (AP000013, 2026), including its switchgear concern. Older appraisals remain in the audit data/report, not in the assessment presentation.
