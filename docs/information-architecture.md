@@ -18,7 +18,7 @@ The review puts information in this order:
 
 There are three disclosure levels: requirement → assessment → supporting evidence. One requirement expands at a time. Mechanical or electrical maintenance is a single essential requirement with two alternative evidence routes. Its expanded view retains separate claim summaries, selected-record counts and dates, involvement, limitations and related training. Safety coverage remains separate from practical experience even though both use the same list. Comfort offshore and mentoring are not inferred from other evidence.
 
-Evidence opens in a side drawer on wider screens and fills the viewport on narrow screens. The parent requirement remains named in the drawer. Exact source text and metadata are separate from interpretation and limitations; original raw fields remain available. Closing retains the expanded requirement and restores focus to its originating control. Native dialogs contain focus and support Escape. At short viewport heights the review bar returns to normal flow so it does not obstruct the assessment.
+Evidence opens in a side drawer on wider screens and fills the viewport on narrow screens. The parent requirement remains named in the drawer. Exact source text and metadata are separate from interpretation and limitations; original raw fields remain available. Closing retains the expanded requirement and restores focus to its originating control. Mantine Modal and Drawer contain focus and support Escape. On narrow screens and at short viewport heights the review bar returns to normal flow so it does not obstruct the assessment.
 
 Questions originate in the relevant assessment. The officer can edit a suggested question, save a local draft, review all draft questions, revise them and remove them. Mechanical and electrical questions remain distinct. Saving a question never sends it or changes either review state. Qualification verification flags are also reversible and do not change the evidence status or establish eligibility.
 
@@ -29,3 +29,11 @@ Suggested job opportunities → role-specific transferable experience → formal
 A keeper could provide missing certificates, correct attribution, explain their involvement or clarify how regularly work occurred. These actions make existing experience visible; they do not confer competence. Training would address a confirmed qualification need after existing evidence and employer acceptance have been checked.
 
 No keeper screen, assigned-vacancies dashboard, candidate search, full vacancy workspace or messaging service is implemented.
+
+## Component ownership
+
+The requirements-led hierarchy is unchanged by the Mantine migration. A controlled Mantine Accordion spans all requirement groups; separate nested disclosures expose supporting modules and original record fields. Mantine layout primitives and default tokens provide the shared rhythm and component sizing. Semantic status icons remain Lucide icons with text, composed inside the Mantine controls.
+
+The theme centralises the existing Carrowmore palette while retaining Mantine’s default system fonts and scales. Remaining custom CSS is limited to the wordmark symbol, skip link, aligned requirement/status columns, source-text wrapping, notification position and the review bar’s sticky-to-flow behaviour. Evidence drawers use the default large size on desktop and the full viewport width below the standard `sm` breakpoint.
+
+One Modal hosts role details, the clarification editor and draft review; a Drawer hosts evidence. Mantine owns focus trapping and scroll locking. The application tracks the outer opener across overlay transitions and restores it only once the final overlay closes. Removing the last draft restores focus to its requirement control because the draft-review button no longer exists. Domain state is independent of component appearance and remains local to React.

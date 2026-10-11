@@ -1,12 +1,21 @@
 import React from "react";
 import {
+  Accordion,
+  Button,
+  Group,
+  Stack,
+  Text,
+  Title,
+  SimpleGrid,
+  Paper,
+} from "@mantine/core";
+import {
   FileText,
   Files,
   Clock3,
   CircleHelp,
   CircleDashed,
   CheckCircle2,
-  ChevronDown,
   ArrowUpRight,
   Pencil,
   Check,
@@ -30,82 +39,105 @@ const statusIcons = {
   circle: CircleDashed,
   check: CheckCircle2,
 };
-export function RequirementRow({ requirement, expanded, onToggle, children }) {
+const statusColors = {
+  evidence: "evidence.7",
+  neutral: "gray.6",
+  attention: "clarification.7",
+  documented: "documented.6",
+};
+
+export function RequirementRow({ requirement, children }) {
   const status = assessmentStates[requirement.assessment];
   return (
-    <article className={"requirement-row" + (expanded ? " expanded" : "")}>
-      <h3>
-        <button
-          id={"requirement-" + requirement.id}
-          className="requirement-trigger"
-          onClick={onToggle}
-          aria-expanded={expanded}
-          aria-controls={"assessment-" + requirement.id}
-        >
-          <span className="requirement-name">{requirement.text}</span>
-          <span className={"assessment-status " + status.tone}>
-            <Icon icon={statusIcons[status.icon]} size={17} />
+    <Accordion.Item value={requirement.id}>
+      <Accordion.Control id={"requirement-" + requirement.id}>
+        <span className="requirement-label">
+          <Text component="span">{requirement.text}</Text>
+          <Text
+            component="span"
+            size="sm"
+            c={statusColors[status.tone] ?? "gray.6"}
+            className="assessment-status"
+          >
+            <Icon icon={statusIcons[status.icon]} />
             {status.label}
-          </span>
-          <Icon icon={ChevronDown} size={17} className="expand-chevron" />
-        </button>
-      </h3>
-      <div
-        hidden={!expanded}
-        id={"assessment-" + requirement.id}
-        className="expanded-assessment"
-        role="region"
-        aria-labelledby={"requirement-" + requirement.id}
-      >
-        {expanded && children}
-      </div>
-    </article>
+          </Text>
+        </span>
+      </Accordion.Control>
+      <Accordion.Panel aria-labelledby={"requirement-" + requirement.id}>
+        <Stack gap="md">{children}</Stack>
+      </Accordion.Panel>
+    </Accordion.Item>
   );
 }
+
 function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
   const records = getSources(claim);
   const first = records[0],
     latest = records[records.length - 1];
   return (
-    <section className="claim-detail" aria-labelledby={"claim-" + claim.id}>
-      <div className="claim-heading">
-        <h4 id={"claim-" + claim.id}>{claim.title}</h4>
-        <span>{claim.involvement}</span>
-      </div>
-      <p>{claim.summary}</p>
-      <dl className="experience-facts">
-        <div>
-          <dt>Selected supporting records</dt>
-          <dd>
-            {records.length} · {claim.pattern}
-          </dd>
-        </div>
-        <div>
-          <dt>Documented span</dt>
-          <dd>
-            {dateLabel(first.date)} – {dateLabel(latest.date)}
-          </dd>
-        </div>
-        <div>
-          <dt>Latest selected activity</dt>
-          <dd>{dateLabel(latest.date)}</dd>
-        </div>
-      </dl>
-      <p className="assessment-limit">
-        <strong>To clarify:</strong> {claim.limitation}
-      </p>
-      <div className="detail-actions">
-        <button className="text-button" onClick={() => onInspect(claim)}>
-          Inspect {records.length} records <Icon icon={ArrowUpRight} />
-        </button>
-        <button className="subtle-button" onClick={() => onClarify(claim)}>
-          <Icon icon={Pencil} />
-          {drafted ? "Edit clarification" : "Ask for clarification"}
-        </button>
-      </div>
-    </section>
+    <Paper
+      component="section"
+      withBorder
+      p="md"
+      aria-labelledby={"claim-" + claim.id}
+    >
+      <Stack gap="sm">
+        <Group justify="space-between">
+          <Title order={4} id={"claim-" + claim.id}>
+            {claim.title}
+          </Title>
+          <Text size="sm" c="dimmed">
+            {claim.involvement}
+          </Text>
+        </Group>
+        <Text>{claim.summary}</Text>
+        <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md" component="dl" m={0}>
+          {[
+            [
+              "Selected supporting records",
+              `${records.length} · ${claim.pattern}`,
+            ],
+            [
+              "Documented span",
+              `${dateLabel(first.date)} – ${dateLabel(latest.date)}`,
+            ],
+            ["Latest selected activity", dateLabel(latest.date)],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <Text component="dt" size="sm" c="dimmed">
+                {label}
+              </Text>
+              <Text component="dd" m={0} size="sm">
+                {value}
+              </Text>
+            </div>
+          ))}
+        </SimpleGrid>
+        <Text size="sm" c="clarification.7">
+          <strong>To clarify:</strong> {claim.limitation}
+        </Text>
+        <Group gap="xs">
+          <Button
+            variant="light"
+            rightSection={<Icon icon={ArrowUpRight} />}
+            onClick={() => onInspect(claim)}
+          >
+            Inspect {records.length} records
+          </Button>
+          <Button
+            variant="subtle"
+            leftSection={<Icon icon={Pencil} />}
+            onClick={() => onClarify(claim)}
+          >
+            {drafted ? "Edit clarification" : "Ask for clarification"}
+          </Button>
+        </Group>
+      </Stack>
+    </Paper>
   );
 }
+
 function QualificationDetail({
   q,
   onInspect,
@@ -116,54 +148,62 @@ function QualificationDetail({
   supporting = false,
 }) {
   return (
-    <section
-      className={
-        "qualification-detail" + (supporting ? " supporting-training" : "")
-      }
-      aria-label={q.title}
-    >
-      {supporting && <h4>{q.title}</h4>}
-      <div className="qualification-detail-title">
-        <strong>{q.status}</strong>
-        {supporting && <span>Supporting module</span>}
-      </div>
-      <p>{q.detail}</p>
+    <Stack component="section" gap="sm" aria-label={q.title}>
+      {supporting && <Title order={5}>{q.title}</Title>}
+      <Group>
+        <Text fw={600}>{q.status}</Text>
+        {supporting && (
+          <Text size="sm" c="dimmed">
+            Supporting module
+          </Text>
+        )}
+      </Group>
+      <Text>{q.detail}</Text>
       {!supporting && (
-        <p className="assessment-limit">
+        <Text size="sm" c="clarification.7">
           {q.id === "medical"
             ? "Current offshore clearance needs confirmation. Clinical details are not required."
             : "The required certificate has not been established. Check existing documentation and employer acceptance before identifying any training need."}
-        </p>
+        </Text>
       )}
       {q.id === "height" && (
-        <p className="assessment-limit">
+        <Text size="sm" c="clarification.7">
           The vacancy includes height coverage; the supplied offshore scheme
           lists it separately. Confirm the accepted combination with Carrowmore
           Array.
-        </p>
+        </Text>
       )}
-      <div className="detail-actions">
+      <Group gap="xs">
         {q.recordId && (
-          <button className="text-button" onClick={() => onInspect(q)}>
-            View training record <Icon icon={ArrowUpRight} />
-          </button>
+          <Button
+            variant="light"
+            rightSection={<Icon icon={ArrowUpRight} />}
+            onClick={() => onInspect(q)}
+          >
+            View training record
+          </Button>
         )}
-        <button className="subtle-button" onClick={() => onClarify(q)}>
-          <Icon icon={Pencil} />
+        <Button
+          variant="subtle"
+          leftSection={<Icon icon={Pencil} />}
+          onClick={() => onClarify(q)}
+        >
           {drafted ? "Edit verification question" : "Ask for verification"}
-        </button>
-        <button
-          className={"verification-button" + (flagged ? " flagged" : "")}
+        </Button>
+        <Button
+          variant={flagged ? "light" : "subtle"}
+          color="clarification"
           aria-pressed={flagged}
+          leftSection={<Icon icon={flagged ? Check : Flag} />}
           onClick={() => onFlag(q)}
         >
-          <Icon icon={flagged ? Check : Flag} size={14} />
           {flagged ? "Flagged for verification" : "Flag for verification"}
-        </button>
-      </div>
-    </section>
+        </Button>
+      </Group>
+    </Stack>
   );
 }
+
 export function ExpandedAssessment({
   requirement,
   onInspect,
@@ -179,11 +219,21 @@ export function ExpandedAssessment({
     qualifications.find((q) => q.id === id),
   );
   const hasDraft = (id) => drafts.some((d) => d.id === id);
+  const trainingDetails = linkedQualifications.map((q) => (
+    <QualificationDetail
+      key={q.id}
+      q={q}
+      supporting={requirement.type === "experience"}
+      onInspect={(item) => onInspect(item, "qualification", requirement)}
+      onClarify={(item) => onClarify(item, requirement)}
+      flagged={verifications.includes(q.id)}
+      onFlag={onFlag}
+      drafted={hasDraft(q.id)}
+    />
+  ));
   return (
     <>
-      {requirement.detail && (
-        <p className="requirement-detail-intro">{requirement.detail}</p>
-      )}
+      {requirement.detail && <Text c="dimmed">{requirement.detail}</Text>}
       {linkedClaims.map((claim) => (
         <ExperienceDetail
           key={claim.id}
@@ -194,62 +244,48 @@ export function ExpandedAssessment({
         />
       ))}
       {linkedClaims.length > 0 && (
-        <p className="selected-records-note">
+        <Text size="sm" c="dimmed">
           These are selected records, not counts of every occasion the work was
           performed. The evidence supports potential; it does not independently
           verify present competence.
-        </p>
+        </Text>
       )}
       {requirement.type === "experience" && linkedQualifications.length > 0 ? (
-        <details className="related-training">
-          <summary>
-            Related training records <span>{linkedQualifications.length}</span>
-          </summary>
-          {linkedQualifications.map((q) => (
-            <QualificationDetail
-              key={q.id}
-              q={q}
-              supporting
-              onInspect={(item) =>
-                onInspect(item, "qualification", requirement)
-              }
-              onClarify={(item) => onClarify(item, requirement)}
-              flagged={verifications.includes(q.id)}
-              onFlag={onFlag}
-              drafted={hasDraft(q.id)}
-            />
-          ))}
-        </details>
+        <Accordion variant="contained" order={4}>
+          <Accordion.Item value="training">
+            <Accordion.Control>
+              Related training records ({linkedQualifications.length})
+            </Accordion.Control>
+            <Accordion.Panel>
+              <Stack gap="lg">{trainingDetails}</Stack>
+            </Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
       ) : (
-        linkedQualifications.map((q) => (
-          <QualificationDetail
-            key={q.id}
-            q={q}
-            onInspect={(item) => onInspect(item, "qualification", requirement)}
-            onClarify={(item) => onClarify(item, requirement)}
-            flagged={verifications.includes(q.id)}
-            onFlag={onFlag}
-            drafted={hasDraft(q.id)}
-          />
-        ))
+        trainingDetails
       )}
       {linkedQualifications.length > 0 && (
-        <p className="assessment-date">
+        <Text size="sm" c="dimmed">
           Expiry interpretation as of {dateLabel(reviewDate)}.
-        </p>
+        </Text>
       )}
       {requirement.type === "clarification" && (
-        <button
-          className="text-button"
-          onClick={() =>
-            onClarify({ ...requirement, title: requirement.text }, requirement)
-          }
-        >
-          <Icon icon={Pencil} />
-          {hasDraft(requirement.id)
-            ? "Edit clarification"
-            : "Ask for clarification"}
-        </button>
+        <Group>
+          <Button
+            variant="light"
+            leftSection={<Icon icon={Pencil} />}
+            onClick={() =>
+              onClarify(
+                { ...requirement, title: requirement.text },
+                requirement,
+              )
+            }
+          >
+            {hasDraft(requirement.id)
+              ? "Edit clarification"
+              : "Ask for clarification"}
+          </Button>
+        </Group>
       )}
     </>
   );

@@ -68,3 +68,9 @@ The collapsed labels describe evidence states. Evidence found means relevant wor
 The offshore-working-conditions and mentoring rows represent actual employer requirements/preferences. No new evidence has been invented for them. All expiry interpretations still use the agreed fictional review date, 31 December 2026, shown in qualification detail rather than the overview.
 
 Review progression and clarification-needed flags are independent officer decisions. They are separate from assessment labels, local drafts and verification flags. These states do not recalculate or override evidence.
+
+## Mantine presentation migration
+
+No evidence fixtures, qualification interpretations, source quotations, identity links or requirement definitions changed during this migration. All eleven logs and four training records remain reachable. The fixed 31 December 2026 review date still governs expiry interpretation.
+
+Mantine theme colours express the existing evidence states; they do not calculate ratings or certification readiness. Module/attendance labels remain neutral, clarification remains amber and evidence remains blue. The exact substring highlighter wraps the original passage in Mantine Mark without changing the source text. Review decisions, drafts and verification flags retain their separate state and never promote a qualification to Documented.
