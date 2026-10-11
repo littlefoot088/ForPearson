@@ -252,6 +252,8 @@ export function WorkspacePanel({
   dispatch,
   onClose,
   storageFailed,
+  onQuestion,
+  drafts = [],
 }) {
   if (mode === "referral")
     return (
@@ -284,6 +286,12 @@ export function WorkspacePanel({
   return (
     <TaskEditor
       task={item}
+      onQuestion={onQuestion}
+      drafted={drafts.some((d) => d.id === item?.qualificationId)}
+      onRemove={() => {
+        dispatch({ type: "task-remove", id: item.id });
+        onClose();
+      }}
       onCancel={onClose}
       onSave={(task) => {
         dispatch({ type: "task-save", task });
@@ -292,7 +300,7 @@ export function WorkspacePanel({
     />
   );
 }
-function TaskEditor({ task, onSave, onCancel }) {
+function TaskEditor({ task, onSave, onCancel, onQuestion, onRemove, drafted }) {
   const [title, setTitle] = useState(task?.title ?? "");
   return (
     <Stack
@@ -322,6 +330,24 @@ function TaskEditor({ task, onSave, onCancel }) {
           {qualifications.find((q) => q.id === task.qualificationId)?.title}.
           Check with Eimhin, Authority training records or the provider.
         </Text>
+      )}
+      {task?.qualificationId && (
+        <Stack gap="xs" align="flex-start">
+          <Button
+            variant="subtle"
+            size="compact-sm"
+            onClick={() =>
+              onQuestion(
+                qualifications.find((q) => q.id === task.qualificationId),
+              )
+            }
+          >
+            {drafted ? "View follow-up" : "Add follow-up"}
+          </Button>
+          <Button variant="subtle" size="compact-sm" onClick={onRemove}>
+            Undo qualification check
+          </Button>
+        </Stack>
       )}
       <Group justify="flex-end">
         <Button variant="default" onClick={onCancel}>

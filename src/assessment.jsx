@@ -76,27 +76,24 @@ export function RequirementRow({ requirement, children }) {
   );
 }
 
-export function QualificationActions({ q, onClarify, drafted, task, onFlag }) {
+export function QualificationActions({ q, task, onFlag, onOpenCheck }) {
   return (
-    <Group gap="xs">
-      {task ? (
-        <>
-          <Text size="sm">
-            Qualification check {task.done ? "completed" : "added"}
-          </Text>
-          <Button variant="subtle" size="compact-sm" onClick={() => onFlag(q)}>
-            Undo qualification check
-          </Button>
-        </>
-      ) : (
-        <Button variant="light" onClick={() => onFlag(q)}>
-          Check qualification
-        </Button>
+    <Stack gap="xs" align="flex-start">
+      <Divider w="100%" />
+      {task && (
+        <Text size="sm" c="dimmed">
+          {task.done ? "Check task completed" : "Check recorded in Next steps"}{" "}
+          · Qualification not verified
+        </Text>
       )}
-      <Button variant="subtle" size="compact-sm" onClick={() => onClarify(q)}>
-        {drafted ? "View follow-up" : "Add follow-up"}
+      <Button
+        variant="subtle"
+        size="compact-sm"
+        onClick={() => (task ? onOpenCheck(task) : onFlag(q))}
+      >
+        {task ? "View qualification check" : "Add qualification check"}
       </Button>
-    </Group>
+    </Stack>
   );
 }
 
@@ -120,6 +117,7 @@ export function ExpandedAssessment({
   drafts,
   tasks = [],
   onFlag,
+  onOpenCheck,
 }) {
   const linkedClaims = (requirement.claimIds ?? []).map((id) =>
     claims.find((c) => c.id === id),
@@ -223,15 +221,10 @@ export function ExpandedAssessment({
       {requirement.type !== "experience" &&
         linkedQualifications.map((q) => (
           <Stack component="section" gap="sm" aria-label={q.title} key={q.id}>
-            <TrainingSummary q={q} />
-            <Text size="sm">
-              <strong>Next step:</strong>{" "}
-              {q.id === "medical"
-                ? "Confirm current offshore medical clearance."
-                : q.id === "height"
-                  ? "Confirm the certificate and height coverage Carrowmore Array accepts."
-                  : "Check the complete certificate and its current coverage."}
+            <Text fw={600} size="sm">
+              Available qualification evidence
             </Text>
+            <TrainingSummary q={q} />
             {q.recordId && (
               <Button
                 variant="subtle"
@@ -242,23 +235,26 @@ export function ExpandedAssessment({
                 View training record
               </Button>
             )}
-            <QualificationActions
-              q={q}
-              onClarify={clarify}
-              drafted={hasDraft(q.id)}
-              task={tasks.find((t) => t.qualificationId === q.id)}
-              onFlag={onFlag}
-            />
             {q.recordId && (
               <Text size="xs" c="dimmed">
                 Expiry assessed at {dateLabel(reviewDate)}.
               </Text>
             )}
+            <QualificationActions
+              q={q}
+              task={tasks.find((t) => t.qualificationId === q.id)}
+              onFlag={onFlag}
+              onOpenCheck={onOpenCheck}
+            />
           </Stack>
         ))}
       {requirement.type === "clarification" && (
         <>
+          <Text fw={600} size="sm">
+            What is known
+          </Text>
           <Text size="sm">{requirement.detail}</Text>
+          <Divider />
           <Button
             variant="subtle"
             w="fit-content"

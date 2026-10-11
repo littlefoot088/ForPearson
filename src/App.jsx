@@ -293,6 +293,7 @@ export default function App() {
             drafts={drafts}
             tasks={workspace.tasks}
             onFlag={flag}
+            onOpenCheck={(task) => openWorkspace("task", task)}
             reports={workspace.reports}
             onReport={(claim) => openWorkspace("report", claim)}
           />
@@ -633,6 +634,16 @@ export default function App() {
             state={workspace}
             dispatch={dispatchWorkspace}
             onClose={() => setWorkspaceOpen(false)}
+            onQuestion={(q) => {
+              setWorkspaceOpen(false);
+              clarify(
+                q,
+                clarificationContexts.find((r) =>
+                  r.qualificationIds?.includes(q.id),
+                ) ?? requirements.find((r) => r.id === "maintenance"),
+              );
+            }}
+            drafts={drafts}
           />
         )}
       </Drawer>
@@ -702,6 +713,10 @@ export default function App() {
               (t) => t.qualificationId === drawer.item.id,
             )}
             onQualificationCheck={flag}
+            onOpenCheck={(task) => {
+              setDrawer(null);
+              openWorkspace("task", task);
+            }}
             drafted={drafts.some((d) => d.id === drawer.item.id)}
             onClarify={(q) => {
               returnEvidence.current = drawer;

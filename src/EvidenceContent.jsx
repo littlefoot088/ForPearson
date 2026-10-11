@@ -24,6 +24,7 @@ export function EvidenceContent({
   onFlag,
   qualificationTask,
   onQualificationCheck,
+  onOpenCheck,
   onClarify,
   drafted,
 }) {
@@ -149,6 +150,7 @@ export function EvidenceContent({
               q={drawer.item}
               task={qualificationTask}
               onFlag={onQualificationCheck}
+              onOpenCheck={onOpenCheck}
               onClarify={onClarify}
               drafted={drafted}
             />
