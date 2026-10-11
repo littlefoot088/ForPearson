@@ -1,5 +1,7 @@
 import React from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { assessmentHash } from "../src/people";
+beforeEach(() => window.history.replaceState(null, "", assessmentHash));
+import { beforeEach, afterEach, describe, expect, it } from "vitest";
 import {
   cleanup,
   render,
@@ -15,6 +17,7 @@ import { sources as sourceRecords } from "../src/records";
 
 afterEach(() => {
   cleanup();
+  window.history.replaceState(null, "", "/");
   window.localStorage.clear();
 });
 function setup() {

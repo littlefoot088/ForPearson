@@ -12,59 +12,48 @@ The workflow below is a **design proposal**, not a description of an established
 
 ## Two entry points, one assessment
 
-**People-first is the primary workflow:** People → keeper profile → suggested opportunities → opportunity assessment. The question is “What suitable opportunities are available for this person?” A profile would bring together career intentions, preferences, relevant opportunities, opportunities already pursued and redeployment progress.
+**People-first is the primary workflow:** Redeployment workspace → a person’s opportunities → individual opportunity assessment. The question is “What suitable opportunities are available for this person?” The implemented entry page groups opportunities directly beneath each person; there is no separate profile or CV page between the list and assessment.
 
 **Vacancy-first is complementary:** Vacancies → vacancy details → suggested keepers → the same opportunity assessment. The question is “Which of our keepers should we recommend for this vacancy?” This supports comparison of evidence, readiness, interest and outstanding questions before employer referrals.
 
 One keeper can have several opportunities; one vacancy can suit several keepers. The assessment belongs to a **keeper–vacancy pair** (here `K0104` + `array-om`). The two routes would open the same assessment and actions, not duplicate logic or conflicting statuses. Person-level preferences would be shared across all of that keeper’s assessments. Interest and officer decisions apply only to the specific opportunity.
 
-## Wider structure — conceptual except where marked
+## Implemented navigation and wider context
 
 ```text
-CARROWMORE REDEPLOYMENT
-├── People
-│   ├── All keepers
-│   │   ├── Seeking employment
-│   │   ├── Exploring options
-│   │   ├── Planning retirement
-│   │   └── Preferences unknown
-│   └── Keeper profile
-│       ├── Career intentions and preferences
-│       ├── Suggested opportunities
-│       │   └── Opportunity assessment [IMPLEMENTED FOR ONE PAIR]
-│       │       ├── Job requirements
-│       │       ├── Experience evidence
-│       │       ├── Qualifications
-│       │       ├── Supporting source records
-│       │       ├── Outstanding questions
-│       │       ├── Keeper interest
-│       │       └── Next actions
-│       ├── Opportunities being pursued
-│       └── Redeployment status
-└── Vacancies
-    ├── Employer vacancies
-    └── Vacancy details
-        ├── Job requirements
-        ├── Suggested keepers
-        ├── Interested keepers
-        ├── Candidates under review
-        ├── Candidates nominated
-        └── Interview outcomes
+REDEPLOYMENT WORKSPACE [ENTRY PAGE]
+├── Eimhin Mac Neidhe
+│   ├── Wind Turbine Technician → existing opportunity assessment [IMPLEMENTED]
+│   ├── Marine Electrician [illustrative association; no assessment]
+│   └── Watch Officer [illustrative association; no assessment]
+├── Aoife Ní Mhurchú
+│   ├── Watch Officer [illustrative association; no assessment]
+│   └── Offshore Survey Technician [illustrative association; no assessment]
+├── Coilean Ó Caomhthaigh
+│   └── Marine Electrician [illustrative association; no assessment]
+└── Fintan Ó Ceallaigh [illustrative person and stated retirement choice]
+    └── No employment recommendations
 ```
 
-The current breadcrumb is People → Eimhin Mac Neidhe → Wind Turbine Technician. These labels provide context; directories and profiles are not implemented navigation destinations.
+The breadcrumb is People → Eimhin Mac Neidhe → Wind Turbine Technician. People returns to the workspace; the opportunity link opens the assessment directly. A small hash route supports browser Back/Forward and direct assessment links, without a new router dependency. App-level workspace state stays mounted across navigation; persisted notes, tasks, questions, flags and drafts use the existing person/opportunity key. No copy of the pair’s progress or tasks is created for the list.
+
+The list offers accent-insensitive name search, a single employment-intention filter and a Needs attention checkbox. Attention means at least one opportunity has an outstanding next action; it is not a risk score or a claim of urgency. All opportunities remain grouped under a matching person. Empty results offer Clear filters. Eimhin’s implemented row derives its next action from the first incomplete task, unless an introduction needs review or is ready for Eimhin’s review. A declined opportunity or a not-suitable assessment does not prompt referral work. Other rows are non-interactive and explicitly outside the prototype.
+
+`src/people.js` keeps illustrative associations separate from evidence fixtures. Aoife (K0847) and Coilean (K0147) names come from `clean/keepers.json`. Marine Electrician, Watch Officer and Offshore Survey Technician titles/employers come from the corresponding employer vacancy files. No additional personal, training or employment evidence is imported. Associations, sample intentions and statuses are illustrative, not historical findings. No submitted application or interview outcome is invented. Fintan is the wholly illustrative retirement example specified in the design brief. The list is a four-person sample, not a claimed directory of all 340 employees.
+
+Vacancy-first remains conceptual: a future employer vacancy list could lead to the same pair-level assessment. It does not require separate assessment logic.
 
 ## Intentions, preferences and retirement
 
 Three questions remain distinct: does the work suit the keeper’s experience; can they meet formal requirements; and do they want to pursue this particular opportunity?
 
-Person-level intention can be **Seeking employment**, **Exploring career options**, **Planning retirement**, or **Not yet discussed**. It must be explicitly provided by the keeper, never inferred from age, tenure, previous jobs or appraisals. Known preferences could cover work type, environment, location, travel, offshore willingness and further training. Unknown preferences are not agreement.
+Person-level intention can be **Seeking employment**, **Exploring options**, **Planning retirement**, **Employment arranged**, or **Not yet discussed**. It must be explicitly provided by the keeper, never inferred from age, tenure, previous jobs or appraisals. Known preferences could cover work type, environment, location, travel, offshore willingness and further training. Unknown preferences are not agreement.
 
 Eimhin’s selected records do not establish his personal plans or offshore preferences. The current prototype starts with Interested as explicitly illustrative workflow state, displayed once in the candidate context. It is not an inferred preference, fabricated historical conversation or permission to share information. Responses can be revised through Edit response. Discussion questions remain preparation, not a record that a conversation occurred.
 
 Conceptually, an explicit retirement intention leaves a keeper visible in People, clearly labelled, but suppresses employment recommendations and automatic vacancy suggestions. The keeper can change the preference later. Age and tenure never trigger this behaviour.
 
-**Illustrative prototype directory example — not derived from employment records:** Fintan Ó Ceallaigh · Planning retirement · No job recommendations. This example is documentation only; it does not change any source fixture or build a directory. How to handle already-active referrals when a keeper changes their intention would require operational research and a conversation with the keeper, rather than automatic assumptions.
+**Illustrative prototype directory example — not derived from employment records:** Fintan Ó Ceallaigh · Planning retirement · No job recommendations. This example is displayed in the entry workspace without changing any source fixture. Intention changes remain conceptual; no retirement management workflow is implemented. How to handle already-active referrals when a keeper changes their intention would require operational research and a conversation with the keeper, rather than automatic assumptions.
 
 ## Implemented moment: assessment to referral
 
@@ -117,7 +106,7 @@ Mantine owns typography, spacing, sizing and accessible controls. Right-hand dra
 
 ## Conceptual features and potential business value
 
-Not built: people/vacancy directories, full profiles, automatic retirement filtering, multiple-opportunity navigation, person-facing portal, real messages, approval to share, employer submissions, employer portal, authentication, backend, matching, training management or interview scheduling.
+Not built: a full workforce directory, vacancy directory, additional assessments, full profiles, intention editing, matching or automatic suggestions, person-facing portal, real messages, approval to share, employer submissions, employer portal, authentication, backend, matching, training management or interview scheduling.
 
 Once an actual interview invitation exists, a future workspace could support selecting career examples, reviewing requirements, preparing employer questions and tracking the date/outcome. No interview-preparation tasks or preview are shown in this prototype’s earlier referral stage.
 

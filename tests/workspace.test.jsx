@@ -1,5 +1,7 @@
 import React from "react";
-import { afterEach, expect, it, vi } from "vitest";
+import { assessmentHash } from "../src/people";
+beforeEach(() => window.history.replaceState(null, "", assessmentHash));
+import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import {
   cleanup,
   fireEvent,
@@ -27,6 +29,7 @@ const close = async (user) => {
 };
 afterEach(() => {
   cleanup();
+  window.history.replaceState(null, "", "/");
   localStorage.clear();
   vi.restoreAllMocks();
 });

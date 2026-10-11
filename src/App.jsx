@@ -51,6 +51,9 @@ import {
   persistWorkspace,
   workspaceReducer,
 } from "./workspace.js";
+import { PeopleWorkspace } from "./PeopleWorkspace";
+import { assessmentHash } from "./people";
+
 const clarificationContexts = [
   ...requirements,
   careerContext,
@@ -59,6 +62,31 @@ const clarificationContexts = [
 ];
 
 export default function App() {
+  const [page, setPage] = useState(() =>
+    window.location.hash === assessmentHash ? "assessment" : "people",
+  );
+  useEffect(() => {
+    const changePage = () => {
+      if (window.location.hash === "#main") return;
+      setPage(
+        window.location.hash === assessmentHash ? "assessment" : "people",
+      );
+    };
+    window.addEventListener("hashchange", changePage);
+    return () => window.removeEventListener("hashchange", changePage);
+  }, []);
+  const previousPage = useRef(page);
+  useEffect(() => {
+    document.title =
+      page === "people"
+        ? "Redeployment workspace · Carrowmore"
+        : "Eimhin Mac Neidhe · Carrowmore";
+    if (previousPage.current !== page) {
+      document.getElementById("main")?.focus();
+      window.scrollTo(0, 0);
+      previousPage.current = page;
+    }
+  }, [page]);
   const [expanded, setExpanded] = useState(null);
   const [loaded] = useState(() =>
     loadWorkspace({ getItem: (key) => window.localStorage.getItem(key) }),
@@ -265,8 +293,18 @@ export default function App() {
 
   return (
     <>
-      <Anchor className="skip" href="#main">
-        Skip to opportunity assessment
+      <Anchor
+        className="skip"
+        href="#main"
+        onClick={(event) => {
+          event.preventDefault();
+          document.getElementById("main")?.focus();
+          document.getElementById("main")?.scrollIntoView();
+        }}
+      >
+        {page === "people"
+          ? "Skip to redeployment workspace"
+          : "Skip to opportunity assessment"}
       </Anchor>
       <Paper component="header" withBorder radius={0} p="md">
         <Container size="lg">
@@ -298,254 +336,258 @@ export default function App() {
           </Group>
         </Container>
       </Paper>
-      <Container size="lg" py="lg" component="main" id="main" tabIndex={-1}>
-        <Stack gap="md">
-          <Breadcrumbs
-            className="context-breadcrumbs"
-            separator={<Icon icon={ChevronRight} />}
-            aria-label="Review context"
-          >
-            <Text size="sm" c="dimmed">
-              People
-            </Text>
-            <Text size="sm" c="dimmed">
-              {person.name}
-            </Text>
-            <Text size="sm">{vacancy.title}</Text>
-          </Breadcrumbs>
-          <Grid gutter="lg" align="flex-start">
-            <Grid.Col span={{ base: 12, md: 8 }}>
-              <Stack gap="md">
-                <Paper
-                  component="section"
-                  withBorder
-                  radius="md"
-                  p="lg"
-                  bg="white"
-                  aria-labelledby="candidate-name"
-                >
-                  <Grid gutter="xl" align="stretch">
-                    <Grid.Col span={12}>
-                      <Stack gap="sm">
-                        <Title order={1} size="h2" id="candidate-name">
-                          {person.name}
-                        </Title>
-                        <Text size="sm">
-                          <Text component="span" c="dimmed">
-                            Current role:{" "}
-                          </Text>
-                          Lighthouse keeper · Carrowmore Light Authority
-                        </Text>
-                      </Stack>
-                    </Grid.Col>
-                    <Grid.Col span={12}>
-                      <Paper p="md" radius="sm" bg="gray.0">
-                        <Stack gap="xs">
-                          <Text size="sm" c="dimmed" fw={600}>
-                            Opportunity being assessed
-                          </Text>
-                          <Title order={2} size="h4">
-                            {vacancy.title} · {vacancy.employer}
+      {page === "people" ? (
+        <PeopleWorkspace workspace={workspace} storageFailed={storageFailed} />
+      ) : (
+        <Container size="lg" py="lg" component="main" id="main" tabIndex={-1}>
+          <Stack gap="md">
+            <Breadcrumbs
+              className="context-breadcrumbs"
+              separator={<Icon icon={ChevronRight} />}
+              aria-label="Review context"
+            >
+              <Anchor size="sm" href="#people">
+                People
+              </Anchor>
+              <Text size="sm" c="dimmed">
+                {person.name}
+              </Text>
+              <Text size="sm">{vacancy.title}</Text>
+            </Breadcrumbs>
+            <Grid gutter="lg" align="flex-start">
+              <Grid.Col span={{ base: 12, md: 8 }}>
+                <Stack gap="md">
+                  <Paper
+                    component="section"
+                    withBorder
+                    radius="md"
+                    p="lg"
+                    bg="white"
+                    aria-labelledby="candidate-name"
+                  >
+                    <Grid gutter="xl" align="stretch">
+                      <Grid.Col span={12}>
+                        <Stack gap="sm">
+                          <Title order={1} size="h2" id="candidate-name">
+                            {person.name}
                           </Title>
-                          <Text size="sm" c="dimmed">
-                            {vacancy.base} · {vacancy.pattern} · Based on the
-                            service operations vessel
+                          <Text size="sm">
+                            <Text component="span" c="dimmed">
+                              Current role:{" "}
+                            </Text>
+                            Lighthouse keeper · Carrowmore Light Authority
                           </Text>
-                          <Button
-                            variant="subtle"
-                            size="compact-sm"
-                            style={{ alignSelf: "flex-start" }}
-                            onClick={() => {
-                              rememberFocus();
-                              setJobOpen(true);
-                            }}
-                          >
-                            View role details
-                          </Button>
-                          <Group gap="xs">
-                            <Text size="sm" data-testid="keeper-interest">
-                              <strong>Eimhin’s interest:</strong>{" "}
-                              {interestLabel(opportunity)}
+                        </Stack>
+                      </Grid.Col>
+                      <Grid.Col span={12}>
+                        <Paper p="md" radius="sm" bg="gray.0">
+                          <Stack gap="xs">
+                            <Text size="sm" c="dimmed" fw={600}>
+                              Opportunity being assessed
+                            </Text>
+                            <Title order={2} size="h4">
+                              {vacancy.title} · {vacancy.employer}
+                            </Title>
+                            <Text size="sm" c="dimmed">
+                              {vacancy.base} · {vacancy.pattern} · Based on the
+                              service operations vessel
                             </Text>
                             <Button
                               variant="subtle"
-                              size="compact-xs"
-                              onClick={() => openWorkflow("response")}
+                              size="compact-sm"
+                              style={{ alignSelf: "flex-start" }}
+                              onClick={() => {
+                                rememberFocus();
+                                setJobOpen(true);
+                              }}
                             >
-                              Edit response
+                              View role details
                             </Button>
-                          </Group>
-                          <Text size="xs" c="dimmed">
-                            {opportunity.responseOrigin === "illustrative"
-                              ? "Interested is illustrative scenario data, not a historical response."
-                              : opportunity.responseOrigin === "simulated"
-                                ? "Manually recorded prototype response."
-                                : "No response recorded."}{" "}
-                            Career preferences remain unknown.
-                          </Text>
-                        </Stack>
-                      </Paper>
-                    </Grid.Col>
-                  </Grid>
-                </Paper>
-                <Stack
-                  component={Paper}
-                  role="region"
-                  withBorder
-                  radius="md"
-                  p="lg"
-                  bg="carrowmore.0"
-                  gap="xs"
-                  aria-labelledby="summary-heading"
-                >
-                  <Title order={2} size="h3" id="summary-heading">
-                    Why consider Eimhin
-                  </Title>
-                  <Text>{candidateSummary.text}</Text>
-                </Stack>
-                <Accordion value={expanded} onChange={setExpanded} order={3}>
-                  <Stack gap="md">
-                    <Stack
-                      component={Paper}
-                      role="region"
-                      withBorder
-                      radius="md"
-                      p="lg"
-                      bg="white"
-                      gap="sm"
-                      aria-labelledby="experience-heading"
-                    >
-                      <Title order={2} size="h3" id="experience-heading">
-                        Relevant experience
-                      </Title>
-                      <Text size="sm" c="dimmed">
-                        Mechanical or electrical maintenance can meet the
-                        experience requirement.
-                      </Text>
-                      <Box>
-                        {experienceRows
-                          .filter((row) => row.id !== "safety")
-                          .map(renderAssessment)}
-                      </Box>
-                    </Stack>
-                    <Stack
-                      component={Paper}
-                      role="region"
-                      withBorder
-                      radius="md"
-                      p="lg"
-                      bg="white"
-                      gap="sm"
-                      aria-labelledby="qualifications-heading"
-                    >
-                      <Title order={2} size="h3" id="qualifications-heading">
-                        Safety certificates and medical fitness
-                      </Title>
-                      <Text size="sm" c="dimmed">
-                        Safety certification is required before mobilisation.
-                        Medical fitness is essential; the vacancy does not
-                        specify when it must be verified.
-                      </Text>
-                      <Box>
-                        {requirements
-                          .filter((r) => r.type === "qualification")
-                          .map(renderAssessment)}
-                      </Box>
-                    </Stack>
-                    <Stack
-                      component={Paper}
-                      role="region"
-                      withBorder
-                      radius="md"
-                      p="lg"
-                      bg="white"
-                      gap="sm"
-                      aria-labelledby="preferences-heading"
-                    >
-                      <Title order={2} size="h3" id="preferences-heading">
-                        Additional employer preferences
-                      </Title>
-                      <Text size="sm" c="dimmed">
-                        Valued experience, rather than essential requirements.
-                      </Text>
-                      <Box>
-                        {experienceRows
-                          .filter((row) => row.id === "safety")
-                          .map(renderAssessment)}
-                        {requirements
-                          .filter((r) => r.id === "mentoring")
-                          .map(renderAssessment)}
-                      </Box>
-                    </Stack>
-                    <Stack
-                      component={Paper}
-                      role="region"
-                      withBorder
-                      radius="md"
-                      p="lg"
-                      bg="white"
-                      gap="sm"
-                      aria-labelledby="interest-heading"
-                    >
-                      <Title order={2} size="h3" id="interest-heading">
-                        Offshore working conditions
-                      </Title>
-                      <Box>
-                        {requirements
-                          .filter((r) => r.id === "environment")
-                          .map(renderAssessment)}
-                      </Box>
-                    </Stack>
+                            <Group gap="xs">
+                              <Text size="sm" data-testid="keeper-interest">
+                                <strong>Eimhin’s interest:</strong>{" "}
+                                {interestLabel(opportunity)}
+                              </Text>
+                              <Button
+                                variant="subtle"
+                                size="compact-xs"
+                                onClick={() => openWorkflow("response")}
+                              >
+                                Edit response
+                              </Button>
+                            </Group>
+                            <Text size="xs" c="dimmed">
+                              {opportunity.responseOrigin === "illustrative"
+                                ? "Interested is illustrative scenario data, not a historical response."
+                                : opportunity.responseOrigin === "simulated"
+                                  ? "Manually recorded prototype response."
+                                  : "No response recorded."}{" "}
+                              Career preferences remain unknown.
+                            </Text>
+                          </Stack>
+                        </Paper>
+                      </Grid.Col>
+                    </Grid>
+                  </Paper>
+                  <Stack
+                    component={Paper}
+                    role="region"
+                    withBorder
+                    radius="md"
+                    p="lg"
+                    bg="carrowmore.0"
+                    gap="xs"
+                    aria-labelledby="summary-heading"
+                  >
+                    <Title order={2} size="h3" id="summary-heading">
+                      Why consider Eimhin
+                    </Title>
+                    <Text>{candidateSummary.text}</Text>
                   </Stack>
-                </Accordion>
-              </Stack>
-            </Grid.Col>
-            <Grid.Col
-              span={{ base: 12, md: 4 }}
-              component="aside"
-              aria-label="Your review workspace"
-              className="review-workspace"
-              tabIndex={0}
-            >
-              <Workspace
-                state={workspace}
-                dispatch={dispatchWorkspace}
-                onOpen={openWorkspace}
-                onWorkflow={openWorkflow}
-                drafts={drafts}
-                onDiscussion={() => {
+                  <Accordion value={expanded} onChange={setExpanded} order={3}>
+                    <Stack gap="md">
+                      <Stack
+                        component={Paper}
+                        role="region"
+                        withBorder
+                        radius="md"
+                        p="lg"
+                        bg="white"
+                        gap="sm"
+                        aria-labelledby="experience-heading"
+                      >
+                        <Title order={2} size="h3" id="experience-heading">
+                          Relevant experience
+                        </Title>
+                        <Text size="sm" c="dimmed">
+                          Mechanical or electrical maintenance can meet the
+                          experience requirement.
+                        </Text>
+                        <Box>
+                          {experienceRows
+                            .filter((row) => row.id !== "safety")
+                            .map(renderAssessment)}
+                        </Box>
+                      </Stack>
+                      <Stack
+                        component={Paper}
+                        role="region"
+                        withBorder
+                        radius="md"
+                        p="lg"
+                        bg="white"
+                        gap="sm"
+                        aria-labelledby="qualifications-heading"
+                      >
+                        <Title order={2} size="h3" id="qualifications-heading">
+                          Safety certificates and medical fitness
+                        </Title>
+                        <Text size="sm" c="dimmed">
+                          Safety certification is required before mobilisation.
+                          Medical fitness is essential; the vacancy does not
+                          specify when it must be verified.
+                        </Text>
+                        <Box>
+                          {requirements
+                            .filter((r) => r.type === "qualification")
+                            .map(renderAssessment)}
+                        </Box>
+                      </Stack>
+                      <Stack
+                        component={Paper}
+                        role="region"
+                        withBorder
+                        radius="md"
+                        p="lg"
+                        bg="white"
+                        gap="sm"
+                        aria-labelledby="preferences-heading"
+                      >
+                        <Title order={2} size="h3" id="preferences-heading">
+                          Additional employer preferences
+                        </Title>
+                        <Text size="sm" c="dimmed">
+                          Valued experience, rather than essential requirements.
+                        </Text>
+                        <Box>
+                          {experienceRows
+                            .filter((row) => row.id === "safety")
+                            .map(renderAssessment)}
+                          {requirements
+                            .filter((r) => r.id === "mentoring")
+                            .map(renderAssessment)}
+                        </Box>
+                      </Stack>
+                      <Stack
+                        component={Paper}
+                        role="region"
+                        withBorder
+                        radius="md"
+                        p="lg"
+                        bg="white"
+                        gap="sm"
+                        aria-labelledby="interest-heading"
+                      >
+                        <Title order={2} size="h3" id="interest-heading">
+                          Offshore working conditions
+                        </Title>
+                        <Box>
+                          {requirements
+                            .filter((r) => r.id === "environment")
+                            .map(renderAssessment)}
+                        </Box>
+                      </Stack>
+                    </Stack>
+                  </Accordion>
+                </Stack>
+              </Grid.Col>
+              <Grid.Col
+                span={{ base: 12, md: 4 }}
+                component="aside"
+                aria-label="Your review workspace"
+                className="review-workspace"
+                tabIndex={0}
+              >
+                <Workspace
+                  state={workspace}
+                  dispatch={dispatchWorkspace}
+                  onOpen={openWorkspace}
+                  onWorkflow={openWorkflow}
+                  drafts={drafts}
+                  onDiscussion={() => {
+                    rememberFocus();
+                    setDraftOpen(true);
+                  }}
+                />
+              </Grid.Col>
+            </Grid>
+            <Group component="footer" justify="space-between" gap="xs">
+              <Text size="xs" c="dimmed">
+                CARROWMORE LIGHT AUTHORITY / EMPLOYEE REDEPLOYMENT
+              </Text>
+              <Text size="xs" c="dimmed">
+                Saved on this browser only. Nothing is sent.
+              </Text>
+              <Button
+                variant="subtle"
+                size="compact-xs"
+                onClick={() => {
                   rememberFocus();
-                  setDraftOpen(true);
+                  setResetOpen(true);
                 }}
-              />
-            </Grid.Col>
-          </Grid>
-          <Group component="footer" justify="space-between" gap="xs">
-            <Text size="xs" c="dimmed">
-              CARROWMORE LIGHT AUTHORITY / EMPLOYEE REDEPLOYMENT
-            </Text>
-            <Text size="xs" c="dimmed">
-              Saved on this browser only. Nothing is sent.
-            </Text>
-            <Button
-              variant="subtle"
-              size="compact-xs"
-              onClick={() => {
-                rememberFocus();
-                setResetOpen(true);
-              }}
-            >
-              Reset prototype workspace
-            </Button>
-          </Group>
-          {storageFailed && (
-            <Text role="alert" size="sm" c="clarification.8">
-              Browser storage is unavailable. Changes are kept for this session
-              but will not survive refresh.
-            </Text>
-          )}
-        </Stack>
-      </Container>
+              >
+                Reset prototype workspace
+              </Button>
+            </Group>
+            {storageFailed && (
+              <Text role="alert" size="sm" c="clarification.8">
+                Browser storage is unavailable. Changes are kept for this
+                session but will not survive refresh.
+              </Text>
+            )}
+          </Stack>
+        </Container>
+      )}
       <Box className="notification-region" role="status" aria-live="polite">
         {notice && (
           <Notification

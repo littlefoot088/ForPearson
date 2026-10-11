@@ -45,3 +45,5 @@ Reset to assessment uses a short confirmation modal because it replaces working 
 The workspace retains its task and conversation layout. Only introduction-related controls/status labels change in this iteration. Task completion does not use qualification-success styling. Recent conversation remains a dated preview, with editing in a drawer.
 
 Current and previous introduction drafts share one document-preview component: the same paper surface, section headings, typography and spacing. Previous versions are labelled read-only. Older saved fields retain their wording under explicit section headings; no recommendation is invented where the previous format stored questions instead. Internal state metadata is never rendered as document text.
+
+The redeployment entry page uses one compact list surface. Person headings establish the primary grouping; a Mantine Grid aligns opportunity, progress and next action beneath each name, stacking with explicit field labels on narrow screens. Only implemented destinations use links. Mantine TextInput, NativeSelect and Checkbox provide search and filtering. The shared application header is unchanged.

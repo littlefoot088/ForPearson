@@ -2,6 +2,8 @@
 
 React + JavaScript + Vite prototype for one redeployment officer assessing Eimhin Mac Neidhe against Carrowmore Array’s Wind Turbine Technician opportunity. The outcome is a concise, evidence-backed candidate introduction, not an employer submission.
 
+The app now opens with a compact **Redeployment workspace**: search people by name, filter employment intentions or show those with outstanding next actions. Open Eimhin’s Wind Turbine Technician link to enter the existing assessment; the People breadcrumb returns to the list without resetting work. Other opportunity associations are clearly illustrative and have no assessment links.
+
 ## Run
 
 ```sh
@@ -38,7 +40,7 @@ Mantine owns typography, spacing, sizing, radii, responsive components and overl
 
 ## Scope and verification
 
-The initial interest is clearly labelled illustrative, not extracted from records or an invented conversation. Actual sharing requires Eimhin’s approval of the information. Sharing approval, submission, employer outcomes and interview preparation remain conceptual, as do directories and the wider redeployment platform.
+The initial interest is clearly labelled illustrative, not extracted from records or an invented conversation. Actual sharing requires Eimhin’s approval of the information. Sharing approval, submission, employer outcomes and interview preparation remain conceptual, as do the full workforce/vacancy directories and the wider redeployment platform. The entry workspace contains only a labelled illustrative sample.
 
 Tests cover fixture integrity/reachability, source highlights, disclosure, discussion editing, independent checks, task and note editing, storage recovery/reset, introduction privacy, reported-information inclusion, review-readiness guards and focus transitions. jsdom component tests do not verify rendered layout. Browser verification results are reported with delivery; no physical-device or full screen-reader audit is claimed.
 
@@ -47,3 +49,5 @@ The candidate introduction uses the same attributed claim relationships as the i
 Storage envelopes now use version 2 under the existing pair-specific key. Version 1 drafts are retained and require an explicit, confirmed creation step for the shorter format; previous wording remains an internal reference. Old referral-readiness decisions never become person approval. Reset to assessment also requires confirmation and preserves previous wording. Changes to assessment context flag a draft for review without overwriting edits.
 
 This iteration passes 41 tests (21 fixture/state tests and 20 component tests), plus the production build. Chrome checks covered the document preview, explicit legacy conversion, edit/cancel transitions, confirmation return focus, Escape and return focus to the workspace trigger. At 250% zoom, the drawer becomes full-width and its text and controls remain within the viewport. This zoom-based narrow-layout check is not a physical mobile-device test; no full screen-reader audit is claimed. Saving, persistence and readiness combinations were verified by automated tests.
+
+The redeployment entry-page iteration passes 45 tests (23 fixture/state tests and 22 component tests) and the production build. Added coverage checks search/filter combinations, retirement with no recommendations, shared task/progress derivation, direct navigation, focus and retained state. Chrome checks covered name search, opening the assessment, returning through People, desktop alignment and stacked fields at 250% zoom. No physical mobile-device or full screen-reader audit was performed.
