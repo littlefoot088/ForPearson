@@ -82,11 +82,6 @@ export function Workspace({
               Edit assessment
             </Button>
           </Group>
-          {drafts.length > 0 && (
-            <Button variant="subtle" size="compact-sm" onClick={onDiscussion}>
-              Discussion with Eimhin ({drafts.length})
-            </Button>
-          )}
         </Stack>
       </Paper>
       <Paper
@@ -111,7 +106,49 @@ export function Workspace({
               <Plus size={18} />
             </ActionIcon>
           </Group>
-          {tasks.length === 0 && (
+          {drafts.map((draft) => (
+            <Stack gap="xs" key={draft.id}>
+              <Text size="sm" fw={600}>
+                {draft.title}
+              </Text>
+              <Text size="sm">{draft.text}</Text>
+              {["pump", "electrical"].includes(draft.id) && (
+                <Button
+                  variant="subtle"
+                  size="compact-sm"
+                  w="fit-content"
+                  onClick={() => onOpen("report", { id: draft.id })}
+                >
+                  {state.reports[draft.id]
+                    ? "Edit Eimhin’s account"
+                    : "Record Eimhin’s account"}
+                </Button>
+              )}
+            </Stack>
+          ))}
+          {Object.values(state.reports)
+            .filter((report) => !drafts.some((draft) => draft.id === report.id))
+            .map((report) => (
+              <Group key={report.id} justify="space-between">
+                <Text size="sm">
+                  {claims.find((claim) => claim.id === report.id)?.title} ·
+                  Account recorded
+                </Text>
+                <Button
+                  variant="subtle"
+                  size="compact-sm"
+                  onClick={() => onOpen("report", { id: report.id })}
+                >
+                  Edit Eimhin’s account
+                </Button>
+              </Group>
+            ))}
+          {drafts.length > 0 && (
+            <Button variant="subtle" size="compact-sm" onClick={onDiscussion}>
+              Discussion with Eimhin ({drafts.length})
+            </Button>
+          )}{" "}
+          {tasks.length === 0 && drafts.length === 0 && (
             <Text size="sm" c="dimmed">
               No tasks recorded.
             </Text>

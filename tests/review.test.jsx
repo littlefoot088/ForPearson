@@ -133,7 +133,7 @@ describe("Mantine review interactions", () => {
     const user = setup();
     await user.click(requirement(maintenance));
     await user.click(
-      (await screen.findAllByRole("button", { name: "Add to discussion" }))[0],
+      (await screen.findAllByRole("button", { name: "Add follow-up" }))[0],
     );
     let input = await screen.findByRole("textbox", {
       name: "Question for Eimhin",
@@ -156,6 +156,17 @@ describe("Mantine review interactions", () => {
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
       "Interested",
     );
+    expect(
+      within(screen.getByRole("region", { name: "Next steps" })).getByText(
+        "Which pump repairs did you complete independently?",
+      ),
+    ).toBeVisible();
+    expect(
+      within(screen.getByRole("region", { name: maintenance })).queryByRole(
+        "button",
+        { name: "Record Eimhin’s account" },
+      ),
+    ).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
     );
@@ -172,7 +183,7 @@ describe("Mantine review interactions", () => {
     await user.type(input, " Please give an example.");
     await user.click(screen.getByRole("button", { name: "Save question" }));
     expect(
-      screen.getByText(
+      within(screen.getByRole("dialog")).getByText(
         "Which pump repairs did you complete independently? Please give an example.",
       ),
     ).toBeVisible();
@@ -273,16 +284,14 @@ it("keeps discussion topics unique and distinct from qualification checks", asyn
   await user.click(
     await screen.findByRole("button", { name: "Check qualification" }),
   );
-  await user.click(screen.getByRole("button", { name: "Add to discussion" }));
+  await user.click(screen.getByRole("button", { name: "Add follow-up" }));
   await user.click(
     await screen.findByRole("button", { name: "Save question" }),
   );
   await waitFor(() =>
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
-  await user.click(
-    screen.getByRole("button", { name: "Edit discussion question" }),
-  );
+  await user.click(screen.getByRole("button", { name: "View follow-up" }));
   const input = await screen.findByRole("textbox", {
     name: "Question for Eimhin",
   });
@@ -352,7 +361,7 @@ it("keeps optional discussion prompts available after saving a contextual questi
   const user = setup();
   await user.click(requirement(maintenance));
   await user.click(
-    await screen.findByRole("button", { name: "Add to discussion" }),
+    await screen.findByRole("button", { name: "Add follow-up" }),
   );
   await user.click(
     await screen.findByRole("button", { name: "Save question" }),
@@ -468,7 +477,7 @@ it("shows experience facts directly and keeps supporting-module actions in the i
     within(dialog).getByRole("button", { name: "Check qualification" }),
   );
   await user.click(
-    within(dialog).getByRole("button", { name: "Add to discussion" }),
+    within(dialog).getByRole("button", { name: "Add follow-up" }),
   );
   await user.click(
     await screen.findByRole("button", { name: "Save question" }),
@@ -476,7 +485,7 @@ it("shows experience facts directly and keeps supporting-module actions in the i
   dialog = await screen.findByRole("dialog", { name: /QUALIFICATION RECORD/ });
   await waitFor(() =>
     expect(
-      within(dialog).getByRole("button", { name: "Edit discussion question" }),
+      within(dialog).getByRole("button", { name: "View follow-up" }),
     ).toBeVisible(),
   );
   await user.click(

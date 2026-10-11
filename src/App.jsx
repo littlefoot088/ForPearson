@@ -191,7 +191,7 @@ export default function App() {
         : [...ds, draft],
     );
     closeComposer();
-    setNotice("Question saved to Discussion with Eimhin.");
+    setNotice("Question saved in Next steps.");
   }
   function editDraft(draft) {
     const requirement = clarificationContexts.find(
@@ -264,7 +264,7 @@ export default function App() {
     }
   }
   const overlayTitle = composer
-    ? "Add to discussion"
+    ? "Follow-up question"
     : draftOpen
       ? "Discussion with Eimhin"
       : workflowDialog
@@ -826,7 +826,7 @@ export default function App() {
               maxLength={2000}
             />
             <Text size="sm" c="dimmed">
-              For your discussion with Eimhin. Saving does not send a message.
+              Saved in Next steps for your discussion. Nothing is sent.
             </Text>
             <Group justify="flex-end">
               <Button variant="default" onClick={closeComposer}>

@@ -56,3 +56,7 @@ The workspace retains its task and conversation layout. Only introduction-relate
 Current and previous introduction drafts share one document-preview component: the same paper surface, section headings, typography and spacing. Previous versions are labelled read-only. Older saved fields retain their wording under explicit section headings; no recommendation is invented where the previous format stored questions instead. Internal state metadata is never rendered as document text.
 
 The redeployment entry page uses one compact list surface. Person headings establish the primary grouping; a Mantine Grid aligns opportunity, progress and next action beneath each name, stacking with explicit field labels on narrow screens. Only implemented destinations use links. Mantine TextInput, NativeSelect and Checkbox provide search and filtering. The shared application header is unchanged.
+
+### Evidence and follow-ups
+
+Experience panels distinguish recorded activity, supporting evidence and related training. Evidence limitations are statements, not automatic requests to the person. A quiet Add follow-up / View follow-up control opens an editable question; only explicit saving adds it to Next steps. All saved questions and their management control now live in Next steps alongside tasks and qualification checks. Reported-account editing is available there, associated with its question (or retained account). Existing questions, accounts and deduplication identifiers are preserved without a storage migration.

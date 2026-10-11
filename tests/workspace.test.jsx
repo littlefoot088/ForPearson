@@ -210,7 +210,19 @@ it("records responsibilities separately and includes them only on explicit selec
     screen.getByRole("button", { name: /Pump maintenance & repair.*Repeated/ }),
   );
   await user.click(
-    await screen.findByRole("button", { name: "Record Eimhin’s account" }),
+    await screen.findByRole("button", { name: "Add follow-up" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "Save question" }),
+  );
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
+  await user.click(
+    within(screen.getByRole("region", { name: "Next steps" })).getByRole(
+      "button",
+      { name: "Record Eimhin’s account" },
+    ),
   );
   fireEvent.change(await screen.findByLabelText(/Date reported/), {
     target: { value: "2026-12-31" },

@@ -1,5 +1,5 @@
 import React from "react";
-import { Accordion, Button, Group, Stack, Text } from "@mantine/core";
+import { Accordion, Button, Divider, Group, Stack, Text } from "@mantine/core";
 import {
   FileText,
   Files,
@@ -38,7 +38,10 @@ export function RequirementRow({ requirement, children }) {
   const status = assessmentStates[requirement.assessment];
   return (
     <Accordion.Item value={requirement.id}>
-      <Accordion.Control id={"requirement-" + requirement.id}>
+      <Accordion.Control
+        className="assessment-control"
+        id={"requirement-" + requirement.id}
+      >
         <span
           className={
             requirement.conclusion
@@ -46,7 +49,9 @@ export function RequirementRow({ requirement, children }) {
               : "requirement-label"
           }
         >
-          <Text component="span">{requirement.text}</Text>
+          <Text component="span" fw={600}>
+            {requirement.text}
+          </Text>
           <Text
             component="span"
             size="sm"
@@ -89,7 +94,7 @@ export function QualificationActions({ q, onClarify, drafted, task, onFlag }) {
         </Button>
       )}
       <Button variant="subtle" size="compact-sm" onClick={() => onClarify(q)}>
-        {drafted ? "Edit discussion question" : "Add to discussion"}
+        {drafted ? "View follow-up" : "Add follow-up"}
       </Button>
     </Group>
   );
@@ -137,38 +142,63 @@ export function ExpandedAssessment({
             aria-label={claim.title}
             key={claim.id}
           >
-            <Text>{claim.summary}</Text>
-            <Text size="sm" c="dimmed">
-              {claim.relevance}
-            </Text>
-            <Text size="sm">
-              {records.length} supporting records ·{" "}
-              {records[0].date.slice(0, 4)}–{records.at(-1).date.slice(0, 4)} ·{" "}
-              {claim.involvement}
-            </Text>
-            {records.some((r) => r.date < person.joined) && (
-              <Text size="sm" c="clarification.8">
-                1 included record needs attribution checking.
+            <Stack gap="xs">
+              <Text fw={600} size="sm">
+                Recorded experience
               </Text>
-            )}
-            {linkedQualifications.map((q) => (
-              <Group key={q.id} justify="space-between" gap="xs">
-                <Text size="sm">
-                  <strong>Related training:</strong> {q.title} · {q.status} ·
-                  Supporting module
+              <Text>{claim.introductionSummary}</Text>
+              <Text size="sm" c="dimmed">
+                {claim.relevance}
+              </Text>
+            </Stack>
+            <Stack gap="xs">
+              <Text fw={600} size="sm">
+                Supporting evidence
+              </Text>
+              <Text size="sm" c="dimmed">
+                {records.length} supporting records ·{" "}
+                {records[0].date.slice(0, 4)}–{records.at(-1).date.slice(0, 4)}{" "}
+                · {claim.involvement}
+              </Text>
+              {records.some((r) => r.date < person.joined) && (
+                <Text size="sm" c="clarification.8">
+                  1 included record needs attribution checking.
                 </Text>
-                <Button
-                  variant="subtle"
-                  size="compact-sm"
-                  onClick={() => inspect(q, "qualification")}
-                >
-                  View training record
-                </Button>
-              </Group>
+              )}
+              <Text size="sm" c="dimmed">
+                {claim.id === "safety"
+                  ? "Current permit authority is not established by these records."
+                  : "Independent responsibility is not established by these records."}
+              </Text>
+              <Button
+                variant="light"
+                w="fit-content"
+                onClick={() => inspect(claim, "claim")}
+              >
+                View evidence
+              </Button>
+            </Stack>
+            {linkedQualifications.map((q) => (
+              <Stack key={q.id} gap="xs">
+                <Divider />
+                <Text fw={600} size="sm">
+                  Related training
+                </Text>
+                <Text size="sm">{q.title}</Text>
+                <Group justify="space-between" gap="xs">
+                  <Text size="sm" c="dimmed">
+                    {q.status} · Supporting module
+                  </Text>
+                  <Button
+                    variant="subtle"
+                    size="compact-sm"
+                    onClick={() => inspect(q, "qualification")}
+                  >
+                    View training record
+                  </Button>
+                </Group>
+              </Stack>
             ))}
-            <Text size="sm">
-              <strong>Next step:</strong> {claim.limitation}
-            </Text>
             {report && (
               <Text size="sm" className="source-quote">
                 <strong>Reported by Eimhin · {dateLabel(report.date)}:</strong>{" "}
@@ -178,25 +208,15 @@ export function ExpandedAssessment({
                 </Text>
               </Text>
             )}
-            <Group gap="xs">
-              <Button variant="light" onClick={() => inspect(claim, "claim")}>
-                View evidence
-              </Button>
-              <Button variant="subtle" onClick={() => clarify(claim)}>
-                {hasDraft(claim.id)
-                  ? "Edit discussion question"
-                  : "Add to discussion"}
-              </Button>
-              {onReport && ["pump", "electrical"].includes(claim.id) && (
-                <Button
-                  variant="subtle"
-                  size="compact-sm"
-                  onClick={() => onReport(claim)}
-                >
-                  {report ? "Edit Eimhin’s account" : "Record Eimhin’s account"}
-                </Button>
-              )}
-            </Group>
+            <Divider />
+            <Button
+              variant="subtle"
+              size="compact-sm"
+              w="fit-content"
+              onClick={() => clarify(claim)}
+            >
+              {hasDraft(claim.id) ? "View follow-up" : "Add follow-up"}
+            </Button>
           </Stack>
         );
       })}
@@ -244,9 +264,7 @@ export function ExpandedAssessment({
             w="fit-content"
             onClick={() => clarify({ ...requirement, title: requirement.text })}
           >
-            {hasDraft(requirement.id)
-              ? "Edit discussion question"
-              : "Add to discussion"}
+            {hasDraft(requirement.id) ? "View follow-up" : "Add follow-up"}
           </Button>
         </>
       )}

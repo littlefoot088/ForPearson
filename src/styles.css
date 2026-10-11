@@ -76,3 +76,9 @@
   outline: 2px solid var(--mantine-primary-color-filled);
   outline-offset: 2px;
 }
+
+.assessment-control[data-active] {
+  background: var(--mantine-color-gray-0);
+  border-bottom: 1px solid var(--mantine-color-gray-3);
+  margin-bottom: var(--mantine-spacing-md);
+}

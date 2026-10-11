@@ -115,3 +115,7 @@ Potential benefits include less manual record reading, better opportunity priori
 ## Simplified interaction model
 
 One expanded assessment provides decision context; the evidence drawer provides original records and directly visible provenance. No nested assessment disclosures are used. Supporting-module follow-ups live only in their training inspector. Candidate introduction is the sole readiness interface, requiring a saved draft and recorded interest without implying sharing consent. People and the assessment workspace share progress derivation. People search and filters remain in app state while visiting and returning from the assessment.
+
+### Evidence and follow-ups
+
+Experience panels distinguish recorded activity, supporting evidence and related training. Evidence limitations are statements, not automatic requests to the person. A quiet Add follow-up / View follow-up control opens an editable question; only explicit saving adds it to Next steps. All saved questions and their management control now live in Next steps alongside tasks and qualification checks. Reported-account editing is available there, associated with its question (or retained account). Existing questions, accounts and deduplication identifiers are preserved without a storage migration.
