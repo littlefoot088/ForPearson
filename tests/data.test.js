@@ -45,7 +45,7 @@ test("attendance remains distinct from passing and full certification", () => {
     "Attended",
   );
   assert.equal(fire.status, "Listed expiry: 18 August 2025 (past)");
-  assert.match(fire.detail, /Attendance is recorded/);
+  assert.match(fire.detail, /Attendance was recorded/);
   assert.match(fire.detail, /requirement is unknown/);
   assert.ok(
     qualifications

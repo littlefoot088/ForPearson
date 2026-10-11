@@ -130,6 +130,10 @@ export const requirements = [
 export const claims = [
   {
     id: "pump",
+    workSummary:
+      "Replaced pump seals, aligned couplings and rebuilt a pump with new wear rings.",
+    evidenceSummary:
+      "Repeated repair entries, including three in 2024–2026. The latest, on 21 April 2026, records a full pump rebuild and restored delivery pressure.",
     introductionSummary:
       "Pump rebuilding, seal replacement and coupling alignment.",
     number: "01",
@@ -155,6 +159,10 @@ export const claims = [
   },
   {
     id: "electrical",
+    workSummary:
+      "Rebuilt electrical changeover controls, traced a lighting fault and corrected a battery charger’s settings.",
+    evidenceSummary:
+      "Examples are recorded in 2011, 2018 and 2026. The latest, on 26 December 2026, describes correcting charger settings. The previous selected example is from January 2018.",
     introductionSummary:
       "Control-system repairs, earth-fault tracing and charger fault correction.",
     number: "02",
@@ -179,6 +187,10 @@ export const claims = [
   },
   {
     id: "safety",
+    workSummary:
+      "Planned entry into a flooded sump with rescue equipment ready, and acted as the person authorised to issue work permits.",
+    evidenceSummary:
+      "Two entries describe different responsibilities: entry planning on 15 April 2014, and issuing three permits on 19 August 2025. Current permit authority is not recorded.",
     introductionSummary:
       "Work planning and permit issuing; current authority needs confirmation.",
     number: "03",
@@ -205,7 +217,7 @@ export const qualifications = [
     tone: "positive",
     recordId: "LH500010",
     detail:
-      "Expires 3 May 2028. The full offshore safety certificate has not been checked.",
+      "Passed on 5 August 2024; expires 3 May 2028. The full offshore safety certificate has not been checked.",
     question:
       "Please provide your current offshore safety certificate so we can check its award, coverage and expiry.",
   },
@@ -217,7 +229,7 @@ export const qualifications = [
     tone: "attention",
     recordId: "LH500003",
     detail:
-      "Attendance is recorded. Whether this meets the fire-safety requirement is unknown.",
+      "Attendance was recorded on 8 September 2021. Whether this meets the fire-safety requirement is unknown.",
     question:
       "Do you have a current fire-safety certificate or a newer training record?",
   },
@@ -260,7 +272,7 @@ export const qualifications = [
     status: "Pass recorded",
     tone: "positive",
     recordId: "LH500008",
-    summary: "Passed. Training record expires 5 December 2028.",
+    summary: "Passed on 4 May 2023. Training record expires 5 December 2028.",
     detail:
       "Training record expires 5 December 2028. This record covers one part of the training, not a full certificate.",
     question:
@@ -273,9 +285,10 @@ export const qualifications = [
     status: "Training record expired",
     tone: "attention",
     recordId: "LH500001",
-    summary: "Passed. Training record expired 14 July 2022.",
+    summary:
+      "Passed on 11 February 2017. Training record expired 14 July 2022.",
     detail:
-      "Passed. Training record expired 14 July 2022. This record covers one part of the training, not a full certificate.",
+      "Passed on 11 February 2017. Training record expired 14 July 2022. This record covers one part of the training, not a full certificate.",
     question: "Do you have a newer record for the generator-control module?",
   },
 ];

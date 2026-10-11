@@ -357,13 +357,14 @@ it("shows experience facts directly and keeps supporting-module actions in the i
     ),
   ).not.toBeInTheDocument();
   expect(
-    within(panel).getByText("Passed. Training record expires 5 December 2028."),
+    within(panel).getByText(
+      "Passed on 4 May 2023. Training record expires 5 December 2028.",
+    ),
   ).toBeVisible();
 
-  expect(within(panel).getByText(/5 supporting records/)).toBeVisible();
-  expect(
-    within(panel).getByText(/entry uses Eimhin’s name and code/),
-  ).toBeVisible();
+  expect(within(panel).getByText(/5 selected logbook entries/)).toBeVisible();
+  expect(within(panel).queryByText(/joining date/)).not.toBeInTheDocument();
+  expect(within(panel).getByText(/three in 2024–2026/)).toBeVisible();
   expect(
     within(panel).queryByRole("button", {
       name: /follow-up|qualification check/i,

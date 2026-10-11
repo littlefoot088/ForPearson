@@ -15,7 +15,6 @@ import {
   qualifications,
   getSources,
   dateLabel,
-  person,
 } from "./data";
 
 const statusIcons = {
@@ -133,29 +132,12 @@ export function ExpandedAssessment({
             aria-label={claim.title}
             key={claim.id}
           >
-            <DetailSection title="Recorded experience">
-              <Text size="sm">{claim.introductionSummary}</Text>
+            <DetailSection title="What Eimhin did">
+              <Text size="sm">{claim.workSummary}</Text>
             </DetailSection>
-            <DetailSection title="Supporting evidence">
-              <Text size="sm">
-                {records.length} supporting records ·{" "}
-                {records[0].date.slice(0, 4)}–{records.at(-1).date.slice(0, 4)}{" "}
-                · {claim.involvement}
-              </Text>
-              {records.some((r) => r.date < person.joined) && (
-                <Text size="sm">
-                  The {dateLabel(records[0].date)} entry uses Eimhin’s name and
-                  code, but predates his recorded joining date (
-                  {dateLabel(person.joined)}). The date discrepancy is
-                  unresolved.
-                </Text>
-              )}
-              {claim.id === "safety" && (
-                <Text size="sm">
-                  The records do not show whether Eimhin’s permit authority is
-                  still current.
-                </Text>
-              )}
+            <DetailSection title="When it is recorded">
+              <Text size="sm">{claim.evidenceSummary}</Text>
+              <Text size="sm">{records.length} selected logbook entries</Text>
               <Button
                 variant="light"
                 size="sm"
