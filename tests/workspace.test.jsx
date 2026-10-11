@@ -369,6 +369,13 @@ it("cancels edits, confirms regeneration and preserves previous manual wording a
   await user.click(
     screen.getByRole("button", { name: "Save introduction draft" }),
   );
+  const previousPreview = screen.getByRole("article", {
+    name: "Previous introduction preview",
+  });
+  expect(
+    within(previousPreview).getByRole("heading", { name: "Recommendation" }),
+  ).toBeInTheDocument();
+  expect(previousPreview).not.toHaveTextContent("assessmentSignature");
   const stored = JSON.parse(localStorage.getItem(storageKey));
   expect(stored.workspace.referral.previousDraft.recommendation).toContain(
     "Please explore",
@@ -409,6 +416,38 @@ it("does not replace a legacy referral until explicitly requested", async () => 
     ).toBeVisible(),
   );
   expect(screen.queryByRole("article")).not.toBeInTheDocument();
+  await user.click(
+    screen.getByRole("button", { name: "Previous draft · internal reference" }),
+  );
+  const previousPreview = await screen.findByRole("article", {
+    name: "Previous introduction preview",
+  });
+  for (const heading of [
+    "Candidate and opportunity",
+    "Why we recommend Eimhin",
+    "Relevant experience",
+    "Qualifications and readiness",
+    "Items to confirm",
+  ]) {
+    expect(
+      within(previousPreview).getByRole("heading", { name: heading }),
+    ).toBeInTheDocument();
+  }
+  for (const wording of [
+    "Original manual wording",
+    "Original experience",
+    "Original qualifications",
+    "Original questions",
+  ]) {
+    expect(previousPreview).toHaveTextContent(wording);
+  }
+  expect(
+    within(previousPreview).queryByRole("heading", { name: "Recommendation" }),
+  ).not.toBeInTheDocument();
+  await user.click(
+    screen.getByRole("button", { name: "Previous draft · internal reference" }),
+  );
+
   expect(
     JSON.parse(localStorage.getItem(storageKey)).workspace.referral.why,
   ).toBe("Original manual wording");

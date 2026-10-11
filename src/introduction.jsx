@@ -24,11 +24,16 @@ import {
 const experienceFields = referralFields.filter(([key]) =>
   ["pump", "electrical", "safety"].includes(key),
 );
-function DocumentPreview({ draft }) {
+function DocumentPreview({ draft, previous = false }) {
+  const legacy = draft.format !== 2;
   return (
     <Paper
       component="article"
-      aria-label="Candidate introduction preview"
+      aria-label={
+        previous
+          ? "Previous introduction preview"
+          : "Candidate introduction preview"
+      }
       bg="white"
       p="lg"
       withBorder
@@ -36,18 +41,31 @@ function DocumentPreview({ draft }) {
     >
       <Stack gap="md">
         <header>
-          <Title order={2} size="h3">
-            {person.name}
-          </Title>
-          <Text size="sm" c="dimmed">
-            Current role: {person.role}
-          </Text>
-          <Text mt="sm" size="sm">
-            For consideration
-          </Text>
-          <Text fw={600}>
-            {vacancy.title} · {vacancy.employer}
-          </Text>
+          {legacy ? (
+            <>
+              <Title order={2} size="h3" mb="xs">
+                Candidate and opportunity
+              </Title>
+              <Text size="sm" className="source-quote">
+                {draft.candidate}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Title order={2} size="h3">
+                {person.name}
+              </Title>
+              <Text size="sm" c="dimmed">
+                Current role: {person.role}
+              </Text>
+              <Text mt="sm" size="sm">
+                For consideration
+              </Text>
+              <Text fw={600}>
+                {vacancy.title} · {vacancy.employer}
+              </Text>
+            </>
+          )}
         </header>
         <Divider />
         <section>
@@ -62,15 +80,21 @@ function DocumentPreview({ draft }) {
           <Title order={3} size="h5" mb="xs">
             Relevant experience
           </Title>
-          <Stack gap="xs">
-            {experienceFields.map(([key, label]) => (
-              <Text key={key} size="sm" className="source-quote">
-                <strong>{label}:</strong> {draft[key]}
-              </Text>
-            ))}
-          </Stack>
+          {legacy ? (
+            <Text size="sm" className="source-quote">
+              {draft.experience}
+            </Text>
+          ) : (
+            <Stack gap="xs">
+              {experienceFields.map(([key, label]) => (
+                <Text key={key} size="sm" className="source-quote">
+                  <strong>{label}:</strong> {draft[key]}
+                </Text>
+              ))}
+            </Stack>
+          )}
         </section>
-        {draft.includedReports.length > 0 && (
+        {draft.includedReports?.length > 0 && (
           <section>
             <Title order={3} size="h5" mb="xs">
               Eimhin’s account
@@ -92,10 +116,10 @@ function DocumentPreview({ draft }) {
         </section>
         <section>
           <Title order={3} size="h5" mb="xs">
-            Recommendation
+            {legacy ? "Items to confirm" : "Recommendation"}
           </Title>
           <Text size="sm" className="source-quote">
-            {draft.recommendation}
+            {legacy ? draft.questions : draft.recommendation}
           </Text>
         </section>
       </Stack>
@@ -112,27 +136,10 @@ function PreviousDraft({ draft }) {
         </Accordion.Control>
         <Accordion.Panel>
           <Text size="sm" c="dimmed" mb="sm">
-            Retained wording, not part of this candidate introduction.
+            Previous version · Read-only. Original wording preserved; not part
+            of the current introduction.
           </Text>
-          <Stack gap="sm">
-            {Object.entries(draft)
-              .filter(
-                ([key, value]) =>
-                  typeof value === "string" &&
-                  !["assessmentSignature"].includes(key),
-              )
-              .map(([key, value]) => (
-                <Text key={key} size="sm" className="source-quote">
-                  {value}
-                </Text>
-              ))}
-            {Array.isArray(draft.includedReports) &&
-              draft.includedReports.map((report) => (
-                <Text size="sm" key={report.id}>
-                  {report.text}
-                </Text>
-              ))}
-          </Stack>
+          <DocumentPreview draft={draft} previous />
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>

@@ -43,3 +43,5 @@ Only Draft and Ready for Eimhin’s review are actionable states. The latter req
 Reset to assessment uses a short confirmation modal because it replaces working text. Restore focus to the document after replacement, or the trigger after cancellation. Retain previous wording behind an internal disclosure, outside the employer-facing preview. Source records remain accessible through the unchanged main assessment.
 
 The workspace retains its task and conversation layout. Only introduction-related controls/status labels change in this iteration. Task completion does not use qualification-success styling. Recent conversation remains a dated preview, with editing in a drawer.
+
+Current and previous introduction drafts share one document-preview component: the same paper surface, section headings, typography and spacing. Previous versions are labelled read-only. Older saved fields retain their wording under explicit section headings; no recommendation is invented where the previous format stored questions instead. Internal state metadata is never rendered as document text.
