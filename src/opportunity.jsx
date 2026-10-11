@@ -40,7 +40,9 @@ export function OpportunityActions({
       id="opportunity-actions"
       tabIndex={-1}
       withBorder
-      p="md"
+      radius="md"
+      bg="white"
+      p="lg"
       aria-label="Opportunity actions"
     >
       <Stack gap="md">

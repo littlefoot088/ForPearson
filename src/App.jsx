@@ -9,6 +9,7 @@ import {
   Container,
   Drawer,
   Group,
+  Grid,
   List,
   Modal,
   Notification,
@@ -258,7 +259,7 @@ export default function App() {
         </Container>
       </Paper>
       <Container size="lg" py="lg" component="main" id="main" tabIndex={-1}>
-        <Stack gap="xl">
+        <Stack gap="md">
           <Breadcrumbs
             className="context-breadcrumbs"
             separator={<Icon icon={ChevronRight} />}
@@ -272,51 +273,81 @@ export default function App() {
             </Text>
             <Text size="sm">{vacancy.title}</Text>
           </Breadcrumbs>
-          <Stack component="section" gap="sm" aria-labelledby="candidate-name">
-            <Title order={1} size="h2" id="candidate-name">
-              {person.name}
-            </Title>
-            <Text size="sm">
-              <Text component="span" c="dimmed">
-                Current role:{" "}
-              </Text>
-              Lighthouse keeper · Carrowmore Light Authority
-            </Text>
-            <Stack gap="xs" mt="sm">
-              <Text size="sm" c="dimmed" fw={600}>
-                Opportunity being assessed
-              </Text>
-              <Group gap="sm">
-                <Text fw={600}>
-                  {vacancy.title} · {vacancy.employer}
-                </Text>
-                <Button
-                  variant="subtle"
-                  size="compact-sm"
-                  onClick={() => {
-                    rememberFocus();
-                    setJobOpen(true);
-                  }}
-                >
-                  View role details
-                </Button>
-              </Group>
-              <Text size="sm" c="dimmed">
-                {vacancy.base} · {vacancy.pattern} · Based on the service
-                operations vessel
-              </Text>
-            </Stack>
-          </Stack>
-          <Stack component="section" gap="xs" aria-labelledby="summary-heading">
+          <Paper
+            component="section"
+            withBorder
+            radius="md"
+            p="lg"
+            bg="white"
+            aria-labelledby="candidate-name"
+          >
+            <Grid gutter="xl" align="stretch">
+              <Grid.Col span={{ base: 12, sm: 5 }}>
+                <Stack gap="sm">
+                  <Title order={1} size="h2" id="candidate-name">
+                    {person.name}
+                  </Title>
+                  <Text size="sm">
+                    <Text component="span" c="dimmed">
+                      Current role:{" "}
+                    </Text>
+                    Lighthouse keeper · Carrowmore Light Authority
+                  </Text>
+                </Stack>
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 7 }}>
+                <Paper p="md" radius="sm" bg="gray.0">
+                  <Stack gap="xs">
+                    <Text size="sm" c="dimmed" fw={600}>
+                      Opportunity being assessed
+                    </Text>
+                    <Title order={2} size="h4">
+                      {vacancy.title} · {vacancy.employer}
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                      {vacancy.base} · {vacancy.pattern} · Based on the service
+                      operations vessel
+                    </Text>
+                    <Button
+                      variant="subtle"
+                      size="compact-sm"
+                      style={{ alignSelf: "flex-start" }}
+                      onClick={() => {
+                        rememberFocus();
+                        setJobOpen(true);
+                      }}
+                    >
+                      View role details
+                    </Button>
+                  </Stack>
+                </Paper>
+              </Grid.Col>
+            </Grid>
+          </Paper>
+          <Stack
+            component={Paper}
+            role="region"
+            withBorder
+            radius="md"
+            p="lg"
+            bg="carrowmore.0"
+            gap="xs"
+            aria-labelledby="summary-heading"
+          >
             <Title order={2} size="h3" id="summary-heading">
               Why consider Eimhin
             </Title>
-            <Text maw="75ch">{candidateSummary.text}</Text>
+            <Text>{candidateSummary.text}</Text>
           </Stack>
           <Accordion value={expanded} onChange={setExpanded} order={3}>
-            <Stack gap="xl">
+            <Stack gap="md">
               <Stack
-                component="section"
+                component={Paper}
+                role="region"
+                withBorder
+                radius="md"
+                p="lg"
+                bg="white"
                 gap="sm"
                 aria-labelledby="experience-heading"
               >
@@ -327,14 +358,19 @@ export default function App() {
                   Mechanical or electrical maintenance can meet the experience
                   requirement.
                 </Text>
-                <Paper withBorder>
+                <Box>
                   {experienceRows
                     .filter((row) => row.id !== "safety")
                     .map(renderAssessment)}
-                </Paper>
+                </Box>
               </Stack>
               <Stack
-                component="section"
+                component={Paper}
+                role="region"
+                withBorder
+                radius="md"
+                p="lg"
+                bg="white"
                 gap="sm"
                 aria-labelledby="qualifications-heading"
               >
@@ -346,11 +382,11 @@ export default function App() {
                   fitness is essential; the vacancy does not specify when it
                   must be verified.
                 </Text>
-                <Paper withBorder>
+                <Box>
                   {requirements
                     .filter((r) => r.type === "qualification")
                     .map(renderAssessment)}
-                </Paper>
+                </Box>
                 {verifications.length > 0 && (
                   <Stack gap="xs" aria-label="Qualification checks">
                     <Text size="sm" fw={600}>
@@ -380,7 +416,12 @@ export default function App() {
                 )}
               </Stack>
               <Stack
-                component="section"
+                component={Paper}
+                role="region"
+                withBorder
+                radius="md"
+                p="lg"
+                bg="white"
                 gap="sm"
                 aria-labelledby="preferences-heading"
               >
@@ -390,17 +431,22 @@ export default function App() {
                 <Text size="sm" c="dimmed">
                   Valued experience, rather than essential requirements.
                 </Text>
-                <Paper withBorder>
+                <Box>
                   {experienceRows
                     .filter((row) => row.id === "safety")
                     .map(renderAssessment)}
                   {requirements
                     .filter((r) => r.id === "mentoring")
                     .map(renderAssessment)}
-                </Paper>
+                </Box>
               </Stack>
               <Stack
-                component="section"
+                component={Paper}
+                role="region"
+                withBorder
+                radius="md"
+                p="lg"
+                bg="white"
                 gap="sm"
                 aria-labelledby="interest-heading"
               >
@@ -414,11 +460,11 @@ export default function App() {
                 <Text size="sm" fw={600}>
                   Required working conditions
                 </Text>
-                <Paper withBorder>
+                <Box>
                   {requirements
                     .filter((r) => r.id === "environment")
                     .map(renderAssessment)}
-                </Paper>
+                </Box>
               </Stack>
             </Stack>
           </Accordion>
