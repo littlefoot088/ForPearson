@@ -44,7 +44,6 @@ import {
   initialOpportunity,
   opportunityReducer,
   interestLabel,
-  nextRecommendation,
 } from "./workflow";
 import {
   OpportunityActions,
@@ -277,26 +276,36 @@ export default function App() {
             <Title order={1} size="h2" id="candidate-name">
               {person.name}
             </Title>
-            <Text c="dimmed">Lighthouse keeper · Opportunity assessment</Text>
-            <Group gap="sm">
-              <Text fw={600}>
-                {vacancy.title} · {vacancy.employer}
+            <Text size="sm">
+              <Text component="span" c="dimmed">
+                Current role:{" "}
               </Text>
-              <Button
-                variant="subtle"
-                size="compact-sm"
-                onClick={() => {
-                  rememberFocus();
-                  setJobOpen(true);
-                }}
-              >
-                View role details
-              </Button>
-            </Group>
-            <Text size="sm" c="dimmed">
-              {vacancy.base} · {vacancy.pattern} · Based on the service
-              operations vessel
+              Lighthouse keeper · Carrowmore Light Authority
             </Text>
+            <Stack gap="xs" mt="sm">
+              <Text size="sm" c="dimmed" fw={600}>
+                Opportunity being assessed
+              </Text>
+              <Group gap="sm">
+                <Text fw={600}>
+                  {vacancy.title} · {vacancy.employer}
+                </Text>
+                <Button
+                  variant="subtle"
+                  size="compact-sm"
+                  onClick={() => {
+                    rememberFocus();
+                    setJobOpen(true);
+                  }}
+                >
+                  View role details
+                </Button>
+              </Group>
+              <Text size="sm" c="dimmed">
+                {vacancy.base} · {vacancy.pattern} · Based on the service
+                operations vessel
+              </Text>
+            </Stack>
           </Stack>
           <Stack component="section" gap="xs" aria-labelledby="summary-heading">
             <Title order={2} size="h3" id="summary-heading">
@@ -398,34 +407,10 @@ export default function App() {
                 <Title order={2} size="h3" id="interest-heading">
                   Eimhin’s interest in this role
                 </Title>
-                <Group gap="sm">
-                  <Text data-testid="keeper-interest">
-                    {interestLabel(opportunity)}
-                    {opportunity.responseOrigin && " · simulated response"}
-                  </Text>
-                  {nextRecommendation(opportunity).action !== "response" && (
-                    <Button
-                      size="compact-sm"
-                      variant="subtle"
-                      onClick={() => openWorkflow("response")}
-                    >
-                      Record keeper response
-                    </Button>
-                  )}
-                </Group>
-                <Text size="sm" c="dimmed">
-                  His career plans and willingness to work offshore are also
-                  unknown.
+                <Text data-testid="keeper-interest">
+                  {interestLabel(opportunity)}
+                  {opportunity.responseOrigin && " · simulated response"}
                 </Text>
-                <Button
-                  id="requirement-career-preferences"
-                  variant="subtle"
-                  size="compact-sm"
-                  style={{ alignSelf: "flex-start" }}
-                  onClick={() => clarify(careerContext, careerContext)}
-                >
-                  Prepare a question
-                </Button>
                 <Text size="sm" fw={600}>
                   Required working conditions
                 </Text>

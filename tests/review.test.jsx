@@ -224,33 +224,46 @@ describe("Mantine review interactions", () => {
       await screen.findAllByRole("button", { name: "View training record" }),
     ).toHaveLength(1);
   });
-  it("keeps career preferences unknown while allowing a contextual discussion draft", async () => {
+  it("keeps interest read-only and prepares preference questions through the discussion", async () => {
     const user = setup();
-    const discuss = screen.getByRole("button", {
-      name: "Prepare a question",
+    const interest = screen.getByRole("region", {
+      name: "Eimhin’s interest in this role",
     });
     expect(
-      screen.getByText(
-        "His career plans and willingness to work offshore are also unknown.",
-      ),
-    ).toBeVisible();
-    await user.click(discuss);
+      within(interest).queryByRole("button", {
+        name: "Record keeper response",
+      }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Prepare a question" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/His career plans/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Current role:/).parentElement).toHaveTextContent(
+      "Lighthouse keeper · Carrowmore Light Authority",
+    );
+    expect(
+      screen.getByText("Opportunity being assessed").parentElement,
+    ).toHaveTextContent("Wind Turbine Technician · Carrowmore Array");
+    await user.click(
+      screen.getByRole("button", { name: "Prepare discussion" }),
+    );
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Add topic: Interest and offshore working preferences",
+      }),
+    );
     const input = await screen.findByRole("textbox", {
       name: "Question for the keeper",
     });
     expect(input.value).toContain("Would you like to explore");
     await user.click(screen.getByRole("button", { name: "Save question" }));
-    await waitFor(() => expect(discuss).toHaveFocus());
-    expect(
-      screen.getByText(
-        "His career plans and willingness to work offshore are also unknown.",
-      ),
-    ).toBeVisible();
-    await user.click(
-      screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    await user.click(await screen.findByRole("button", { name: "Remove" }));
-    await waitFor(() => expect(discuss).toHaveFocus());
+    expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
+      "Not yet discussed",
+    );
   });
 
   it("separates suggestion, simulated response and nomination with explicit gap acknowledgement", async () => {
@@ -287,11 +300,7 @@ describe("Mantine review interactions", () => {
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
       "Interested · simulated response",
     );
-    expect(
-      screen.getByText(
-        "His career plans and willingness to work offshore are also unknown.",
-      ),
-    ).toBeVisible();
+
     await user.click(
       screen.getByRole("button", { name: "Consider for nomination" }),
     );

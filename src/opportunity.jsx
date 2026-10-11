@@ -99,6 +99,22 @@ export function OpportunityActions({
               )}
           </Group>
         </Group>
+        {action !== "response" && (
+          <Group gap="xs">
+            <Text size="sm" c="dimmed">
+              {state.interest === "not-discussed"
+                ? "Already spoken with Eimhin?"
+                : "His response has changed?"}
+            </Text>
+            <Button
+              variant="subtle"
+              size="compact-sm"
+              onClick={() => onOpen("response")}
+            >
+              Record keeper response
+            </Button>
+          </Group>
+        )}
       </Stack>
     </Paper>
   );
