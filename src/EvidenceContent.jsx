@@ -40,8 +40,8 @@ export function EvidenceContent({
       </Text>
       {source && (
         <Text size="sm">
-          Selected coverage: {dateLabel(records[0].date)}–
-          {dateLabel(records.at(-1).date)}. Latest selected activity:{" "}
+          Records cover: {dateLabel(records[0].date)}–
+          {dateLabel(records.at(-1).date)}. Latest entry:{" "}
           {dateLabel(records.at(-1).date)}. {drawer.item.involvement}
         </Text>
       )}
@@ -50,7 +50,7 @@ export function EvidenceContent({
           <Text size="sm">
             {records.length} selected supporting records
             {records.some((r) => r.date < person.joined) &&
-              " · 1 needs attribution checking"}
+              " · 1 may not belong to Eimhin"}
           </Text>
           <Text fw={600}>
             {dateLabel(source.date)} · {source.station} Station
@@ -118,7 +118,7 @@ export function EvidenceContent({
             ))}
           </Group>
           <Button
-            variant="subtle"
+            variant="default"
             color="clarification"
             leftSection={<Icon icon={Flag} />}
             aria-pressed={flagged}
@@ -141,7 +141,7 @@ export function EvidenceContent({
                   </Mark>,
                 ],
                 ["Recorded date", dateLabel(training.completed_on)],
-                ["Expiry field", dateLabel(training.expires_on)],
+                ["Listed expiry", dateLabel(training.expires_on)],
               ]}
             />
           )}

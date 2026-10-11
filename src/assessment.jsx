@@ -63,9 +63,15 @@ export function RequirementRow({ requirement, children }) {
               (requirement.assessment === "unknown" &&
               requirement.type === "qualification"
                 ? requirement.id === "medical"
-                  ? "Clearance not established from records"
-                  : "Certificate not established from records"
-                : status.label)}
+                  ? "No clearance record found"
+                  : "No certificate record found"
+                : requirement.id === "fire"
+                  ? "Attendance recorded · expiry passed"
+                  : requirement.id === "environment"
+                    ? "Not yet discussed"
+                    : requirement.id === "mentoring"
+                      ? "No experience recorded"
+                      : status.label)}
           </Text>
         </span>
       </Accordion.Control>
@@ -82,13 +88,12 @@ export function QualificationActions({ q, task, onFlag, onOpenCheck }) {
       <Divider w="100%" />
       {task && (
         <Text size="sm" c="dimmed">
-          {task.done ? "Check task completed" : "Check recorded in Next steps"}{" "}
-          · Qualification not verified
+          {task.done ? "Check task completed" : "Check added to Next steps"}
         </Text>
       )}
       <Button
-        variant="subtle"
-        size="compact-sm"
+        variant="default"
+        size="sm"
         onClick={() => (task ? onOpenCheck(task) : onFlag(q))}
       >
         {task ? "View qualification check" : "Add qualification check"}
@@ -100,9 +105,11 @@ export function QualificationActions({ q, task, onFlag, onOpenCheck }) {
 export function TrainingSummary({ q }) {
   return (
     <Stack gap="xs">
-      <Text fw={600} size="sm">
-        {q.status}
-      </Text>
+      {q.recordId && (
+        <Text fw={600} size="sm">
+          {q.status}
+        </Text>
+      )}
       <Text size="sm">{q.detail}</Text>
     </Stack>
   );
@@ -160,13 +167,13 @@ export function ExpandedAssessment({
               </Text>
               {records.some((r) => r.date < person.joined) && (
                 <Text size="sm" c="clarification.8">
-                  1 included record needs attribution checking.
+                  One of these records may not belong to Eimhin.
                 </Text>
               )}
               <Text size="sm" c="dimmed">
                 {claim.id === "safety"
-                  ? "Current permit authority is not established by these records."
-                  : "Independent responsibility is not established by these records."}
+                  ? "The records do not show whether Eimhin’s permit authority is still current."
+                  : "The records do not show which work Eimhin carried out independently."}
               </Text>
               <Button
                 variant="light"
@@ -185,11 +192,14 @@ export function ExpandedAssessment({
                 <Text size="sm">{q.title}</Text>
                 <Group justify="space-between" gap="xs">
                   <Text size="sm" c="dimmed">
-                    {q.status} · Supporting module
+                    {q.status === "Not established"
+                      ? "No record found"
+                      : q.status}{" "}
+                    · Supporting module
                   </Text>
                   <Button
-                    variant="subtle"
-                    size="compact-sm"
+                    variant="default"
+                    size="sm"
                     onClick={() => inspect(q, "qualification")}
                   >
                     View training record
@@ -208,8 +218,8 @@ export function ExpandedAssessment({
             )}
             <Divider />
             <Button
-              variant="subtle"
-              size="compact-sm"
+              variant="default"
+              size="sm"
               w="fit-content"
               onClick={() => clarify(claim)}
             >
@@ -221,14 +231,11 @@ export function ExpandedAssessment({
       {requirement.type !== "experience" &&
         linkedQualifications.map((q) => (
           <Stack component="section" gap="sm" aria-label={q.title} key={q.id}>
-            <Text fw={600} size="sm">
-              Available qualification evidence
-            </Text>
             <TrainingSummary q={q} />
             {q.recordId && (
               <Button
-                variant="subtle"
-                size="compact-sm"
+                variant="default"
+                size="sm"
                 w="fit-content"
                 onClick={() => inspect(q, "qualification")}
               >
@@ -237,7 +244,7 @@ export function ExpandedAssessment({
             )}
             {q.recordId && (
               <Text size="xs" c="dimmed">
-                Expiry assessed at {dateLabel(reviewDate)}.
+                As of {dateLabel(reviewDate)}.
               </Text>
             )}
             <QualificationActions
@@ -250,13 +257,10 @@ export function ExpandedAssessment({
         ))}
       {requirement.type === "clarification" && (
         <>
-          <Text fw={600} size="sm">
-            What is known
-          </Text>
           <Text size="sm">{requirement.detail}</Text>
           <Divider />
           <Button
-            variant="subtle"
+            variant="default"
             w="fit-content"
             onClick={() => clarify({ ...requirement, title: requirement.text })}
           >

@@ -44,8 +44,9 @@ test("attendance remains distinct from passing and full certification", () => {
     trainingRecords.find((r) => r.id === fire.recordId).outcome,
     "Attended",
   );
-  assert.equal(fire.status, "Attendance only");
-  assert.match(fire.detail, /Completion is not established/);
+  assert.equal(fire.status, "Listed expiry: 18 August 2025 (past)");
+  assert.match(fire.detail, /Attendance is recorded/);
+  assert.match(fire.detail, /requirement is unknown/);
   assert.ok(
     qualifications
       .filter((q) => ["first-aid", "height", "medical"].includes(q.id))
@@ -58,7 +59,7 @@ test("expiry labels agree with the fixed review date for recorded passes", () =>
     const r = trainingRecords.find((r) => r.id === q.recordId);
     assert.equal(r.keeper_code, person.id);
     assert.equal(r.outcome, "Pass");
-    assert.equal(q.status.includes("within expiry"), r.expires_on > reviewDate);
+    assert.equal(q.status === "Module passed", r.expires_on > reviewDate);
   }
   assert.equal(qualifications.find((q) => q.id === "pumped").required, false);
   assert.equal(

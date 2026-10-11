@@ -122,7 +122,7 @@ export const requirements = [
     type: "clarification",
     assessment: "unknown",
     detail:
-      "No supporting records were selected. Ask about this employer preference if Eimhin wants to pursue the role.",
+      "The selected records do not describe Eimhin training or supporting colleagues.",
     question:
       "Have you trained or supported less experienced colleagues? Please describe your role and a recent example.",
   },
@@ -139,7 +139,7 @@ export const claims = [
     pattern: "Repeated practical work",
     requirementId: "maintenance",
     relevance:
-      "Relevant to maintaining pumps and replacing worn turbine components.",
+      "This work is relevant to the role’s mechanical maintenance duties.",
     involvement: "Hands-on work recorded",
     limitation:
       "Confirm which repairs Eimhin carried out independently and whether this was a regular responsibility.",
@@ -164,7 +164,7 @@ export const claims = [
     pattern: "Historical and recent evidence",
     requirementId: "maintenance",
     relevance:
-      "Relevant to diagnosing faults and maintaining electrical plant.",
+      "This work is relevant to the role’s electrical maintenance duties.",
     involvement: "Hands-on work recorded",
     limitation:
       "Confirm Eimhin’s regular fault-finding duties and independent responsibilities.",
@@ -187,8 +187,7 @@ export const claims = [
       "One entry describes planning a confined-space task; another records issuing permits.",
     pattern: "Two different responsibilities",
     requirementId: "permits",
-    relevance:
-      "Relevant to the employer’s preference for permit-system experience.",
+    relevance: "The employer values experience of permit systems.",
     involvement: "Planning / issuing authority",
     limitation:
       "Confirm the scope of Eimhin’s permit authority and whether it is current.",
@@ -202,11 +201,11 @@ export const qualifications = [
     id: "sea",
     title: "Sea survival",
     required: true,
-    status: "Pass recorded · within expiry",
+    status: "Module passed",
     tone: "positive",
     recordId: "LH500010",
     detail:
-      "Module expires 3 May 2028. Full offshore certificate still needs verification.",
+      "Expires 3 May 2028. The full offshore safety certificate has not been checked.",
     question:
       "Please provide your current offshore safety certificate so we can check its award, coverage and expiry.",
   },
@@ -214,13 +213,13 @@ export const qualifications = [
     id: "fire",
     title: "Fire prevention & response",
     required: true,
-    status: "Attendance only",
+    status: "Listed expiry: 18 August 2025 (past)",
     tone: "attention",
     recordId: "LH500003",
     detail:
-      "Completion is not established. The record’s expiry field is 18 August 2025.",
+      "Attendance is recorded. Whether this meets the fire-safety requirement is unknown.",
     question:
-      "The fire-response record shows attendance, rather than a pass. Do you have a completed certificate or a more recent record?",
+      "Do you have a current fire-safety certificate or a newer training record?",
   },
   {
     id: "first-aid",
@@ -228,7 +227,7 @@ export const qualifications = [
     required: true,
     status: "Not established",
     tone: "neutral",
-    detail: "No completion evidence in the selected records.",
+    detail: "No first-aid certificate was found in the selected records.",
     question:
       "Do you hold a current first-aid qualification? Please provide the certificate and expiry date if available.",
   },
@@ -239,7 +238,7 @@ export const qualifications = [
     status: "Not established",
     tone: "neutral",
     detail:
-      "No certificate in the selected records. Confirm which height coverage the employer accepts.",
+      "No certificate was found in the selected records. The employer’s accepted height coverage also needs checking.",
     question:
       "Do you hold current working-at-height certification? Please share the certificate and describe your recent experience at height.",
   },
@@ -250,7 +249,7 @@ export const qualifications = [
     status: "Not established",
     tone: "neutral",
     detail:
-      "Current fitness clearance needs verification; no medical details are needed here.",
+      "No current offshore medical clearance was found in the selected records.",
     question:
       "Can you provide confirmation of current offshore medical clearance and its expiry date? Please do not include clinical details.",
   },
@@ -258,11 +257,11 @@ export const qualifications = [
     id: "pumped",
     title: "Fluid transfer & pumped systems",
     required: false,
-    status: "Pass recorded · within expiry",
+    status: "Module passed",
     tone: "positive",
     recordId: "LH500008",
     detail:
-      "Module expires 5 December 2028. This does not establish a complete maintenance certificate.",
+      "Expires 5 December 2028. This is a training module, not a full certificate.",
     question:
       "Do you have the award record for your pumped-systems module and any related maintenance certification?",
   },
@@ -270,12 +269,12 @@ export const qualifications = [
     id: "generator",
     title: "Rotating plant & generator control",
     required: false,
-    status: "Recorded module expired",
+    status: "Module expired",
     tone: "attention",
     recordId: "LH500001",
-    detail: "Expired 14 July 2022. This does not negate practical experience.",
-    question:
-      "Have you renewed your generator-control qualification since July 2022? Please share any current record.",
+    detail:
+      "Passed module; expired 14 July 2022. This does not change the work recorded in the logbooks.",
+    question: "Do you have a newer record for the generator-control module?",
   },
 ];
 export const interpretations = {
@@ -320,7 +319,7 @@ export const requirementNextSteps = {
   maintenance: "Discuss responsibilities",
   environment: "Discuss working preferences",
   sea: "Verify full certificate",
-  fire: "Confirm completion",
+  fire: "Check current fire-safety coverage",
   "first-aid": "Check certificate",
   height: "Check accepted coverage",
   medical: "Check clearance",

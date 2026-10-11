@@ -87,7 +87,7 @@ describe("Mantine review interactions", () => {
     expect(within(dialog).getByText("Needs checking:")).toBeVisible();
     expect(
       within(dialog).getByText(
-        /5 selected supporting records.*1 needs attribution/,
+        /5 selected supporting records.*1 may not belong/,
       ),
     ).toBeVisible();
     expect(within(dialog).getByText("Source details")).toBeVisible();
@@ -276,7 +276,7 @@ describe("Mantine review interactions", () => {
       "Not interested",
     );
     expect(
-      requirement(/Offshore medical fitness.*Clearance not established/),
+      requirement(/Offshore medical fitness.*No clearance record found/),
     ).toBeVisible();
   });
 });
@@ -474,7 +474,7 @@ it("shows experience facts directly and keeps supporting-module actions in the i
     within(panel).getByText(/5 supporting records · 2009–2026/),
   ).toBeVisible();
   expect(
-    within(panel).getByText(/1 included record needs attribution/),
+    within(panel).getByText(/One of these records may not belong/),
   ).toBeVisible();
   expect(panel.querySelector("[aria-expanded]")).toBeNull();
   expect(within(panel).getByText(/Fluid transfer/)).toBeVisible();
@@ -528,4 +528,24 @@ it("shows experience facts directly and keeps supporting-module actions in the i
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
+});
+
+it("uses plain qualification copy and visible buttons without redundant headings", async () => {
+  const user = setup();
+  for (const name of [
+    /Sea survival/,
+    /Fire prevention and response/,
+    /First aid/,
+    /Working-at-height certification/,
+    /Offshore medical fitness/,
+  ]) {
+    await user.click(requirement(name));
+    const panel = (await screen.findAllByRole("region", { name }))[0];
+    expect(
+      within(panel).queryByText("Available qualification evidence"),
+    ).not.toBeInTheDocument();
+    expect(within(panel).queryByText(/Next step:/)).not.toBeInTheDocument();
+    for (const button of within(panel).getAllByRole("button"))
+      expect(button).toHaveAttribute("data-variant", "default");
+  }
 });
