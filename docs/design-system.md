@@ -4,7 +4,7 @@ Mantine owns the default typography, spacing, component sizes, radii and breakpo
 
 ## Layout and emphasis
 
-Use aligned Paper sections to group decision-relevant content. The candidate and explicitly labelled current role sit beside the prospective opportunity on desktop and above it on narrow screens. A restrained teal summary panel provides emphasis; white assessment panels keep evidence statuses scannable. Group related controls with their purpose and avoid repeating statuses.
+Use aligned Paper sections to group decision-relevant content. The wider left column contains the person, current role, prospective opportunity and assessment. A narrower right column contains Your next step, your assessment and Your notes. Use Mantine Grid spans 8/4 from md, stacking below it. A restrained teal summary panel provides emphasis; white assessment panels keep evidence statuses scannable. Group related controls with their purpose and avoid repeating statuses.
 
 ## Overlay convention
 
@@ -23,3 +23,5 @@ Drawers expose the accessible `dialog` role: that role describes their interacti
 ## Evidence and action semantics
 
 Experience evidence is not verified competence. Training modules and attendance are not complete certificates. Unknown information remains unknown. Qualification tasks, discussion questions and record-review flags are separate local actions. Suggestion, keeper interest and nomination decisions remain distinct, with no real messaging or employer submission.
+
+Use the person’s name in actions and prompts (for example, Suggest to Eimhin and Record Eimhin’s response). Address the signed-in user as “you” or “your”; do not label their own controls “Officer”. Keep authentic job titles and original source-field labels unchanged. Notes are editable reminders, never evidence or an inferred record of a previous conversation.

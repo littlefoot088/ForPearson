@@ -141,7 +141,7 @@ describe("Mantine review interactions", () => {
       (await screen.findAllByRole("button", { name: "Add to discussion" }))[0],
     );
     let input = await screen.findByRole("textbox", {
-      name: "Question for the keeper",
+      name: "Question for Eimhin",
     });
     await user.clear(input);
     expect(
@@ -156,7 +156,7 @@ describe("Mantine review interactions", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     expect(
-      screen.getByText(/Officer assessment:/).parentElement,
+      screen.getByText(/Your assessment:/).parentElement,
     ).toHaveTextContent("Not reviewed");
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
       "Not yet discussed",
@@ -168,7 +168,7 @@ describe("Mantine review interactions", () => {
       await screen.findByRole("button", { name: "Edit question" }),
     );
     input = await screen.findByRole("textbox", {
-      name: "Question for the keeper",
+      name: "Question for Eimhin",
     });
     expect(input).toHaveValue(
       "Which pump repairs did you complete independently?",
@@ -231,7 +231,7 @@ describe("Mantine review interactions", () => {
     });
     expect(
       within(interest).queryByRole("button", {
-        name: "Record keeper response",
+        name: "Record Eimhin’s response",
       }),
     ).not.toBeInTheDocument();
     expect(
@@ -253,7 +253,7 @@ describe("Mantine review interactions", () => {
       }),
     );
     const input = await screen.findByRole("textbox", {
-      name: "Question for the keeper",
+      name: "Question for Eimhin",
     });
     expect(input.value).toContain("Would you like to explore");
     await user.click(screen.getByRole("button", { name: "Save question" }));
@@ -268,26 +268,26 @@ describe("Mantine review interactions", () => {
 
   it("separates suggestion, simulated response and nomination with explicit gap acknowledgement", async () => {
     const user = setup();
-    await user.click(screen.getByRole("button", { name: "Suggest to keeper" }));
+    await user.click(screen.getByRole("button", { name: "Suggest to Eimhin" }));
     await user.click(
       await screen.findByRole("button", { name: "Record suggestion locally" }),
     );
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    expect(screen.getByText("Awaiting keeper response")).toBeVisible();
+    expect(screen.getByText("Awaiting Eimhin’s response")).toBeVisible();
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
-      "Suggested to keeper",
+      "Suggested to Eimhin",
     );
     expect(
       screen.queryByRole("button", { name: "Consider for nomination" }),
     ).not.toBeInTheDocument();
     await user.click(
-      screen.getByRole("button", { name: "Record keeper response" }),
+      screen.getByRole("button", { name: "Record Eimhin’s response" }),
     );
     await user.selectOptions(
       await screen.findByRole("combobox", {
-        name: "Simulated keeper response",
+        name: "Simulated response from Eimhin",
       }),
       "interested",
     );
@@ -334,12 +334,12 @@ describe("Mantine review interactions", () => {
     ).toBeVisible();
     await user.click(
       await screen.findByRole("button", {
-        name: "Record keeper response",
+        name: "Record Eimhin’s response",
       }),
     );
     await user.selectOptions(
       await screen.findByRole("combobox", {
-        name: "Simulated keeper response",
+        name: "Simulated response from Eimhin",
       }),
       "not-interested",
     );
@@ -349,7 +349,7 @@ describe("Mantine review interactions", () => {
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
-    expect(screen.getByText("Keeper declined · no nomination")).toBeVisible();
+    expect(screen.getByText("Eimhin declined · no nomination")).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Review nomination decision" }),
     ).not.toBeInTheDocument();
@@ -359,11 +359,11 @@ describe("Mantine review interactions", () => {
     const user = setup();
     await user.click(
       await screen.findByRole("button", {
-        name: "Update officer assessment",
+        name: "Update your assessment",
       }),
     );
     await user.selectOptions(
-      await screen.findByRole("combobox", { name: "Officer assessment" }),
+      await screen.findByRole("combobox", { name: "Your assessment" }),
       "worth-discussing",
     );
     await user.click(screen.getByRole("button", { name: "Save assessment" }));
@@ -372,23 +372,23 @@ describe("Mantine review interactions", () => {
     );
     await waitFor(() =>
       expect(
-        screen.getByRole("button", { name: "Update officer assessment" }),
+        screen.getByRole("button", { name: "Update your assessment" }),
       ).toHaveFocus(),
     );
     expect(
-      screen.getByText(/Officer assessment:/).parentElement,
+      screen.getByText(/Your assessment:/).parentElement,
     ).toHaveTextContent("Worth discussing");
     expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
       "Not yet discussed",
     );
     await user.click(
       await screen.findByRole("button", {
-        name: "Record keeper response",
+        name: "Record Eimhin’s response",
       }),
     );
     await user.selectOptions(
       await screen.findByRole("combobox", {
-        name: "Simulated keeper response",
+        name: "Simulated response from Eimhin",
       }),
       "more-information",
     );
@@ -402,7 +402,7 @@ describe("Mantine review interactions", () => {
       screen.getByRole("button", { name: "Prepare follow-up discussion" }),
     );
     expect(
-      (await screen.findByRole("textbox", { name: "Question for the keeper" }))
+      (await screen.findByRole("textbox", { name: "Question for Eimhin" }))
         .value,
     ).toContain("What more would you like to know");
   });
@@ -425,7 +425,7 @@ it("keeps discussion topics unique and distinct from qualification checks", asyn
     screen.getByRole("button", { name: "Edit discussion question" }),
   );
   const input = await screen.findByRole("textbox", {
-    name: "Question for the keeper",
+    name: "Question for Eimhin",
   });
   await user.clear(input);
   await user.type(input, "Which current offshore certificates do you hold?");
@@ -504,7 +504,7 @@ it("prepares optional discussion topics without recording a suggestion or consen
     }),
   );
   const input = await screen.findByRole("textbox", {
-    name: "Question for the keeper",
+    name: "Question for Eimhin",
   });
   expect(input).toHaveFocus();
   await user.click(screen.getByRole("button", { name: "Save question" }));
@@ -527,7 +527,7 @@ it("prepares optional discussion topics without recording a suggestion or consen
     "Not yet discussed",
   );
   expect(
-    screen.getByRole("button", { name: "Suggest to keeper" }),
+    screen.getByRole("button", { name: "Suggest to Eimhin" }),
   ).toBeVisible();
   await user.click(
     screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
@@ -536,7 +536,7 @@ it("prepares optional discussion topics without recording a suggestion or consen
     await screen.findByRole("button", { name: "Edit question" }),
   );
   expect(
-    await screen.findByRole("textbox", { name: "Question for the keeper" }),
+    await screen.findByRole("textbox", { name: "Question for Eimhin" }),
   ).toHaveValue(input.value);
 });
 
@@ -598,4 +598,33 @@ it("gives every section one purpose and keeps qualification tasks discoverable",
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
     "Not yet discussed",
   );
+});
+
+it("saves editable personal notes independently of the assessment and Eimhin’s response", async () => {
+  const user = setup();
+  const workspace = screen.getByRole("complementary", {
+    name: "Your review workspace",
+  });
+  const input = within(workspace).getByRole("textbox", {
+    name: "Conversation notes and reminders",
+  });
+  const save = within(workspace).getByRole("button", { name: "Save notes" });
+  expect(save).toBeDisabled();
+  await user.type(
+    input,
+    "Ask Eimhin which certificates he can bring to our discussion.",
+  );
+  await user.click(save);
+  expect(within(workspace).getByText("Notes saved.")).toBeVisible();
+  expect(save).toBeDisabled();
+  expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
+    "Not yet discussed",
+  );
+  expect(screen.getByText(/Your assessment:/).parentElement).toHaveTextContent(
+    "Not reviewed",
+  );
+  await user.clear(input);
+  await user.click(save);
+  expect(input).toHaveValue("");
+  expect(save).toBeDisabled();
 });

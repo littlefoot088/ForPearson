@@ -32,7 +32,7 @@ test("suggestion does not manufacture interest, assessment or employer progressi
   assert.equal(suggested.employerProgression, "not-submitted");
   assert.equal(
     interestLabel(suggested),
-    "Suggested to keeper · awaiting response",
+    "Suggested to Eimhin · awaiting response",
   );
   assert.equal(initialOpportunity.suggested, false);
 });
@@ -77,7 +77,7 @@ test("revised keeper interest clears a stale nomination and allows later reconsi
   const reset = reduce(saved, { type: "response", value: "not-discussed" });
   assert.equal(reset.responseOrigin, null);
 });
-test("officer assessment cannot bypass nomination gates or manufacture a response", () => {
+test("your assessment cannot bypass nomination gates or manufacture a response", () => {
   assert.equal(
     reduce(initialOpportunity, {
       type: "assessment",

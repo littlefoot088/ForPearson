@@ -21,8 +21,8 @@ import { vacancy } from "./data";
 
 export const workflowTitles = {
   suggest: "Suggest this opportunity to Eimhin",
-  response: "Record keeper response",
-  assessment: "Officer assessment",
+  response: "Record Eimhin’s response",
+  assessment: "Your assessment",
   nomination: "Consider for nomination",
 };
 
@@ -47,7 +47,7 @@ export function OpportunityActions({
     >
       <Stack gap="md">
         <Title order={2} size="h3">
-          Officer decision and next step
+          Your next step
         </Title>
         <Text>{guidance}</Text>
         {detail && (
@@ -55,19 +55,19 @@ export function OpportunityActions({
             {detail}
           </Text>
         )}
-        <Group justify="space-between" align="center">
+        <Stack gap="md">
           <Stack gap="xs">
             <Text size="sm">
-              <strong>Officer assessment:</strong>{" "}
+              <strong>Your assessment:</strong>{" "}
               {officerAssessments[state.assessment]}
             </Text>
             {action !== "assessment" && (
               <Button variant="subtle" onClick={() => onOpen("assessment")}>
-                Update officer assessment
+                Update your assessment
               </Button>
             )}
           </Stack>
-          <Group gap="xs">
+          <Stack gap="xs">
             {drafts.length > 0 && action !== "discussion" && (
               <Button
                 variant="subtle"
@@ -96,11 +96,11 @@ export function OpportunityActions({
               state.interest === "not-discussed" &&
               state.assessment !== "not-suitable" && (
                 <Button variant="subtle" onClick={() => onOpen("suggest")}>
-                  Suggest to keeper
+                  Suggest to Eimhin
                 </Button>
               )}
-          </Group>
-        </Group>
+          </Stack>
+        </Stack>
         {action !== "response" && (
           <Group gap="xs">
             <Text size="sm" c="dimmed">
@@ -113,7 +113,7 @@ export function OpportunityActions({
               size="compact-sm"
               onClick={() => onOpen("response")}
             >
-              Record keeper response
+              Record Eimhin’s response
             </Button>
           </Group>
         )}
@@ -181,7 +181,7 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
           <NativeSelect
             ref={fieldRef}
             data-autofocus
-            label="Officer assessment"
+            label="Your assessment"
             value={assessment}
             onChange={(event) => setAssessment(event.currentTarget.value)}
             data={Object.entries(officerAssessments).map(([value, label]) => ({
@@ -193,7 +193,8 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
           <Text size="sm" c="dimmed">
             This is your judgement about the opportunity. Outstanding questions
             and qualification statuses remain unchanged. “Worth nominating” is
-            recorded through the nomination decision after keeper interest.
+            recorded through the nomination decision after Eimhin expresses
+            interest.
           </Text>
           {state.nominationDecision && (
             <Text size="sm" c="clarification.7">
@@ -212,7 +213,7 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
           <NativeSelect
             ref={fieldRef}
             data-autofocus
-            label="Simulated keeper response"
+            label="Simulated response from Eimhin"
             value={response}
             onChange={(event) => setResponse(event.currentTarget.value)}
             data={Object.entries(keeperResponses).map(([value, label]) => ({
@@ -303,5 +304,54 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
         </Button>
       </Group>
     </Stack>
+  );
+}
+
+export function ReviewNotes({ notes, onSave }) {
+  const [text, setText] = useState(notes);
+  const [saved, setSaved] = useState(false);
+  return (
+    <Paper
+      component="section"
+      withBorder
+      radius="md"
+      bg="white"
+      p="lg"
+      aria-labelledby="notes-heading"
+    >
+      <Stack
+        gap="sm"
+        component="form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSave(text.trim());
+          setSaved(true);
+        }}
+      >
+        <Title order={2} size="h3" id="notes-heading">
+          Your notes
+        </Title>
+        <Textarea
+          label="Conversation notes and reminders"
+          placeholder="What did you discuss? What do you need to follow up?"
+          autosize
+          minRows={4}
+          maxLength={4000}
+          value={text}
+          onChange={(event) => {
+            setText(event.currentTarget.value);
+            setSaved(false);
+          }}
+        />
+        <Button type="submit" variant="light" disabled={text.trim() === notes}>
+          Save notes
+        </Button>
+        {saved && (
+          <Text size="sm" role="status">
+            Notes saved.
+          </Text>
+        )}
+      </Stack>
+    </Paper>
   );
 }

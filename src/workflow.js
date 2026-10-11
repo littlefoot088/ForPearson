@@ -36,7 +36,7 @@ export const initialOpportunity = {
 };
 export function interestLabel(state) {
   return state.interest === "not-discussed" && state.suggested
-    ? "Suggested to keeper · awaiting response"
+    ? "Suggested to Eimhin · awaiting response"
     : keeperResponses[state.interest];
 }
 export function opportunityReducer(state, action) {
@@ -105,14 +105,14 @@ export function nextRecommendation(state) {
   if (state.assessment === "not-suitable")
     return {
       action: "assessment",
-      label: "Update officer assessment",
+      label: "Update your assessment",
       guidance: "This opportunity is on hold following your assessment.",
     };
   if (state.interest === "not-interested")
     return {
       action: "response",
-      label: "Review keeper response",
-      guidance: "Keeper declined · no nomination",
+      label: "Review Eimhin’s response",
+      guidance: "Eimhin declined · no nomination",
       detail:
         "Respect Eimhin’s decision. Revisit this opportunity only if his interest changes.",
     };
@@ -149,8 +149,8 @@ export function nextRecommendation(state) {
   if (state.suggested)
     return {
       action: "response",
-      label: "Record keeper response",
-      guidance: "Awaiting keeper response",
+      label: "Record Eimhin’s response",
+      guidance: "Awaiting Eimhin’s response",
       detail:
         "Discuss the opportunity with Eimhin and record whether he wants to pursue it.",
     };
