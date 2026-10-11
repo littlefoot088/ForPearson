@@ -8,10 +8,15 @@ import {
   Stack,
   Text,
   Textarea,
+  Title,
 } from "@mantine/core";
 import { ArrowRight, Check, ClipboardList } from "lucide-react";
 import { Icon } from "./components";
-import { officerAssessments, keeperResponses } from "./workflow";
+import {
+  officerAssessments,
+  keeperResponses,
+  nextRecommendation,
+} from "./workflow";
 import { vacancy } from "./data";
 
 export const workflowTitles = {
@@ -28,92 +33,76 @@ export function OpportunityActions({
   drafts,
   onReviewDrafts,
 }) {
-  let action = "suggest",
-    label = "Suggest to keeper";
-  if (state.interest === "interested") {
-    action = "nomination";
-    label = state.nominationDecision
-      ? "Review nomination decision"
-      : "Consider for nomination";
-  } else if (state.interest === "more-information") {
-    action = "clarify";
-    label = "Prepare follow-up discussion";
-  } else if (state.interest === "not-interested") {
-    action = "response";
-    label = "Review keeper response";
-  } else if (state.assessment === "not-suitable") {
-    action = "assessment";
-    label = "Review assessment";
-  } else if (state.suggested) {
-    action = "response";
-    label = "Record keeper response";
-  }
-  const next =
-    state.nominationDecision?.decision === "recommend"
-      ? "Nomination decision recorded · not submitted"
-      : state.nominationDecision?.decision === "defer"
-        ? "Nomination deferred · resolve outstanding questions"
-        : state.interest === "not-interested"
-          ? "Keeper declined · no nomination"
-          : state.interest === "more-information"
-            ? "More information requested"
-            : state.interest === "interested"
-              ? "Interest recorded · review suitability before nomination"
-              : state.suggested
-                ? "Awaiting keeper response"
-                : "Decide whether this opportunity is worth discussing";
+  const { action, label, guidance, detail } = nextRecommendation(state);
   return (
     <Paper
       component="section"
       id="opportunity-actions"
       tabIndex={-1}
-      className="review-actions-bar"
       withBorder
       p="md"
-      shadow="sm"
       aria-label="Opportunity actions"
     >
-      <Group justify="space-between" align="center">
-        <Stack gap="xs">
-          <Text size="sm">
-            <strong>Officer assessment:</strong>{" "}
-            {officerAssessments[state.assessment]}
-          </Text>
+      <Stack gap="md">
+        <Title order={2}>Recommended next step</Title>
+        <Text>{guidance}</Text>
+        {detail && (
           <Text size="sm" c="dimmed">
-            {next}
+            {detail}
           </Text>
-        </Stack>
-        <Group gap="xs">
-          {drafts.length > 0 && (
+        )}
+        <Group justify="space-between" align="center">
+          <Stack gap="xs">
+            <Text size="sm">
+              <strong>Officer assessment:</strong>{" "}
+              {officerAssessments[state.assessment]}
+            </Text>
+          </Stack>
+          <Group gap="xs">
+            {drafts.length > 0 && action !== "discussion" && (
+              <Button
+                variant="subtle"
+                leftSection={<Icon icon={ClipboardList} />}
+                onClick={onReviewDrafts}
+              >
+                Discussion with Eimhin ({drafts.length})
+              </Button>
+            )}
             <Button
-              variant="subtle"
-              leftSection={<Icon icon={ClipboardList} />}
-              onClick={onReviewDrafts}
+              id="next-opportunity-action"
+              rightSection={<Icon icon={ArrowRight} />}
+              onClick={() =>
+                action === "discussion"
+                  ? onReviewDrafts()
+                  : action === "clarify"
+                    ? onClarify()
+                    : onOpen(action)
+              }
             >
-              Discussion with Eimhin ({drafts.length})
+              {action === "discussion" && drafts.length > 0
+                ? `Discussion with Eimhin (${drafts.length})`
+                : label}
             </Button>
-          )}
-          <Button
-            id="next-opportunity-action"
-            rightSection={<Icon icon={ArrowRight} />}
-            onClick={() =>
-              action === "clarify" ? onClarify() : onOpen(action)
-            }
-          >
-            {label}
-          </Button>
-          {action !== "assessment" && (
-            <Button variant="subtle" onClick={() => onOpen("assessment")}>
-              Update officer assessment
-            </Button>
-          )}
-          {action !== "response" && (
-            <Button variant="subtle" onClick={() => onOpen("response")}>
-              Record keeper response
-            </Button>
-          )}
+            {!state.suggested &&
+              state.interest === "not-discussed" &&
+              state.assessment !== "not-suitable" && (
+                <Button variant="subtle" onClick={() => onOpen("suggest")}>
+                  Suggest to keeper
+                </Button>
+              )}
+            {action !== "assessment" && (
+              <Button variant="subtle" onClick={() => onOpen("assessment")}>
+                Update officer assessment
+              </Button>
+            )}
+            {action !== "response" && (
+              <Button variant="subtle" onClick={() => onOpen("response")}>
+                Record keeper response
+              </Button>
+            )}
+          </Group>
         </Group>
-      </Group>
+      </Stack>
     </Paper>
   );
 }

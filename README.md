@@ -15,8 +15,8 @@ Open the local URL printed by Vite. `npm run build` creates the production bundl
 
 ## What it demonstrates
 
-- People-first context, a compact experience/qualifications/interest summary and explicitly unknown career preferences, followed by nine compact requirement rows.
-- Progressive disclosure from requirement to assessment to original evidence. Mechanical or electrical maintenance remains one requirement with two distinct evidence routes.
+- A job-specific narrative explains why Eimhin is worth considering, followed by distinct experience, qualifications and keeper-interest indicators. Career intentions remain explicitly unknown.
+- Three experience rows lead to their assessment and original evidence. Five qualification rows and two non-certificate considerations follow. Mechanical or electrical maintenance remains one underlying requirement with two alternative evidence routes.
 - Eleven verbatim raw log entries and four training records, with source locations, exact highlights and separate interpretations.
 - Evidence-state labels that distinguish experience evidence, recorded modules, attendance and unresolved requirements without scores or unsupported certification claims.
 - One editable Discussion with Eimhin list; reversible qualification checks and separate internal record-review flags.
@@ -34,14 +34,24 @@ See [information architecture](docs/information-architecture.md) and [data decis
 
 ## Design system
 
-Mantine owns typography, spacing, component sizes, radii, breakpoints and standard interaction behaviour. `src/theme.js` changes only brand/semantic colours and the canvas/text colours. The application stays in light mode. `src/styles.css` contains only branding, skip-link positioning, status-column alignment, verbatim/source wrapping, notification placement and review-bar positioning. Do not recreate button, input, modal or typography scales in CSS.
+Mantine owns typography, spacing, component sizes, radii, breakpoints and standard interaction behaviour. `src/theme.js` changes only brand/semantic colours and the canvas/text colours. The application stays in light mode. `src/styles.css` contains only branding, skip-link positioning, status-column alignment, verbatim/source wrapping, notification placement. Do not recreate button, input, modal or typography scales in CSS.
 
-Requirement assessments, exact substring highlighting and record metadata remain domain-specific compositions. `src/App.jsx` holds local UI state; `src/workflow.js` separates opportunity decisions and their guards, and `src/opportunity.jsx` provides contextual actions; `src/main.jsx` installs the provider and library styles. Mantine Modal/Drawer handle focus containment, Escape and scroll locking; the app restores the original opener after overlay transitions, including removal of the final discussion question.
+Requirement assessments, exact substring highlighting and record metadata remain domain-specific compositions. `src/App.jsx` holds local UI state; `src/workflow.js` separates opportunity decisions and their guards, and `src/opportunity.jsx` presents the shared state-based recommendation and contextual actions; `src/main.jsx` installs the provider and library styles. Mantine Modal/Drawer handle focus containment, Escape and scroll locking; the app restores the original opener after overlay transitions, including removal of the final discussion question.
 
 ## Validation
 
-All 19 tests pass (10 fixture/workflow tests and 9 component tests). `npm test` covers source integrity, qualification distinctions, evidence reachability and the proposed workflow rules. Component tests cover single-row disclosure, source navigation/highlighting, source details, discussion questions, verification checks, career discussion, separate suggestion/response stages and nomination gates. The nomination tests check that changed interest invalidates a prior local decision and never submits to an employer. The component suite uses jsdom and does not verify visual layout.
+All 23 tests pass (12 fixture/workflow tests and 11 component tests). `npm test` covers source integrity, qualification distinctions, evidence reachability and the proposed workflow rules. Component tests cover single-row disclosure, source navigation/highlighting, source details, discussion questions, verification checks, career discussion, separate suggestion/response stages and nomination gates. The nomination tests check that changed interest invalidates a prior local decision and never submits to an employer. The component suite uses jsdom and does not verify visual layout.
 
-The production build passes. Browser QA for this simplification covered the summary, requirement expansion, evidence navigation, attribution caveat, internal record flag, source disclosure, discussion creation/removal, qualification-task toggling and officer-assessment dialog. Escape restored focus to the evidence opener and the officer-assessment control. Desktop and narrow reflow/full-width evidence were visually checked in Chrome at standard zoom and 250% zoom. Component tests cover final-question focus restoration, editing/deduplication, qualification-check independence and the complete nomination path. Physical mobile devices, a full screen-reader audit and the complete nomination path in a real browser remain unchecked.
+The production build passes. Component tests cover the restructured experience/qualification lists, all eleven exact log highlights, all four training records, optional discussion topics and state-based recommendation precedence, in addition to the existing focus, discussion, check and nomination safeguards. They run in jsdom and do not verify visual layout.
+
+Browser QA covered the desktop narrative, separate experience/qualification lists, optional discussion topics and explicit saving/deduplication. Narrow reflow and recommendation-control wrapping were checked in Chrome at 250% zoom, together with the full-width highlighted source drawer and Escape/return focus. Browser access briefly failed but recovered before these checks. Physical mobile testing, a full screen-reader audit and a complete browser walkthrough of every nomination state remain outstanding; state combinations and nomination safeguards are covered by automated tests.
 
 The proposed operating process and potential business benefits are documented in [information architecture](docs/information-architecture.md); they are not claimed as existing operations or measured results. Remaining design research includes officer comprehension of the statuses, acceptable referral evidence and keeper understanding of the opportunity suggestion.
+
+## Candidate-focused assessment
+
+The Why consider Eimhin narrative is curated copy in `src/data.js`, with explicit claim, source and vacancy links. It connects repeated pump repairs and electrical fault-finding to the employer’s acceptance of maintenance experience from other plant and lack of a prior-wind requirement. The rationale does not depend on the two disputed 2009 records and does not certify current competence. Once interest is recorded, the narrative no longer asks for it to be established.
+
+Recommended next step is a normal-flow section, not a sticky bar. `nextRecommendation` supplies both its guidance and primary action. Initial Prepare discussion opens the existing question list with two optional topics; nothing is saved until the officer edits/saves a question. Subsequent states prioritise recording a response, following up information, reconsidering an unsuitable assessment or considering/reviewing nomination. Interest, checks and nomination remain separate.
+
+Safety certification is expressly required before mobilisation. The vacancy states medical fitness as essential without specifying a verification stage; it does not establish certificate verification as an interview gate.

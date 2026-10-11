@@ -105,3 +105,32 @@ test("requirement-led assessment keeps every source and training record reachabl
     "attendance",
   );
 });
+
+test("candidate narrative and experience rows retain traceable requirement links", async () => {
+  const { candidateSummary, experienceRows } = await import("../src/data.js");
+  assert.equal(candidateSummary.vacancyId, "array-om");
+  assert.ok(
+    candidateSummary.sourceIds.every((id) => {
+      const source = sources.find((r) => r.id === id);
+      return (
+        source && source.date >= person.joined && source.date <= reviewDate
+      );
+    }),
+  );
+  assert.deepEqual(
+    experienceRows.map((row) => row.sourceRequirementId),
+    ["maintenance", "maintenance", "permits"],
+  );
+  assert.deepEqual(
+    experienceRows.flatMap((row) => row.qualificationIds),
+    ["pumped", "generator"],
+  );
+  assert.match(
+    candidateSummary.text,
+    /does not require previous wind experience/,
+  );
+  assert.doesNotMatch(
+    candidateSummary.interestKnownText,
+    /interest in offshore work need discussion/,
+  );
+});

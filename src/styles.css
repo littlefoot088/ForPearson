@@ -29,6 +29,9 @@
   align-items: center;
   gap: var(--mantine-spacing-md);
 }
+.experience-label {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+}
 .assessment-status {
   display: flex;
   align-items: center;
@@ -44,15 +47,6 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.review-actions-bar {
-  position: sticky;
-  bottom: var(--mantine-spacing-md);
-  z-index: 10;
-  background: var(--mantine-color-white);
-}
-:where(button, a, textarea):focus {
-  scroll-margin-block: var(--mantine-spacing-xl) 12rem;
-}
 .notification-region {
   position: fixed;
   top: var(--mantine-spacing-md);
@@ -64,13 +58,5 @@
   .requirement-label {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--mantine-spacing-xs);
-  }
-  .review-actions-bar {
-    position: static;
-  }
-}
-@media (max-height: 36em) {
-  .review-actions-bar {
-    position: static;
   }
 }

@@ -320,3 +320,42 @@ export const requirementNextSteps = {
   medical: "Check clearance",
   permits: "Confirm current authority",
 };
+
+// Curated conclusions grounded in the linked claims and O&M vacancy, not a score.
+export const candidateSummary = {
+  text: "Eimhin’s pump repairs and electrical fault-finding provide a practical starting point for turbine maintenance. Carrowmore Array welcomes maintenance experience from other kinds of plant and does not require previous wind experience. His independent responsibilities and interest in offshore work need discussion, while safety certification and medical fitness still need checking.",
+  interestKnownText:
+    "Eimhin’s pump repairs and electrical fault-finding provide a practical starting point for turbine maintenance. Carrowmore Array welcomes maintenance experience from other kinds of plant and does not require previous wind experience. His independent responsibilities need discussion, while safety certification and medical fitness still need checking.",
+  claimIds: ["pump", "electrical"],
+  sourceIds: [
+    "pump_2010-08-06",
+    "pump_2024-09-27",
+    "pump_2025-10-10",
+    "pump_2026-04-21",
+    "electrical_2011-09-21",
+    "electrical_2018-01-01",
+    "electrical_2026-12-26",
+  ],
+  vacancyId: vacancy.id,
+};
+
+// Presentation rows preserve the underlying employer requirements and evidence links.
+export const experienceRows = claims.map((claim) => {
+  const requirement = requirements.find((r) => r.id === claim.requirementId);
+  const supporting = { pump: "pumped", electrical: "generator" }[claim.id];
+  return {
+    ...requirement,
+    id: claim.id,
+    sourceRequirementId: requirement.id,
+    text: claim.title,
+    conclusion: {
+      pump: "Repeated pump repairs recorded",
+      electrical: "Fault-finding and repairs across several years",
+      safety:
+        "Planning and permit issuing recorded; current authority needs checking",
+    }[claim.id],
+    detail: claim.relevance,
+    claimIds: [claim.id],
+    qualificationIds: supporting ? [supporting] : [],
+  };
+});

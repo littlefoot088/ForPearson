@@ -105,3 +105,34 @@ test("officer assessment cannot bypass nomination gates or manufacture a respons
   assert.equal(deferred.interest, "interested");
   assert.equal(deferred.employerProgression, "not-submitted");
 });
+
+test("recommendation guidance and primary action follow the same state precedence", async () => {
+  const { nextRecommendation } = await import("../src/workflow.js");
+  assert.equal(nextRecommendation(initialOpportunity).action, "discussion");
+  assert.equal(
+    nextRecommendation(reduce(initialOpportunity, { type: "suggest" })).action,
+    "response",
+  );
+  assert.equal(nextRecommendation(interested).action, "nomination");
+  assert.match(nextRecommendation(interested).detail, /before mobilisation/);
+  assert.equal(
+    nextRecommendation({ ...interested, assessment: "not-suitable" }).action,
+    "assessment",
+  );
+  assert.equal(
+    nextRecommendation({ ...interested, interest: "not-interested" }).action,
+    "response",
+  );
+  assert.equal(
+    nextRecommendation({ ...interested, interest: "more-information" }).action,
+    "clarify",
+  );
+  for (const decision of ["recommend", "defer"]) {
+    const state = reduce(interested, { ...recommendation, decision });
+    assert.equal(nextRecommendation(state).label, "Review nomination decision");
+    assert.match(
+      nextRecommendation(state).guidance,
+      decision === "recommend" ? /not submitted/ : /deferred/,
+    );
+  }
+});

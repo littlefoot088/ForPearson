@@ -32,7 +32,8 @@ import {
   person,
   vacancy,
   requirements,
-  requirementGroups,
+  experienceRows,
+  candidateSummary,
   claims,
   qualifications,
   trainingRecords,
@@ -44,6 +45,8 @@ import { RequirementRow, ExpandedAssessment } from "./assessment";
 
 import {
   careerContext,
+  certificateContext,
+  discussionTopics,
   opportunityContext,
   initialOpportunity,
   opportunityReducer,
@@ -58,6 +61,7 @@ const clarificationContexts = [
   ...requirements,
   careerContext,
   opportunityContext,
+  certificateContext,
 ];
 
 export default function App() {
@@ -167,6 +171,10 @@ export default function App() {
     drawer || composer || draftOpen || jobOpen || workflowDialog,
   );
   const composerInput = useRef(null);
+  const discussionStart = useRef(null);
+  useEffect(() => {
+    if (draftOpen) discussionStart.current?.focus();
+  }, [draftOpen]);
   useEffect(() => {
     // Editing a draft changes content inside an already-open Modal.
     if (composer) composerInput.current?.focus();
@@ -193,6 +201,27 @@ export default function App() {
       : workflowDialog
         ? `${person.name} · ${vacancy.title}`
         : "CARROWMORE ARRAY · O&M";
+
+  function renderAssessment(row) {
+    const context = requirements.find(
+      (r) => r.id === (row.sourceRequirementId ?? row.id),
+    );
+    return (
+      <RequirementRow key={row.id} requirement={row}>
+        {expanded === row.id && (
+          <ExpandedAssessment
+            requirement={row}
+            contextRequirement={context}
+            onInspect={inspect}
+            onClarify={clarify}
+            drafts={drafts}
+            verifications={verifications}
+            onFlag={flag}
+          />
+        )}
+      </RequirementRow>
+    );
+  }
 
   return (
     <>
@@ -263,7 +292,7 @@ export default function App() {
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed">
-                    System-suggested opportunity
+                    Being considered for
                   </Text>
                   <Text>
                     <strong>{vacancy.title}</strong> · {vacancy.employer}
@@ -281,37 +310,27 @@ export default function App() {
                 </Button>
               </Group>
             </Paper>
-            <Stack gap="xs" aria-label="Quick assessment">
-              <Text size="sm">
-                <strong>Experience:</strong> Relevant maintenance experience
-                recorded.
+            <Stack gap="sm" aria-labelledby="summary-heading">
+              <Title order={2} id="summary-heading">
+                Why consider Eimhin
+              </Title>
+              <Text size="lg">
+                {opportunity.interest === "not-discussed"
+                  ? candidateSummary.text
+                  : candidateSummary.interestKnownText}
               </Text>
-              <Text size="sm">
-                <strong>Qualifications:</strong> Offshore safety certificates
-                and medical clearance need checking.
-              </Text>
-              <Text size="sm">
-                <strong>Interest:</strong> {interestLabel(opportunity)}
-                {opportunity.responseOrigin && " · simulated response"}
-              </Text>
-              <Text size="sm">
-                <strong>Next step:</strong>{" "}
-                {opportunity.assessment === "not-suitable"
-                  ? "Reconsider the assessment before suggesting this opportunity."
-                  : opportunity.nominationDecision?.decision === "defer"
-                    ? "Follow up the outstanding questions before reconsidering nomination."
-                    : opportunity.nominationDecision
-                      ? "Review the recorded gaps before any employer referral."
-                      : opportunity.interest === "interested"
-                        ? "Review outstanding requirements before deciding whether to nominate Eimhin."
-                        : opportunity.interest === "not-interested"
-                          ? "Respect Eimhin’s decision; revisit this opportunity only if his interest changes."
-                          : opportunity.interest === "more-information"
-                            ? "Prepare the information Eimhin needs to decide."
-                            : opportunity.suggested
-                              ? "Discuss the opportunity and record Eimhin’s response."
-                              : "Discuss offshore working preferences and check which safety certificates Eimhin already holds."}
-              </Text>
+              <Group gap="lg" align="flex-start" aria-label="Quick assessment">
+                <Text size="sm">
+                  <strong>Experience:</strong> Relevant maintenance recorded
+                </Text>
+                <Text size="sm">
+                  <strong>Qualifications:</strong> Coverage needs checking
+                </Text>
+                <Text size="sm">
+                  <strong>Interest:</strong> {interestLabel(opportunity)}
+                  {opportunity.responseOrigin && " · simulated response"}
+                </Text>
+              </Group>
             </Stack>
             <Group justify="space-between" align="center" gap="sm">
               <div>
@@ -332,61 +351,58 @@ export default function App() {
               </Button>
             </Group>
           </Stack>
-          <Stack
-            component="section"
-            gap="md"
-            aria-labelledby="requirements-heading"
-          >
-            <Group justify="space-between" gap="xs">
-              <Title order={2} id="requirements-heading">
-                Requirements assessment
-              </Title>
-              <Text size="sm" c="dimmed">
-                Select a requirement to investigate
-              </Text>
-            </Group>
-            <Paper withBorder>
-              <Accordion value={expanded} onChange={setExpanded} order={4}>
-                {requirementGroups.map((group) => (
-                  <Box
-                    component="section"
-                    key={group.id}
-                    aria-labelledby={"group-" + group.id}
-                  >
-                    <Box px="md" py="sm" bg="gray.1">
-                      <Title
-                        order={3}
-                        size="sm"
-                        c="gray.7"
-                        id={"group-" + group.id}
-                      >
-                        {group.label}
-                      </Title>
-                    </Box>
-                    {requirements
-                      .filter((r) => r.group === group.id)
-                      .map((requirement) => (
-                        <RequirementRow
-                          key={requirement.id}
-                          requirement={requirement}
-                        >
-                          {expanded === requirement.id && (
-                            <ExpandedAssessment
-                              requirement={requirement}
-                              onInspect={inspect}
-                              onClarify={clarify}
-                              drafts={drafts}
-                              verifications={verifications}
-                              onFlag={flag}
-                            />
-                          )}
-                        </RequirementRow>
-                      ))}
-                  </Box>
-                ))}
-              </Accordion>
-            </Paper>
-          </Stack>
+          <Accordion value={expanded} onChange={setExpanded} order={3}>
+            <Stack gap="lg">
+              <Stack
+                component="section"
+                gap="sm"
+                aria-labelledby="experience-heading"
+              >
+                <Title order={2} id="experience-heading">
+                  Relevant experience
+                </Title>
+                <Text size="sm" c="dimmed">
+                  The role accepts mechanical or electrical maintenance
+                  experience. Permit-system experience is an employer
+                  preference.
+                </Text>
+                <Paper withBorder>
+                  {experienceRows.map((row) => renderAssessment(row))}
+                </Paper>
+              </Stack>
+              <Stack
+                component="section"
+                gap="sm"
+                aria-labelledby="qualifications-heading"
+              >
+                <Title order={2} id="qualifications-heading">
+                  Qualifications and outstanding requirements
+                </Title>
+                <Text size="sm" c="dimmed">
+                  Safety certification is required before mobilisation. Medical
+                  fitness is essential; the vacancy does not specify when it
+                  must be verified.
+                </Text>
+                <Paper withBorder>
+                  {requirements
+                    .filter((r) => r.type === "qualification")
+                    .map((row) => renderAssessment(row))}
+                </Paper>
+                <Title order={3} size="h4">
+                  Working conditions and additional experience
+                </Title>
+                <Text size="sm" c="dimmed">
+                  Comfort with offshore conditions is essential. Supporting
+                  colleagues is an employer preference.
+                </Text>
+                <Paper withBorder>
+                  {requirements
+                    .filter((r) => r.type === "clarification")
+                    .map((row) => renderAssessment(row))}
+                </Paper>
+              </Stack>
+            </Stack>
+          </Accordion>
           <OpportunityActions
             state={opportunity}
             drafts={drafts}
@@ -485,10 +501,21 @@ export default function App() {
       >
         {draftOpen && (
           <Stack gap="md">
-            <Text>
+            <Text ref={discussionStart} tabIndex={-1}>
               Prepare for your discussion. Questions are saved locally, not
               sent.
             </Text>
+            {discussionTopics
+              .filter((topic) => !drafts.some((draft) => draft.id === topic.id))
+              .map((topic) => (
+                <Button
+                  key={topic.id}
+                  variant="light"
+                  onClick={() => clarify(topic, topic, true)}
+                >
+                  Add topic: {topic.title}
+                </Button>
+              ))}
             {drafts.map((draft) => (
               <Paper withBorder p="md" key={draft.id}>
                 <Stack gap="sm">
@@ -516,7 +543,12 @@ export default function App() {
                         if (drafts.length === 1) {
                           focusOrigin.current =
                             document.getElementById(
-                              "requirement-" + draft.requirementId,
+                              "requirement-" +
+                                (experienceRows.find(
+                                  (row) =>
+                                    row.claimIds.includes(draft.id) ||
+                                    row.qualificationIds.includes(draft.id),
+                                )?.id ?? draft.requirementId),
                             ) ?? document.getElementById("opportunity-actions");
                           setDraftOpen(false);
                         }

@@ -39,12 +39,6 @@ export function EvidenceContent({
             {records.some((r) => r.date < person.joined) &&
               " · 1 needs attribution checking"}
           </Text>
-          <Text size="sm" c="dimmed">
-            {drawer.item.pattern} · {drawer.item.involvement}
-            <br />
-            {dateLabel(records[0].date)} – {dateLabel(records.at(-1).date)} ·
-            Latest selected activity: {dateLabel(records.at(-1).date)}
-          </Text>
           <Text fw={600}>
             {dateLabel(source.date)} · {source.station} Station
           </Text>

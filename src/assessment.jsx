@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Accordion,
-  Button,
-  Group,
-  Stack,
-  Text,
-  Title,
-  Paper,
-} from "@mantine/core";
+import { Accordion, Button, Group, Stack, Text, Title } from "@mantine/core";
 import {
   FileText,
   Files,
@@ -52,7 +44,13 @@ export function RequirementRow({ requirement, children }) {
   return (
     <Accordion.Item value={requirement.id}>
       <Accordion.Control id={"requirement-" + requirement.id}>
-        <span className="requirement-label">
+        <span
+          className={
+            requirement.conclusion
+              ? "requirement-label experience-label"
+              : "requirement-label"
+          }
+        >
           <Text component="span">{requirement.text}</Text>
           <Text
             component="span"
@@ -61,11 +59,13 @@ export function RequirementRow({ requirement, children }) {
             className="assessment-status"
           >
             <Icon icon={statusIcons[status.icon]} />
-            {status.label}
+            {requirement.conclusion ?? status.label}
           </Text>
-          <Text component="span" size="sm" c="dimmed">
-            {requirementNextSteps[requirement.id]}
-          </Text>
+          {!requirement.conclusion && (
+            <Text component="span" size="sm" c="dimmed">
+              {requirementNextSteps[requirement.id]}
+            </Text>
+          )}
         </span>
       </Accordion.Control>
       <Accordion.Panel aria-labelledby={"requirement-" + requirement.id}>
@@ -78,21 +78,11 @@ export function RequirementRow({ requirement, children }) {
 function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
   const records = getSources(claim);
   return (
-    <Paper
-      component="section"
-      withBorder
-      p="md"
-      aria-labelledby={"claim-" + claim.id}
-    >
+    <Stack component="section" aria-label={claim.title}>
       <Stack gap="sm">
-        <Group justify="space-between">
-          <Title order={4} id={"claim-" + claim.id}>
-            {claim.title}
-          </Title>
-          <Text size="sm" c="dimmed">
-            {claim.involvement}
-          </Text>
-        </Group>
+        <Text size="sm" c="dimmed">
+          {claim.involvement}
+        </Text>
         <Text>
           <strong>What we found:</strong> {claim.summary}
         </Text>
@@ -100,6 +90,10 @@ function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
           {records.length} selected records
           {records.some((r) => r.date < person.joined) &&
             " · 1 needs attribution checking"}
+        </Text>
+        <Text size="sm" c="dimmed">
+          {dateLabel(records[0].date)} – {dateLabel(records.at(-1).date)} ·
+          Latest selected activity: {dateLabel(records.at(-1).date)}
         </Text>
         <Text size="sm">
           <strong>Needs checking:</strong> {claim.limitation}
@@ -121,7 +115,7 @@ function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
           </Button>
         </Group>
       </Stack>
-    </Paper>
+    </Stack>
   );
 }
 
@@ -196,6 +190,7 @@ function QualificationDetail({
 
 export function ExpandedAssessment({
   requirement,
+  contextRequirement = requirement,
   onInspect,
   onClarify,
   drafts,
@@ -214,8 +209,8 @@ export function ExpandedAssessment({
       key={q.id}
       q={q}
       supporting={requirement.type === "experience"}
-      onInspect={(item) => onInspect(item, "qualification", requirement)}
-      onClarify={(item) => onClarify(item, requirement)}
+      onInspect={(item) => onInspect(item, "qualification", contextRequirement)}
+      onClarify={(item) => onClarify(item, contextRequirement)}
       flagged={verifications.includes(q.id)}
       onFlag={onFlag}
       drafted={hasDraft(q.id)}
@@ -228,8 +223,8 @@ export function ExpandedAssessment({
         <ExperienceDetail
           key={claim.id}
           claim={claim}
-          onInspect={(item) => onInspect(item, "claim", requirement)}
-          onClarify={(item) => onClarify(item, requirement)}
+          onInspect={(item) => onInspect(item, "claim", contextRequirement)}
+          onClarify={(item) => onClarify(item, contextRequirement)}
           drafted={hasDraft(claim.id)}
         />
       ))}
@@ -237,7 +232,7 @@ export function ExpandedAssessment({
         <Accordion variant="contained" order={4}>
           <Accordion.Item value="training">
             <Accordion.Control>
-              Related training records ({linkedQualifications.length})
+              Related training ({linkedQualifications.length})
             </Accordion.Control>
             <Accordion.Panel>
               <Stack gap="lg">{trainingDetails}</Stack>
