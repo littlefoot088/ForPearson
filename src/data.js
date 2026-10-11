@@ -323,7 +323,7 @@ export const requirementNextSteps = {
 
 // Curated conclusions grounded in the linked claims and O&M vacancy, not a score.
 export const candidateSummary = {
-  text: "Eimhin has recorded pump-repair and electrical fault-finding experience. The employer accepts maintenance experience from other plant and does not require previous wind experience. His independent responsibilities need clarification.",
+  text: "Eimhin has recorded pump-repair and electrical fault-finding experience. The employer accepts maintenance experience from other plant and does not require previous wind experience. His independent responsibilities need clarification; complete safety certification and medical fitness still need checking.",
   claimIds: ["pump", "electrical"],
   sourceIds: [
     "pump_2010-08-06",

@@ -53,51 +53,30 @@ First aid, height certification and medical fitness are “not established by th
 
 The NOSF Offshore Wind Turbine Technician occupation was inspected for context, but employer wording is used in the page; the prototype does not implement a taxonomy mapping or assert a NOSF award.
 
-## Simplifications and boundaries
+## Assessment semantics and narrative provenance
 
-`src/data.js` separates the person, vacancy, job requirements, experience claims, interpretations and qualification requirements. `src/records.js` separates source and training records. Discussion questions, qualification checks and internal record-review flags live in separate React state. Opportunity-specific workflow state is managed separately in `src/workflow.js`. Claims refer to requirements and source IDs; qualifications refer to training record IDs where present.
+`src/data.js` separates people, vacancies, requirements, claims, interpretations and formal qualification records. Mechanical and electrical maintenance remain alternatives under one essential requirement. Permits and supporting colleagues remain employer preferences. Unknown evidence is not a confirmed absence; no current required qualification is marked Documented.
 
-This is curated decision support, not live inference, certification validation or matching. No raw personnel or appraisal corpus is shipped. No expensive training is recommended from missing evidence. All review changes reset on refresh, and neither interest nor a local nomination decision establishes offshore eligibility.
+`candidateSummary` is authored copy linked to the pump/electrical claims, seven attributed post-joining records and the O&M vacancy. It does not use the two disputed early records. The employer accepts maintenance on other plant and does not require prior wind experience; this does not establish that Eimhin lacks wind experience or prove turbine competence. The summary names independent responsibility and safety/medical checks as unresolved.
 
-## Requirement-led assessment
+The referral adds safe-work and permit evidence and records nine attributed source IDs. Both uncertain early records remain available in selected counts and inspection but are excluded from the referral recommendation. Source metadata and inspection links are for the reviewer, separately from employer-facing text. Qualification wording preserves all four training interpretations and the distinction between missing documentation and confirmed gaps.
 
-The same eleven original log entries and four training records are retained. Requirements now carry group/order, an assessment state, and explicit links to existing experience claims or qualification records. Mechanical and electrical evidence are alternative routes within one employer requirement. Supporting modules are disclosed there, not promoted into additional mandatory certificates.
+Safety certification is required before mobilisation. Medical fitness is essential with verification timing unspecified. No certificate-verification rule is invented for interview or referral.
 
-The collapsed labels describe evidence states. Evidence found means relevant work is documented, not competence verified. Module recorded means a passed module exists, not the complete certificate. Attendance recorded preserves the distinction from completion. Needs clarification identifies an unresolved question; Not established describes the selected records without asserting that the keeper lacks experience or credentials. Documented is reserved for sufficient qualification evidence and is not assigned to any current required qualification.
+## Workflow, private notes and reported information
 
-The offshore-working-conditions and mentoring rows represent actual employer requirements/preferences. No new evidence has been invented for them. All expiry interpretations still use the agreed fictional review date, 31 December 2026, shown in qualification detail rather than the overview.
+The initial Interested response is illustrative workflow state, visibly labelled; it is not a historical fact. Career intention remains unknown and preferences remain null. Edited responses are manually recorded prototype responses. No automatic consent or communication occurs.
 
-Officer assessment, opportunity suggestion, keeper response and nomination decision are distinct from requirement evidence labels, discussion questions and verification checks. These states do not recalculate or override evidence. Employer progression remains Not submitted in this prototype.
+Private conversation notes require a user-entered date and text, with optional follow-up. No dates or conversations are fabricated. Notes remain excluded from generated referrals. A follow-up within a note is a reminder, not an automatically created task.
 
-## Mantine presentation migration
+The small new-information example records pump/electrical responsibilities explicitly as reported by Eimhin, with a date supplied by the user. It neither overwrites original evidence nor independently verifies competence. Explicit inclusion copies a snapshot into the referral under self-reported information; edited referral wording retains that provenance. Changes to an included account invalidate readiness and mark the draft for review. They never silently overwrite saved wording; the editor offers Use latest reported account.
 
-No evidence fixtures, qualification interpretations, source quotations, identity links or requirement definitions changed during this migration. All eleven logs and four training records remain reachable. The fixed 31 December 2026 review date still governs expiry interpretation.
+Qualification checks are linked tasks with stable IDs. Their completion, reopening or removal does not change qualification status. General certificate tasks remain distinct from individual qualification checks. Record flags and discussion questions remain separate; questions are deduplicated by topic, with independent mechanical/electrical topics.
 
-Mantine theme colours express the existing evidence states; they do not calculate ratings or certification readiness. Module/attendance labels remain neutral, clarification remains amber and evidence remains blue. The exact substring highlighter wraps the original passage in Mantine Mark without changing the source text. Review decisions, drafts and verification flags retain their separate state and never promote a qualification to Documented.
+## Referral readiness and persistence
 
-## Career context and workflow provenance
+Saving a draft is separate from marking it ready. Readiness requires a reviewed saved draft, recorded interest, an assessment other than Not currently suitable, a rationale and acknowledgement of unresolved requirements. These guards allow a recommendation with gaps but do not establish eligibility. Employer progression remains Not submitted; the information must still be approved by Eimhin before any external sharing.
 
-Eimhin’s career intention is explicitly unknown and career preferences are null. These are absence-of-information states, not facts inferred from age, tenure or historical appraisals. The preference discussion question is authored prototype copy, not a source quotation. Opportunity responses entered through the UI are explicitly simulated and never written into personnel or evidence fixtures.
+Changed responses, judgements, saved referral wording or included reported information invalidate readiness while retaining the draft. Changed assessment information requires explicit review and resaving. Completing tasks or saving private notes does not invalidate readiness or resolve gaps. No formal qualification outcome editor is implemented.
 
-The user approved local nomination decisions with outstanding gaps, provided interest is recorded and the officer supplies a rationale and acknowledges unresolved requirements. A saved recommendation means an officer decision for possible employer consideration; it never marks an employer submission or interview. Retirement filtering and the illustrative Fintan Ó Ceallaigh example exist only in the information-architecture proposal and are not source-derived personnel data.
-
-## Decision-focused presentation
-
-The page separates experience, qualifications and interest in a compact summary. Each requirement offers a current position and a next step where useful; mentoring has no automatic immediate action. Detailed source counts describe selected records, not total work frequency. Recency, span and involvement are available in expanded experience assessments. Technical identifiers, original dates, identity notes and raw fields sit under View source details; original passages and highlights remain unchanged. The inspector identifies the fictional assessment date.
-
-Discussion with Eimhin collects editable questions by experience area or topic, with one item per stable ID. No source-level question drafts or outgoing messages are created. Check qualification tracks a reversible local task to obtain evidence from the keeper, Authority training records or provider. It never certifies a qualification or creates a training recommendation. Internal record-review flags are keyed by source ID and remain independent of qualification checks, discussion questions and opportunity progression.
-
-## Narrative provenance and display mappings
-
-`candidateSummary` stores authored assessment text plus links to the pump/electrical claims, seven post-joining source records and the O&M vacancy. It is curated, not generated at runtime by a matching model. The vacancy explicitly accepts mechanical or electrical experience on other kinds of plant and does not require prior wind experience. These facts support the transfer described in the summary; they do not prove turbine competence, independence or decades of work. Both unresolved 2009 records remain accessible and counted with caveats, but are not needed to support the narrative.
-
-Experience presentation rows preserve their parent requirement IDs. Pump repair and electrical fault-finding map to the same maintenance requirement; the pumped-systems and generator-control modules stay with their respective area. Safe-work planning/permits map to the permit preference. Formal qualifications and non-certificate considerations retain their original definitions and evidence statuses.
-
-The narrative’s uncertainty sentence omits the request to establish interest once any opportunity response is recorded. `nextRecommendation` derives recommendations from existing officer, interest and nomination state; it never treats a local qualification task as a verified outcome. Safety certification is a documented mobilisation condition. Medical fitness is essential with timing unspecified. The fixture provides no verified-current full required qualification and no confirmed training gap.
-
-
-## Consolidated assessment presentation
-
-The shorter suitability narrative retains its existing claim and vacancy provenance; it does not depend on either early, attribution-uncertain record. Personal intention, working preferences and opportunity interest remain separate data concepts despite a consolidated interest presentation. No source fixtures, quotations, highlights or expiry rules changed.
-
-Evidence inspection starts on the first selected record on or after the documented joining date. This is an initial selection only, not an exclusion or a claim of externally verified attribution. Chronological record navigation still includes all eleven logs and both early attribution caveats. Qualification checks are visible local tasks, independent of questions, record-review flags and progression. A not-currently-suitable assessment leaves the opportunity on hold without prompting progression.
+Tasks, dated notes, reported accounts, referral snapshots, readiness, questions, record flags and review state persist in versioned localStorage scoped to this person/opportunity. This explicitly replaces the earlier reset-on-refresh choice. Original fixtures are not stored or mutated. Invalid saved data falls back to the illustrative scenario with a notice; failed writes retain session state with a warning. Reset clears workspace content and restores initial tasks and illustrative interest. There is no server persistence, synchronisation or production audit trail.

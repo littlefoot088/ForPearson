@@ -12,6 +12,7 @@ import {
   Grid,
   List,
   Notification,
+  Modal,
   Paper,
   Stack,
   Text,
@@ -41,16 +42,15 @@ import {
   certificateContext,
   discussionTopics,
   opportunityContext,
-  initialOpportunity,
-  opportunityReducer,
   interestLabel,
 } from "./workflow";
+import { WorkflowForm, workflowTitles } from "./opportunity";
+import { Workspace, WorkspacePanel, workspaceTitles } from "./workspace.jsx";
 import {
-  OpportunityActions,
-  WorkflowForm,
-  ReviewNotes,
-  workflowTitles,
-} from "./opportunity";
+  loadWorkspace,
+  persistWorkspace,
+  workspaceReducer,
+} from "./workspace.js";
 const clarificationContexts = [
   ...requirements,
   careerContext,
@@ -60,26 +60,65 @@ const clarificationContexts = [
 
 export default function App() {
   const [expanded, setExpanded] = useState(null);
-  const [opportunity, dispatchOpportunity] = useReducer(
-    opportunityReducer,
-    initialOpportunity,
+  const [loaded] = useState(() =>
+    loadWorkspace({ getItem: (key) => window.localStorage.getItem(key) }),
   );
+  const [workspace, dispatchWorkspace] = useReducer(
+    workspaceReducer,
+    loaded.workspace,
+  );
+  const opportunity = workspace.opportunity;
+  const [workspacePanel, setWorkspacePanel] = useState(null);
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [returnToWorkspace, setReturnToWorkspace] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [storageFailed, setStorageFailed] = useState(false);
   const [workflowDialog, setWorkflowDialog] = useState(null);
   const [drawer, setDrawer] = useState(null);
   const [index, setIndex] = useState(0);
   const [composer, setComposer] = useState(null);
   const [question, setQuestion] = useState("");
-  const [drafts, setDrafts] = useState([]);
+  const [drafts, setDrafts] = useState(loaded.drafts);
   const [draftOpen, setDraftOpen] = useState(false);
   const [returnToDraft, setReturnToDraft] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [notes, setNotes] = useState("");
+  const [notice, setNotice] = useState(loaded.message);
   const [jobOpen, setJobOpen] = useState(false);
-  const [verifications, setVerifications] = useState([]);
-  const [recordFlags, setRecordFlags] = useState([]);
+  const verifications = workspace.tasks
+    .filter((t) => t.qualificationId)
+    .map((t) => t.qualificationId);
+  const [recordFlags, setRecordFlags] = useState(loaded.recordFlags);
+  useEffect(() => {
+    setStorageFailed(
+      !persistWorkspace(
+        { setItem: (key, value) => window.localStorage.setItem(key, value) },
+        { workspace, drafts, recordFlags },
+      ),
+    );
+  }, [workspace, drafts, recordFlags]);
+  function openWorkspace(mode, item) {
+    rememberFocus();
+    setWorkspacePanel({ mode, item, session: crypto.randomUUID() });
+    setWorkspaceOpen(true);
+  }
+  function closeEvidence() {
+    setDrawer(null);
+    if (returnToWorkspace) {
+      setWorkspaceOpen(true);
+      setReturnToWorkspace(false);
+    }
+  }
   const focusOrigin = useRef(null);
+  const referralSourceFocus = useRef(null);
   function rememberFocus() {
-    if (!drawer && !composer && !draftOpen && !jobOpen && !workflowDialog)
+    if (
+      !drawer &&
+      !composer &&
+      !draftOpen &&
+      !jobOpen &&
+      !workflowDialog &&
+      !workspaceOpen &&
+      !resetOpen
+    )
       focusOrigin.current = document.activeElement;
   }
   function inspect(item, type, requirement) {
@@ -132,9 +171,7 @@ export default function App() {
     clarify(item, requirement, true);
   }
   function flag(q) {
-    setVerifications((v) =>
-      v.includes(q.id) ? v.filter((id) => id !== q.id) : [...v, q.id],
-    );
+    dispatchWorkspace({ type: "qualification-toggle", qualification: q });
     setNotice(
       verifications.includes(q.id)
         ? "Qualification check removed."
@@ -146,7 +183,7 @@ export default function App() {
     setWorkflowDialog(mode);
   }
   function saveWorkflow(action) {
-    dispatchOpportunity(action);
+    dispatchWorkspace({ type: "opportunity", action });
     setWorkflowDialog(null);
     setNotice(
       action.type === "suggest"
@@ -169,7 +206,13 @@ export default function App() {
   const narrow = useMediaQuery(`(max-width: ${mantineTheme.breakpoints.sm})`);
   const overlayActive = useRef(false);
   overlayActive.current = Boolean(
-    drawer || composer || draftOpen || jobOpen || workflowDialog,
+    drawer ||
+    composer ||
+    draftOpen ||
+    jobOpen ||
+    workflowDialog ||
+    workspaceOpen ||
+    resetOpen,
   );
   const composerInput = useRef(null);
   const discussionStart = useRef(null);
@@ -218,6 +261,8 @@ export default function App() {
             drafts={drafts}
             verifications={verifications}
             onFlag={flag}
+            reports={workspace.reports}
+            onReport={(claim) => openWorkspace("report", claim)}
           />
         )}
       </RequirementRow>
@@ -323,6 +368,27 @@ export default function App() {
                           >
                             View role details
                           </Button>
+                          <Group gap="xs">
+                            <Text size="sm" data-testid="keeper-interest">
+                              <strong>Eimhin’s interest:</strong>{" "}
+                              {interestLabel(opportunity)}
+                            </Text>
+                            <Button
+                              variant="subtle"
+                              size="compact-xs"
+                              onClick={() => openWorkflow("response")}
+                            >
+                              Edit response
+                            </Button>
+                          </Group>
+                          <Text size="xs" c="dimmed">
+                            {opportunity.responseOrigin === "illustrative"
+                              ? "Interested is illustrative scenario data, not a historical response."
+                              : opportunity.responseOrigin === "simulated"
+                                ? "Manually recorded prototype response."
+                                : "No response recorded."}{" "}
+                            Career preferences remain unknown.
+                          </Text>
                         </Stack>
                       </Paper>
                     </Grid.Col>
@@ -391,34 +457,6 @@ export default function App() {
                           .filter((r) => r.type === "qualification")
                           .map(renderAssessment)}
                       </Box>
-                      {verifications.length > 0 && (
-                        <Stack gap="xs" aria-label="Qualification checks">
-                          <Text size="sm" fw={600}>
-                            Qualification checks ({verifications.length})
-                          </Text>
-                          <Text size="sm" c="dimmed">
-                            Tasks to follow up with Eimhin, Authority training
-                            records or the provider. No qualification has been
-                            verified.
-                          </Text>
-                          {verifications.map((id) => {
-                            const q = qualifications.find((q) => q.id === id);
-                            return (
-                              <Group key={id} gap="xs">
-                                <Text size="sm">{q.title}</Text>
-                                <Button
-                                  size="compact-sm"
-                                  variant="subtle"
-                                  onClick={() => flag(q)}
-                                  aria-label={`Remove check: ${q.title}`}
-                                >
-                                  Remove check
-                                </Button>
-                              </Group>
-                            );
-                          })}
-                        </Stack>
-                      )}
                     </Stack>
                     <Stack
                       component={Paper}
@@ -456,15 +494,8 @@ export default function App() {
                       aria-labelledby="interest-heading"
                     >
                       <Title order={2} size="h3" id="interest-heading">
-                        Eimhin’s interest in this role
+                        Offshore working conditions
                       </Title>
-                      <Text data-testid="keeper-interest">
-                        {interestLabel(opportunity)}
-                        {opportunity.responseOrigin && " · simulated response"}
-                      </Text>
-                      <Text size="sm" fw={600}>
-                        Required working conditions
-                      </Text>
                       <Box>
                         {requirements
                           .filter((r) => r.id === "environment")
@@ -482,21 +513,17 @@ export default function App() {
               className="review-workspace"
               tabIndex={0}
             >
-              <Stack gap="md">
-                <OpportunityActions
-                  state={opportunity}
-                  drafts={drafts}
-                  onOpen={openWorkflow}
-                  onClarify={() =>
-                    clarify(opportunityContext, opportunityContext)
-                  }
-                  onReviewDrafts={() => {
-                    rememberFocus();
-                    setDraftOpen(true);
-                  }}
-                />
-                <ReviewNotes notes={notes} onSave={setNotes} />
-              </Stack>
+              <Workspace
+                state={workspace}
+                dispatch={dispatchWorkspace}
+                onOpen={openWorkspace}
+                onWorkflow={openWorkflow}
+                drafts={drafts}
+                onDiscussion={() => {
+                  rememberFocus();
+                  setDraftOpen(true);
+                }}
+              />
             </Grid.Col>
           </Grid>
           <Group component="footer" justify="space-between" gap="xs">
@@ -504,9 +531,25 @@ export default function App() {
               CARROWMORE LIGHT AUTHORITY / EMPLOYEE REDEPLOYMENT
             </Text>
             <Text size="xs" c="dimmed">
-              Changes are local and reset on refresh.
+              Saved on this browser only. Nothing is sent.
             </Text>
+            <Button
+              variant="subtle"
+              size="compact-xs"
+              onClick={() => {
+                rememberFocus();
+                setResetOpen(true);
+              }}
+            >
+              Reset prototype workspace
+            </Button>
           </Group>
+          {storageFailed && (
+            <Text role="alert" size="sm" c="clarification.8">
+              Browser storage is unavailable. Changes are kept for this session
+              but will not survive refresh.
+            </Text>
+          )}
         </Stack>
       </Container>
       <Box className="notification-region" role="status" aria-live="polite">
@@ -521,8 +564,80 @@ export default function App() {
         )}
       </Box>
       <Drawer
+        opened={workspaceOpen}
+        onClose={() => setWorkspaceOpen(false)}
+        position="right"
+        size={narrow ? "100%" : "lg"}
+        keepMounted={workspacePanel?.mode === "referral"}
+        onEnterTransitionEnd={() => {
+          if (referralSourceFocus.current) {
+            referralSourceFocus.current.focus();
+            referralSourceFocus.current = null;
+          }
+        }}
+        returnFocus={false}
+        onExitTransitionEnd={restoreFocus}
+        title={workspaceTitles[workspacePanel?.mode]}
+        closeButtonProps={{ "aria-label": "Close workspace panel" }}
+      >
+        {workspacePanel && (
+          <WorkspacePanel
+            key={workspacePanel.session}
+            mode={workspacePanel.mode}
+            item={workspacePanel.item}
+            state={workspace}
+            dispatch={dispatchWorkspace}
+            onClose={() => setWorkspaceOpen(false)}
+            onInspect={(claim) => {
+              referralSourceFocus.current = document.activeElement;
+              setWorkspaceOpen(false);
+              setReturnToWorkspace(true);
+              inspect(
+                claim,
+                "claim",
+                requirements.find((r) => r.claimIds?.includes(claim.id)),
+              );
+            }}
+          />
+        )}
+      </Drawer>
+      <Modal
+        opened={resetOpen}
+        onClose={() => setResetOpen(false)}
+        title="Reset prototype workspace?"
+        returnFocus={false}
+        onExitTransitionEnd={restoreFocus}
+      >
+        <Stack gap="md">
+          <Text>
+            This removes saved notes, tasks, accounts, discussion questions,
+            flags and referral decisions from this browser. The illustrative
+            interested scenario and initial tasks will be restored.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setResetOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={() => {
+                dispatchWorkspace({ type: "reset" });
+                setDrafts([]);
+                setRecordFlags([]);
+                setExpanded(null);
+                setWorkspacePanel(null);
+                setResetOpen(false);
+                setNotice("Prototype workspace reset.");
+              }}
+            >
+              Reset workspace
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+      <Drawer
         opened={Boolean(drawer)}
-        onClose={() => setDrawer(null)}
+        onClose={closeEvidence}
         position="right"
         size={narrow ? "100%" : "lg"}
         returnFocus={false}

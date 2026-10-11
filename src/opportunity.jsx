@@ -8,15 +8,10 @@ import {
   Stack,
   Text,
   Textarea,
-  Title,
 } from "@mantine/core";
-import { ArrowRight, Check, ClipboardList } from "lucide-react";
+import { Check } from "lucide-react";
 import { Icon } from "./components";
-import {
-  officerAssessments,
-  keeperResponses,
-  nextRecommendation,
-} from "./workflow";
+import { officerAssessments, keeperResponses } from "./workflow";
 import { vacancy } from "./data";
 
 export const workflowTitles = {
@@ -25,102 +20,6 @@ export const workflowTitles = {
   assessment: "Your assessment",
   nomination: "Consider for nomination",
 };
-
-export function OpportunityActions({
-  state,
-  onOpen,
-  onClarify,
-  drafts,
-  onReviewDrafts,
-}) {
-  const { action, label, guidance, detail } = nextRecommendation(state);
-  return (
-    <Paper
-      component="section"
-      id="opportunity-actions"
-      tabIndex={-1}
-      withBorder
-      radius="md"
-      bg="white"
-      p="lg"
-      aria-label="Opportunity actions"
-    >
-      <Stack gap="md">
-        <Title order={2} size="h3">
-          Your next step
-        </Title>
-        <Text>{guidance}</Text>
-        {detail && (
-          <Text size="sm" c="dimmed">
-            {detail}
-          </Text>
-        )}
-        <Stack gap="md">
-          <Stack gap="xs">
-            <Text size="sm">
-              <strong>Your assessment:</strong>{" "}
-              {officerAssessments[state.assessment]}
-            </Text>
-            {action !== "assessment" && (
-              <Button variant="subtle" onClick={() => onOpen("assessment")}>
-                Update your assessment
-              </Button>
-            )}
-          </Stack>
-          <Stack gap="xs">
-            {drafts.length > 0 && action !== "discussion" && (
-              <Button
-                variant="subtle"
-                leftSection={<Icon icon={ClipboardList} />}
-                onClick={onReviewDrafts}
-              >
-                Discussion with Eimhin ({drafts.length})
-              </Button>
-            )}
-            <Button
-              id="next-opportunity-action"
-              rightSection={<Icon icon={ArrowRight} />}
-              onClick={() =>
-                action === "discussion"
-                  ? onReviewDrafts()
-                  : action === "clarify"
-                    ? onClarify()
-                    : onOpen(action)
-              }
-            >
-              {action === "discussion" && drafts.length > 0
-                ? `Discussion with Eimhin (${drafts.length})`
-                : label}
-            </Button>
-            {!state.suggested &&
-              state.interest === "not-discussed" &&
-              state.assessment !== "not-suitable" && (
-                <Button variant="subtle" onClick={() => onOpen("suggest")}>
-                  Suggest to Eimhin
-                </Button>
-              )}
-          </Stack>
-        </Stack>
-        {action !== "response" && (
-          <Group gap="xs">
-            <Text size="sm" c="dimmed">
-              {state.interest === "not-discussed"
-                ? "Already spoken with Eimhin?"
-                : "His response has changed?"}
-            </Text>
-            <Button
-              variant="subtle"
-              size="compact-sm"
-              onClick={() => onOpen("response")}
-            >
-              Record Eimhin’s response
-            </Button>
-          </Group>
-        )}
-      </Stack>
-    </Paper>
-  );
-}
 
 export function WorkflowForm({ mode, state, onSave, onCancel }) {
   const fieldRef = useRef(null);
@@ -304,54 +203,5 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
         </Button>
       </Group>
     </Stack>
-  );
-}
-
-export function ReviewNotes({ notes, onSave }) {
-  const [text, setText] = useState(notes);
-  const [saved, setSaved] = useState(false);
-  return (
-    <Paper
-      component="section"
-      withBorder
-      radius="md"
-      bg="white"
-      p="lg"
-      aria-labelledby="notes-heading"
-    >
-      <Stack
-        gap="sm"
-        component="form"
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSave(text.trim());
-          setSaved(true);
-        }}
-      >
-        <Title order={2} size="h3" id="notes-heading">
-          Your notes
-        </Title>
-        <Textarea
-          label="Conversation notes and reminders"
-          placeholder="What did you discuss? What do you need to follow up?"
-          autosize
-          minRows={4}
-          maxLength={4000}
-          value={text}
-          onChange={(event) => {
-            setText(event.currentTarget.value);
-            setSaved(false);
-          }}
-        />
-        <Button type="submit" variant="light" disabled={text.trim() === notes}>
-          Save notes
-        </Button>
-        {saved && (
-          <Text size="sm" role="status">
-            Notes saved.
-          </Text>
-        )}
-      </Stack>
-    </Paper>
   );
 }

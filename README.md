@@ -1,78 +1,44 @@
-# Carrowmore · Opportunity assessment
+# Carrowmore opportunity assessment
 
-A functional, single-page prototype for a redeployment officer evaluating Carrowmore Array’s Wind Turbine Technician opportunity with Eimhin Mac Neidhe’s redeployment in mind. Built with React, JavaScript/JSX, Mantine and Vite.
+React + JavaScript + Vite prototype for one redeployment officer assessing Eimhin Mac Neidhe against Carrowmore Array’s Wind Turbine Technician opportunity. The outcome is a defensible local referral draft, not an employer submission.
 
-## Run locally
-
-Requires Node.js 22.13+ (22.x), 24+ (24.x), or 26+ and npm; Node 24 is recommended. From this repository:
+## Run
 
 ```sh
 npm install
 npm run dev
+npm test
+npm run build
 ```
 
-Open the local URL printed by Vite. `npm run build` creates the production bundle in `dist/`; `npm test` runs fixture/state checks and component interaction tests. `npm run test:ui` runs only the Mantine interaction tests.
+The development URL is printed by Vite (normally http://127.0.0.1:5173). Keep the dev server running while reviewing the prototype.
 
-## What it demonstrates
+## Implemented experience
 
-- One concise narrative explains why Eimhin is worth considering. A compact header identifies the keeper, opportunity, employer and sourced working arrangements.
-- Two essential maintenance evidence rows lead to their assessment and original evidence. Five safety/medical rows follow; permits and supporting colleagues are grouped as additional employer preferences. Offshore working conditions sit with opportunity interest. Mechanical or electrical maintenance remains one underlying requirement with two alternative evidence routes.
-- Eleven verbatim raw log entries and four training records, with source locations, exact highlights and separate interpretations.
-- Evidence-state labels that distinguish experience evidence, recorded modules, attendance and unresolved requirements without scores or unsupported certification claims.
-- One editable Discussion with Eimhin list; reversible qualification checks and separate internal record-review flags.
-- Separate officer assessment, local opportunity suggestion, explicitly simulated keeper response and local nomination decision. Nomination needs interest, rationale and acknowledgement of unresolved requirements; it does not submit to the employer.
+- A wider candidate assessment and a narrower sticky working area, stacked below Mantine’s md breakpoint.
+- Explicit current/prospective roles, a curated suitability narrative, illustrative Interested state and unknown career preferences.
+- One expanded assessment at a time; mechanical or electrical maintenance meets the experience requirement. Permits and supporting colleagues remain preferences.
+- All eleven original log records and four training records, exact highlights, source navigation, original-field disclosure and independent record-review flags. Two early records retain attribution caveats.
+- Opportunity progress, editable/completable tasks and dated private conversation notes with optional follow-up reminders.
+- Qualification checks as linked tasks, independent of evidence outcomes. Completing a task does not verify a qualification.
+- Editable Discussion with Eimhin questions, deduplicated by topic. Separately recorded responsibilities attributed to Eimhin, not treated as independent proof.
+- An editable employer-facing referral, with explicit optional inclusion of reported responsibilities. Private notes and tasks never populate it automatically.
+- Separate referral readiness decision: saved and reviewed draft, interest, suitable officer assessment, rationale and explicit acknowledgement of unresolved requirements. Readiness is local and does not imply approval to share, submission or interview.
 
-The review date is fixed at **31 December 2026**, an explicitly agreed fictional scenario date. All records are synthetic. Source dates show selected evidence, not the number of times a person performed an activity.
+## State and evidence
 
-## Boundaries and limitations
+The fictional assessment date is **31 December 2026**. Safety certification is required before mobilisation; medical fitness is essential, with its verification stage unspecified. Modules, attendance, expired training and missing evidence retain distinct meanings. No required complete qualification is marked verified.
 
-All changes use React state and reset on refresh. Nothing is sent, verified externally, or persisted to a server. There is no authentication, matching algorithm, data ingestion, backend or keeper-facing screen. Navigation labels provide context. People/vacancy directories, full profiles, retirement filtering and employer outcomes are conceptual only. Typography uses Mantine’s default system fonts; no font downloads are required.
+Workspace changes persist in versioned localStorage for `K0104` + `array-om`. Reset prototype workspace asks for confirmation and restores the initial interested scenario and tasks. Storage failure leaves the session usable with an explicit warning. No backend, authentication or cross-device synchronisation is provided. Only explicit saves retain editor changes; closing an unsaved editor discards them.
 
-The fixture is deliberately small and hand-curated. Missing evidence does not establish absence of experience or certification. Personnel attribution uses corroborating source identifiers and postings; it is not a verified identity service. Employer acceptance of safety and height certification needs confirmation. An expiry field on an attendance record does not prove that an award was made.
+`src/records.js` holds unchanged original fixtures; `src/data.js` holds curated interpretations and relationships. `src/workspace.js` owns task/note/report/referral state, guards and persistence; `src/workspace.jsx` presents the workspace and editors. `src/workflow.js` retains the underlying opportunity response and judgement model. Evidence inspection remains independent.
 
-See [information architecture](docs/information-architecture.md) and [data decisions](docs/data-decisions.md). No personal assessment reflection has been written on the applicant’s behalf.
+Mantine owns typography, spacing, sizing, radii, responsive components and overlay behaviour. Contextual work uses drawers; short destructive confirmations use modals. Custom CSS is limited to branding, evidence formatting, status alignment, notices and sticky layout. See [design system](docs/design-system.md), [information architecture](docs/information-architecture.md) and [data decisions](docs/data-decisions.md).
 
-## Design system
+## Scope and verification
 
-Mantine owns typography, spacing, component sizes, radii, breakpoints and standard interaction behaviour. `src/theme.js` changes only brand/semantic colours and the canvas/text colours. The application stays in light mode. `src/styles.css` contains only branding, skip-link positioning, status-column alignment, verbatim/source wrapping, notification placement. Do not recreate button, input, modal or typography scales in CSS.
+The initial interest is clearly labelled illustrative, not extracted from records or an invented conversation. Actual sharing requires Eimhin’s approval of the information. Sharing approval, submission, employer outcomes and interview preparation remain conceptual, as do directories and the wider redeployment platform.
 
-Requirement assessments, exact substring highlighting and record metadata remain domain-specific compositions. `src/App.jsx` holds local UI state; `src/workflow.js` separates opportunity decisions and their guards, and `src/opportunity.jsx` presents the shared state-based recommendation and contextual actions; `src/main.jsx` installs the provider and library styles. Mantine drawers handle focus containment, Escape and scroll locking; the app restores the original opener after overlay transitions, including removal of the final discussion question.
+Tests cover fixture integrity/reachability, source highlights, disclosure, discussion editing, independent checks, task and note editing, storage recovery/reset, referral privacy, reported-information inclusion, readiness safeguards and focus transitions. jsdom component tests do not verify rendered layout. Browser verification results are reported with delivery; no physical-device or full screen-reader audit is claimed.
 
-## Validation
-
-All 27 tests pass (13 fixture/workflow tests and 14 component tests). `npm test` covers source integrity, qualification distinctions, evidence reachability and the proposed workflow rules. Component tests cover single-row disclosure, source navigation/highlighting, source details, discussion questions, verification checks, career discussion, separate suggestion/response stages and nomination gates. The nomination tests check that changed interest invalidates a prior local decision and never submits to an employer. The component suite uses jsdom and does not verify visual layout.
-
-The production build passes. Component tests cover the restructured experience/qualification lists, all eleven exact log highlights, all four training records, optional discussion topics and state-based recommendation precedence, in addition to the existing focus, discussion, check and nomination safeguards. They run in jsdom and do not verify visual layout.
-
-Browser QA covered the desktop narrative, separate experience/qualification lists, optional discussion topics and explicit saving/deduplication. Narrow reflow and recommendation-control wrapping were checked in Chrome at 250% zoom, together with the full-width highlighted source drawer and Escape/return focus. Browser access briefly failed but recovered before these checks. Physical mobile testing, a full screen-reader audit and a complete browser walkthrough of every nomination state remain outstanding; state combinations and nomination safeguards are covered by automated tests.
-
-The proposed operating process and potential business benefits are documented in [information architecture](docs/information-architecture.md); they are not claimed as existing operations or measured results. Remaining design research includes officer comprehension of the statuses, acceptable referral evidence and keeper understanding of the opportunity suggestion.
-
-## Candidate-focused assessment
-
-The Why consider Eimhin narrative is curated copy in `src/data.js`, with explicit claim, source and vacancy links. It connects repeated pump repairs and electrical fault-finding to the employer’s acceptance of maintenance experience from other plant and lack of a prior-wind requirement. The rationale does not depend on the two disputed 2009 records and does not certify current competence. Interest has its own section and is not repeated in the narrative.
-
-Officer decision and next step is a normal-flow section, not a sticky bar. `nextRecommendation` supplies both its guidance and primary action. Initial Prepare discussion opens the existing question list with two optional topics; nothing is saved until the officer edits/saves a question. Subsequent states prioritise recording a response, following up information, reconsidering an unsuitable assessment or considering/reviewing nomination. Interest, checks and nomination remain separate.
-
-Safety certification is expressly required before mobilisation. The vacancy states medical fitness as essential without specifying a verification stage; it does not establish certificate verification as an interview gate.
-
-
-## Intentional hierarchy
-
-Each fact has one home: candidate/opportunity context → suitability narrative → essential experience → safety certificates and medical fitness → additional employer preferences → keeper interest and required working conditions → officer decision and next step. The former three-column summary and repeated career-intention/preference labels are removed. Unknown personal plans stay distinct from opportunity-specific responses in the data.
-
-Prepare discussion offers an editable role/offshore discussion prompt. Add qualification check creates a task, not a verification result; added checks are listed below qualifications and can be removed without reopening a row. Interest is read-only. Response recording is in the next-step section, introduced by “Already spoken with Eimhin?”; officer assessment editing sits beside the judgement. An unsuitable assessment can remain on hold. Evidence opens on the first post-joining selected record, while every early record and attribution caveat remains accessible in chronological navigation.
-
-Latest hierarchy review: desktop rendering and narrow layout at 250% browser zoom were inspected. Controls wrapped without visible horizontal overflow. Physical-mobile and screen-reader testing were not performed; drawer behaviour and focus restoration are covered by the component suite. The local preview is left running.
-
-The header explicitly labels **Current role** (Lighthouse keeper, Carrowmore Light Authority) and **Opportunity being assessed** (Wind Turbine Technician, Carrowmore Array). The interest section has one status, without a second unknown-preferences sentence or competing question/response buttons. Discussion preparation and response recording have separate, explicit purposes in the next-step section.
-
-Visual grouping uses aligned Mantine Paper sections on the off-white canvas. Candidate/current role and the prospective role share a responsive Grid, with the opportunity in a neutral inset. The full-width suitability summary has a restrained teal background; its former independent 75-character width cap is removed. Assessment sections own their borders, with accordion dividers inside rather than nested bordered boxes. All panel spacing, radii and breakpoints use Mantine tokens. Desktop and 250% zoom stacking were visually checked.
-
-Overlay conventions are defined in [the design system](docs/design-system.md). Details, evidence and editing flows all use right-hand drawers; modals are reserved for brief confirmations.
-
-The review workspace uses a wider assessment column and a narrower right column for Your next step, your assessment and saved editable notes. They stack below Mantine’s md breakpoint. User-facing actions name Eimhin rather than using a generic occupational label, and address the reviewer directly. Notes are independent of evidence, interest and nomination. By explicit product decision, notes and review state use local React state and reset on refresh. Nothing is saved in browser storage; no previous conversation is fabricated.
-
-From Mantine’s md breakpoint, the right-hand review workspace stays visible with sticky positioning while the assessment scrolls. Its height is limited to the viewport, with keyboard-accessible internal scrolling when needed so notes and controls remain reachable. Below md it returns to normal document flow. Positioning uses Mantine spacing variables; no fixed overlay covers assessment content.
-
-Expanded experience uses a neutral evidence panel (recorded activity, role relevance, selected-record count with attribution caveat, source inspection) and a separate amber clarification panel with its own discussion action. Date range, latest selected activity and involvement are disclosed through Record coverage and involvement. Related training stays secondary, with compact module details and optional follow-up actions behind a disclosure. Expiry context stays with the module. Source fixtures and qualification semantics are unchanged.
+Verification for this iteration: 37 tests pass (19 fixture/state tests and 18 component tests), and the production build passes. Chrome checks covered the two-column desktop view, sticky workspace, local referral save, Escape/return focus, stacked controls at 250% zoom and full-width referral drawer. Zoom was restored to 100%. Persistence/remount, task/note editing, reset, reported-account inclusion and readiness combinations have automated coverage. A physical mobile device and full screen-reader audit were not tested.

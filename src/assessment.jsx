@@ -84,7 +84,14 @@ export function RequirementRow({ requirement, children }) {
   );
 }
 
-function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
+function ExperienceDetail({
+  claim,
+  onInspect,
+  onClarify,
+  drafted,
+  onReport,
+  report,
+}) {
   const records = getSources(claim);
   return (
     <Stack component="section" gap="md" aria-label={claim.title}>
@@ -154,6 +161,15 @@ function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
             What to clarify with Eimhin
           </Title>
           <Text size="sm">{claim.limitation}</Text>
+          {report && (
+            <Text size="sm" className="source-quote">
+              <strong>Reported by Eimhin · {dateLabel(report.date)}:</strong>{" "}
+              {report.text}{" "}
+              <Text component="span" c="dimmed">
+                Recorded by you; not independently verified.
+              </Text>
+            </Text>
+          )}
           <Group>
             <Button
               variant="subtle"
@@ -163,6 +179,15 @@ function ExperienceDetail({ claim, onInspect, onClarify, drafted }) {
             >
               {drafted ? "Edit discussion question" : "Add to discussion"}
             </Button>
+            {onReport && ["pump", "electrical"].includes(claim.id) && (
+              <Button
+                variant="subtle"
+                size="compact-sm"
+                onClick={() => onReport(claim)}
+              >
+                {report ? "Edit Eimhin’s account" : "Record Eimhin’s account"}
+              </Button>
+            )}
           </Group>
         </Stack>
       </Paper>
@@ -314,6 +339,8 @@ function QualificationDetail({
 export function ExpandedAssessment({
   requirement,
   contextRequirement = requirement,
+  onReport,
+  reports = {},
   onInspect,
   onClarify,
   drafts,
@@ -348,6 +375,8 @@ export function ExpandedAssessment({
         <ExperienceDetail
           key={claim.id}
           claim={claim}
+          onReport={onReport}
+          report={reports[claim.id]}
           onInspect={(item) => onInspect(item, "claim", contextRequirement)}
           onClarify={(item) => onClarify(item, contextRequirement)}
           drafted={hasDraft(claim.id)}

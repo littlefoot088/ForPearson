@@ -4,11 +4,11 @@ Mantine owns the default typography, spacing, component sizes, radii and breakpo
 
 ## Layout and emphasis
 
-Use aligned Paper sections to group decision-relevant content. The wider left column contains the person, current role, prospective opportunity and assessment. A narrower right column contains Your next step, your assessment and Your notes. Use Mantine Grid spans 8/4 from md, stacking below it. A restrained teal summary panel provides emphasis; white assessment panels keep evidence statuses scannable. Group related controls with their purpose and avoid repeating statuses.
+Use aligned Paper sections to group decision-relevant content. The wider left column contains the person, current role, prospective opportunity and assessment. A narrower right column contains Opportunity progress, Next steps and Recent conversation. Use Mantine Grid spans 8/4 from md, stacking below it. A restrained teal summary panel provides emphasis; white assessment panels keep evidence statuses scannable. Group related controls with their purpose and avoid repeating statuses.
 
 ## Overlay convention
 
-**Use a drawer for viewing details or doing contextual work.** This includes source evidence, role details, discussion preparation, question editing, officer assessment, simulated keeper responses and local nomination decisions.
+**Use a drawer for viewing details or doing contextual work.** This includes source evidence, role details, discussion preparation, question editing, officer assessment, simulated keeper responses and referral drafts, reported responsibilities, dated notes, tasks and readiness decisions.
 
 - Drawers open from the right, using Mantine’s `lg` size on desktop and full width at or below its `sm` breakpoint.
 - Use the same title/context pattern and a labelled close control throughout.
@@ -26,8 +26,14 @@ Experience evidence is not verified competence. Training modules and attendance 
 
 Use the person’s name in actions and prompts (for example, Suggest to Eimhin and Record Eimhin’s response). Address the signed-in user as “you” or “your”; do not label their own controls “Officer”. Keep authentic job titles and original source-field labels unchanged. Notes are editable reminders, never evidence or an inferred record of a previous conversation.
 
-Prototype persistence: notes and review state last only until refresh, as explicitly selected. Do not imply browser persistence or recovery of previous sessions.
+Prototype persistence: explicitly saved notes, tasks and review state survive refresh in browser localStorage. Display storage failures. Reset prototype workspace uses a short confirmation modal and restores the illustrative scenario. Never imply server storage or cross-device recovery.
 
 From Mantine’s md breakpoint, the right-hand review workspace stays visible with sticky positioning while the assessment scrolls. Its height is limited to the viewport, with keyboard-accessible internal scrolling when needed so notes and controls remain reachable. Below md it returns to normal document flow. Positioning uses Mantine spacing variables; no fixed overlay covers assessment content.
 
 Expanded experience uses a neutral evidence panel (recorded activity, role relevance, selected-record count with attribution caveat, source inspection) and a separate amber clarification panel with its own discussion action. Date range, latest selected activity and involvement are disclosed through Record coverage and involvement. Related training stays secondary, with compact module details and optional follow-up actions behind a disclosure. Expiry context stays with the module. Source fixtures and qualification semantics are unchanged.
+
+## Referral workspace hierarchy
+
+One primary action prepares or reviews the referral. Readiness is a secondary decision after saving. Keep the current stage distinct from interest and from employer progression. Use compact task rows with labelled edit/remove icons; completion does not use qualification-success styling. Recent conversation is a dated preview with an Add note action, not a permanent textarea. Full editing uses drawers.
+
+Referral editing uses Mantine labelled textareas and explicit save actions. Source access is disclosed separately from employer-facing content. Returning from source inspection preserves unsaved draft edits and focus. Reported responsibilities require explicit inclusion and visible self-reported provenance. Private notes never appear in the referral automatically.
