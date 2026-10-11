@@ -15,7 +15,6 @@ import {
   qualifications,
   getSources,
   dateLabel,
-  reviewDate,
   person,
 } from "./data";
 
@@ -82,26 +81,6 @@ export function RequirementRow({ requirement, children }) {
   );
 }
 
-export function QualificationActions({ q, task, onFlag, onOpenCheck }) {
-  return (
-    <Stack gap="xs" align="flex-start">
-      <Divider w="100%" />
-      {task && (
-        <Text size="sm" c="dimmed">
-          {task.done ? "Check task completed" : "Check added to Next steps"}
-        </Text>
-      )}
-      <Button
-        variant="default"
-        size="sm"
-        onClick={() => (task ? onOpenCheck(task) : onFlag(q))}
-      >
-        {task ? "View qualification check" : "Add qualification check"}
-      </Button>
-    </Stack>
-  );
-}
-
 export function TrainingSummary({ q }) {
   return (
     <Stack gap="xs">
@@ -117,14 +96,8 @@ export function TrainingSummary({ q }) {
 export function ExpandedAssessment({
   requirement,
   contextRequirement = requirement,
-  onReport,
   reports = {},
   onInspect,
-  onClarify,
-  drafts,
-  tasks = [],
-  onFlag,
-  onOpenCheck,
 }) {
   const linkedClaims = (requirement.claimIds ?? []).map((id) =>
     claims.find((c) => c.id === id),
@@ -132,9 +105,7 @@ export function ExpandedAssessment({
   const linkedQualifications = (requirement.qualificationIds ?? []).map((id) =>
     qualifications.find((q) => q.id === id),
   );
-  const hasDraft = (id) => drafts.some((d) => d.id === id);
   const inspect = (item, type) => onInspect(item, type, contextRequirement);
-  const clarify = (item) => onClarify(item, contextRequirement);
   return (
     <>
       {linkedClaims.map((claim) => {
@@ -216,15 +187,6 @@ export function ExpandedAssessment({
                 </Text>
               </Text>
             )}
-            <Divider />
-            <Button
-              variant="default"
-              size="sm"
-              w="fit-content"
-              onClick={() => clarify(claim)}
-            >
-              {hasDraft(claim.id) ? "View follow-up" : "Add follow-up"}
-            </Button>
           </Stack>
         );
       })}
@@ -242,30 +204,11 @@ export function ExpandedAssessment({
                 View training record
               </Button>
             )}
-            {q.recordId && (
-              <Text size="xs" c="dimmed">
-                As of {dateLabel(reviewDate)}.
-              </Text>
-            )}
-            <QualificationActions
-              q={q}
-              task={tasks.find((t) => t.qualificationId === q.id)}
-              onFlag={onFlag}
-              onOpenCheck={onOpenCheck}
-            />
           </Stack>
         ))}
       {requirement.type === "clarification" && (
         <>
           <Text size="sm">{requirement.detail}</Text>
-          <Divider />
-          <Button
-            variant="default"
-            w="fit-content"
-            onClick={() => clarify({ ...requirement, title: requirement.text })}
-          >
-            {hasDraft(requirement.id) ? "View follow-up" : "Add follow-up"}
-          </Button>
         </>
       )}
     </>

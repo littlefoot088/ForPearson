@@ -210,11 +210,15 @@ it("records responsibilities separately and includes them only on explicit selec
     screen.getByRole("button", { name: /Pump maintenance & repair.*Repeated/ }),
   );
   await user.click(
-    await screen.findByRole("button", { name: "Add follow-up" }),
+    await screen.findByRole("button", { name: "Discussion with Eimhin (0)" }),
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "Write question" }),
   );
   await user.click(
     await screen.findByRole("button", { name: "Save question" }),
   );
+  await user.keyboard("{Escape}");
   await waitFor(() =>
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );

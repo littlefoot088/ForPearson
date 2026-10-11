@@ -10,9 +10,9 @@ import {
   Mark,
 } from "@mantine/core";
 import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
-import { QualificationActions, TrainingSummary } from "./assessment";
+import { TrainingSummary } from "./assessment";
 import { Icon, Highlight, RecordFields } from "./components";
-import { dateLabel, person, reviewDate, interpretations } from "./data";
+import { dateLabel, person, interpretations } from "./data";
 
 export function EvidenceContent({
   drawer,
@@ -22,11 +22,6 @@ export function EvidenceContent({
   training,
   flagged,
   onFlag,
-  qualificationTask,
-  onQualificationCheck,
-  onOpenCheck,
-  onClarify,
-  drafted,
 }) {
   const source = records[index];
   const early = source && source.date < person.joined;
@@ -34,9 +29,6 @@ export function EvidenceContent({
     <Stack gap="md">
       <Text size="sm" c="dimmed">
         {drawer.requirement.text}
-      </Text>
-      <Text size="xs" c="dimmed">
-        Fictional assessment: {dateLabel(reviewDate)}
       </Text>
       {source && (
         <Text size="sm">
@@ -143,16 +135,6 @@ export function EvidenceContent({
                 ["Recorded date", dateLabel(training.completed_on)],
                 ["Listed expiry", dateLabel(training.expires_on)],
               ]}
-            />
-          )}
-          {drawer.requirement.type === "experience" && (
-            <QualificationActions
-              q={drawer.item}
-              task={qualificationTask}
-              onFlag={onQualificationCheck}
-              onOpenCheck={onOpenCheck}
-              onClarify={onClarify}
-              drafted={drafted}
             />
           )}
         </>

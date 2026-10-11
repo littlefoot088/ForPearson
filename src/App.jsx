@@ -12,6 +12,7 @@ import {
   Grid,
   List,
   Notification,
+  NativeSelect,
   Modal,
   Paper,
   Stack,
@@ -92,7 +93,6 @@ export default function App() {
     intention: null,
     attentionOnly: false,
   });
-  const returnEvidence = useRef(null);
   const [expanded, setExpanded] = useState(null);
   const [loaded] = useState(() =>
     loadWorkspace({ getItem: (key) => window.localStorage.getItem(key) }),
@@ -113,12 +113,10 @@ export default function App() {
   const [question, setQuestion] = useState("");
   const [drafts, setDrafts] = useState(loaded.drafts);
   const [draftOpen, setDraftOpen] = useState(false);
+  const [questionTopic, setQuestionTopic] = useState("pump");
   const [returnToDraft, setReturnToDraft] = useState(false);
   const [notice, setNotice] = useState(loaded.message);
   const [jobOpen, setJobOpen] = useState(false);
-  const verifications = workspace.tasks
-    .filter((t) => t.qualificationId)
-    .map((t) => t.qualificationId);
   const [recordFlags, setRecordFlags] = useState(loaded.recordFlags);
   useEffect(() => {
     setStorageFailed(
@@ -171,10 +169,6 @@ export default function App() {
   function closeComposer() {
     setComposer(null);
     if (returnToDraft) setDraftOpen(true);
-    else if (returnEvidence.current) {
-      setDrawer(returnEvidence.current);
-      returnEvidence.current = null;
-    }
   }
   function saveDraft(e) {
     e.preventDefault();
@@ -201,14 +195,6 @@ export default function App() {
       (i) => i.id === draft.id,
     ) ?? { ...requirement, title: requirement.text };
     clarify(item, requirement, true);
-  }
-  function flag(q) {
-    dispatchWorkspace({ type: "qualification-toggle", qualification: q });
-    setNotice(
-      verifications.includes(q.id)
-        ? "Qualification check removed."
-        : "Qualification check added.",
-    );
   }
   function openWorkflow(mode) {
     rememberFocus();
@@ -289,13 +275,7 @@ export default function App() {
             requirement={row}
             contextRequirement={context}
             onInspect={inspect}
-            onClarify={clarify}
-            drafts={drafts}
-            tasks={workspace.tasks}
-            onFlag={flag}
-            onOpenCheck={(task) => openWorkspace("task", task)}
             reports={workspace.reports}
-            onReport={(claim) => openWorkspace("report", claim)}
           />
         )}
       </RequirementRow>
@@ -709,19 +689,6 @@ export default function App() {
             index={index}
             setIndex={setIndex}
             training={training}
-            qualificationTask={workspace.tasks.find(
-              (t) => t.qualificationId === drawer.item.id,
-            )}
-            onQualificationCheck={flag}
-            onOpenCheck={(task) => {
-              setDrawer(null);
-              openWorkspace("task", task);
-            }}
-            drafted={drafts.some((d) => d.id === drawer.item.id)}
-            onClarify={(q) => {
-              returnEvidence.current = drawer;
-              clarify(q, drawer.requirement);
-            }}
             flagged={recordFlags.includes(source?.id)}
             onFlag={(id) =>
               setRecordFlags((flags) =>
@@ -766,17 +733,44 @@ export default function App() {
               Save questions for your conversation with Eimhin. Questions stay
               local; nothing is sent.
             </Text>
-            {discussionTopics
-              .filter((topic) => !drafts.some((draft) => draft.id === topic.id))
-              .map((topic) => (
-                <Button
-                  key={topic.id}
-                  variant="light"
-                  onClick={() => clarify(topic, topic, true)}
-                >
-                  Add topic: {topic.title}
-                </Button>
-              ))}
+            <NativeSelect
+              label="Question topic"
+              value={questionTopic}
+              onChange={(e) => setQuestionTopic(e.currentTarget.value)}
+              data={[
+                ...claims,
+                ...qualifications,
+                ...discussionTopics,
+                ...requirements
+                  .filter((r) => r.type === "clarification")
+                  .map((r) => ({ ...r, title: r.text })),
+              ].map((topic) => ({ value: topic.id, label: topic.title }))}
+            />
+            <Button
+              variant="default"
+              onClick={() => {
+                const topic = [
+                  ...claims,
+                  ...qualifications,
+                  ...discussionTopics,
+                  ...requirements,
+                ].find((item) => item.id === questionTopic);
+                const context =
+                  clarificationContexts.find(
+                    (r) =>
+                      r.id === topic.requirementId ||
+                      r.qualificationIds?.includes(topic.id) ||
+                      r.id === topic.id,
+                  ) ?? requirements.find((r) => r.id === "maintenance");
+                clarify(
+                  { ...topic, title: topic.title ?? topic.text },
+                  context,
+                  true,
+                );
+              }}
+            >
+              Write question
+            </Button>
             {drafts.map((draft) => (
               <Paper withBorder p="md" key={draft.id}>
                 <Stack gap="sm">

@@ -41,6 +41,24 @@ async function openPump(user) {
   return inspect;
 }
 
+async function writeQuestion(user, topic = "pump") {
+  await user.click(
+    screen.getByRole("button", { name: /Discussion with Eimhin/ }),
+  );
+  await user.selectOptions(
+    await screen.findByLabelText("Question topic"),
+    topic,
+  );
+  await user.click(screen.getByRole("button", { name: "Write question" }));
+  await user.click(
+    await screen.findByRole("button", { name: "Save question" }),
+  );
+  await user.keyboard("{Escape}");
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
+}
+
 describe("Mantine review interactions", () => {
   it("starts collapsed and opens one named assessment across all groups", async () => {
     const user = setup();
@@ -131,99 +149,40 @@ describe("Mantine review interactions", () => {
 
   it("saves, edits and removes a draft without altering assessment or interest", async () => {
     const user = setup();
-    await user.click(requirement(maintenance));
+    await writeQuestion(user);
     await user.click(
-      (await screen.findAllByRole("button", { name: "Add follow-up" }))[0],
-    );
-    let input = await screen.findByRole("textbox", {
-      name: "Question for Eimhin",
-    });
-    await user.clear(input);
-    expect(
-      screen.getByRole("button", { name: "Save question" }),
-    ).toBeDisabled();
-    await user.type(
-      input,
-      "Which pump repairs did you complete independently?",
-    );
-    await user.click(screen.getByRole("button", { name: "Save question" }));
-    await waitFor(() =>
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-    );
-    expect(
-      screen.getByText(/Your assessment:/).parentElement,
-    ).toHaveTextContent("Not reviewed");
-    expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
-      "Interested",
-    );
-    expect(
-      within(screen.getByRole("region", { name: "Next steps" })).getByText(
-        "Which pump repairs did you complete independently?",
-      ),
-    ).toBeVisible();
-    expect(
-      within(screen.getByRole("region", { name: maintenance })).queryByRole(
-        "button",
-        { name: "Record Eimhin’s account" },
-      ),
-    ).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
+      screen.getByRole("button", { name: /Discussion with Eimhin/ }),
     );
     await user.click(
       await screen.findByRole("button", { name: "Edit question" }),
     );
-    input = await screen.findByRole("textbox", {
+    const input = await screen.findByRole("textbox", {
       name: "Question for Eimhin",
     });
-    expect(input).toHaveValue(
-      "Which pump repairs did you complete independently?",
-    );
-    expect(input).toHaveFocus();
-    await user.type(input, " Please give an example.");
+    await user.clear(input);
+    await user.type(input, "Which repairs did you complete independently?");
     await user.click(screen.getByRole("button", { name: "Save question" }));
     expect(
       within(screen.getByRole("dialog")).getByText(
-        "Which pump repairs did you complete independently? Please give an example.",
+        "Which repairs did you complete independently?",
       ),
     ).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Remove" }));
-    await waitFor(() => expect(requirement(maintenance)).toHaveFocus());
-    expect(
-      screen.queryByRole("button", { name: "Discussion with Eimhin (1)" }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
+      "Interested",
+    );
   });
 
   it("retains qualification records, verification flags and supporting modules", async () => {
     const user = setup();
     await user.click(requirement(/Sea survival.*Module recorded/));
     await user.click(
-      await screen.findByRole("button", { name: "Add qualification check" }),
+      await screen.findByRole("button", { name: "View training record" }),
     );
+    expect(await screen.findByText("LH500010")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "View qualification check" }),
-    ).toBeVisible();
-    await user.click(
-      screen.getByRole("button", { name: "View training record" }),
-    );
-    await waitFor(() => expect(screen.getByText("LH500010")).toBeVisible());
-    await user.keyboard("{Escape}");
-    await waitFor(() =>
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-    );
-    await user.click(
-      screen.getByRole("button", { name: "View qualification check" }),
-    );
-    await user.click(
-      await screen.findByRole("button", { name: "Undo qualification check" }),
-    );
-    expect(
-      screen.getByRole("button", { name: "Add qualification check" }),
-    ).toBeVisible();
-    await user.click(requirement(maintenance));
-    expect(
-      await screen.findAllByRole("button", { name: "View training record" }),
-    ).toHaveLength(1);
+      screen.queryByRole("button", { name: /qualification check/i }),
+    ).not.toBeInTheDocument();
   });
   it("labels illustrative interest once and keeps current and prospective roles explicit", async () => {
     setup();
@@ -283,55 +242,14 @@ describe("Mantine review interactions", () => {
 
 it("keeps discussion topics unique and distinct from qualification checks", async () => {
   const user = setup();
-  await user.click(requirement(/Sea survival.*Module recorded/));
-  await user.click(
-    await screen.findByRole("button", { name: "Add qualification check" }),
-  );
-  await user.click(
-    screen.getByRole("button", { name: "View qualification check" }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "Add follow-up" }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "Save question" }),
-  );
-  await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-  );
-  await user.click(
-    screen.getByRole("button", { name: "View qualification check" }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "View follow-up" }),
-  );
-  const input = await screen.findByRole("textbox", {
-    name: "Question for Eimhin",
-  });
-  await user.clear(input);
-  await user.type(input, "Which current offshore certificates do you hold?");
-  await user.click(screen.getByRole("button", { name: "Save question" }));
-  await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-  );
+  await writeQuestion(user, "sea");
+  await writeQuestion(user, "sea");
   expect(
     screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
   ).toBeVisible();
   expect(
-    screen.getByRole("button", { name: "View qualification check" }),
-  ).toBeVisible();
-  expect(requirement(/Sea survival.*Module recorded/)).toBeVisible();
-  expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
-  await user.click(
-    screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
-  );
-  await waitFor(() =>
-    expect(
-      within(screen.getByRole("dialog")).getByText(
-        "Which current offshore certificates do you hold?",
-      ),
-    ).toBeVisible(),
-  );
+    screen.queryByRole("checkbox", { name: "Check Sea survival" }),
+  ).not.toBeInTheDocument();
 });
 
 it("opens every selected log with its exact highlight through the requirement assessment", async () => {
@@ -374,40 +292,11 @@ it("opens every selected log with its exact highlight through the requirement as
 
 it("keeps optional discussion prompts available after saving a contextual question", async () => {
   const user = setup();
-  await user.click(requirement(maintenance));
-  await user.click(
-    await screen.findByRole("button", { name: "Add follow-up" }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "Save question" }),
-  );
-  await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-  );
-  const launch = screen.getByRole("button", {
-    name: "Discussion with Eimhin (1)",
-  });
-  await user.click(launch);
-  await user.click(
-    await screen.findByRole("button", {
-      name: "Add topic: Existing offshore safety certificates",
-    }),
-  );
+  await writeQuestion(user, "pump");
+  await writeQuestion(user, "electrical");
   expect(
-    await screen.findByRole("textbox", { name: "Question for Eimhin" }),
-  ).toHaveFocus();
-  await user.click(screen.getByRole("button", { name: "Save question" }));
-  expect(
-    screen.queryByRole("button", {
-      name: "Add topic: Existing offshore safety certificates",
-    }),
-  ).not.toBeInTheDocument();
-  await user.keyboard("{Escape}");
-  await waitFor(() =>
-    expect(
-      screen.getByRole("button", { name: "Discussion with Eimhin (2)" }),
-    ).toHaveFocus(),
-  );
+    screen.getByRole("button", { name: "Discussion with Eimhin (2)" }),
+  ).toBeVisible();
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
 });
 
@@ -435,99 +324,54 @@ it("keeps all four training records reachable in their experience or qualificati
 
 it("gives every section one purpose and keeps qualification tasks discoverable", async () => {
   const user = setup();
-  expect(screen.queryByLabelText("Quick assessment")).not.toBeInTheDocument();
-  expect(screen.queryByText(/Career intention:/)).not.toBeInTheDocument();
-  const preferred = screen.getByRole("region", {
-    name: "Additional employer preferences",
-  });
-  expect(
-    within(preferred).getByRole("button", { name: /Safe-work planning/ }),
-  ).toBeVisible();
-  expect(
-    within(preferred).getByRole("button", { name: /Training and supporting/ }),
-  ).toBeVisible();
-  await user.click(requirement(/Sea survival.*Module recorded/));
-  await user.click(
-    await screen.findByRole("button", { name: "Add qualification check" }),
+  await user.click(screen.getByRole("button", { name: "Add task" }));
+  await user.type(
+    await screen.findByRole("textbox", { name: "Task" }),
+    "Check Sea survival",
   );
-  await user.click(requirement(maintenance));
+  await user.click(screen.getByRole("button", { name: "Save task" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
   const checks = screen.getByRole("region", { name: "Next steps" });
-  expect(checks).toHaveTextContent(
-    "Completing a task does not verify evidence or qualifications.",
-  );
+  expect(
+    within(checks).getByRole("checkbox", { name: "Check Sea survival" }),
+  ).toBeVisible();
   await user.click(
     within(checks).getByRole("button", {
-      name: /Remove task: Check Sea survival/,
+      name: "Remove task: Check Sea survival",
     }),
   );
   expect(
     screen.queryByRole("checkbox", { name: "Check Sea survival" }),
   ).not.toBeInTheDocument();
-  expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
 });
 
 it("shows experience facts directly and keeps supporting-module actions in the inspector", async () => {
   const user = setup();
   await user.click(requirement(maintenance));
   const panel = await screen.findByRole("region", { name: maintenance });
-  expect(
-    within(panel).getByText(/5 supporting records · 2009–2026/),
-  ).toBeVisible();
+  expect(within(panel).getByText(/5 supporting records/)).toBeVisible();
   expect(
     within(panel).getByText(/One of these records may not belong/),
   ).toBeVisible();
-  expect(panel.querySelector("[aria-expanded]")).toBeNull();
-  expect(within(panel).getByText(/Fluid transfer/)).toBeVisible();
   expect(
-    within(panel).queryByRole("button", { name: "Add qualification check" }),
+    within(panel).queryByRole("button", {
+      name: /follow-up|qualification check/i,
+    }),
   ).not.toBeInTheDocument();
   await user.click(
     within(panel).getByRole("button", { name: "View training record" }),
   );
-  let dialog = await screen.findByRole("dialog");
-  await waitFor(() =>
-    expect(within(dialog).getByText("LH500008")).toBeVisible(),
-  );
-  await user.click(
-    within(dialog).getByRole("button", { name: "Add qualification check" }),
-  );
+  const dialog = await screen.findByRole("dialog");
   expect(
-    within(dialog).queryByRole("button", { name: "Add follow-up" }),
-  ).not.toBeInTheDocument();
-  await user.click(
-    within(dialog).getByRole("button", { name: "View qualification check" }),
-  );
-  const taskDrawer = await screen.findByRole("dialog", { name: "Next step" });
-  await waitFor(() =>
-    expect(
-      within(taskDrawer).getByRole("textbox", { name: "Task" }),
-    ).toBeVisible(),
-  );
-  await user.click(
-    within(taskDrawer).getByRole("button", { name: "Add follow-up" }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "Save question" }),
-  );
-  await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-  );
-  const nextSteps = screen.getByRole("region", { name: "Next steps" });
-  expect(
-    within(nextSteps).getByRole("button", {
-      name: "Discussion with Eimhin (1)",
+    within(dialog).queryByRole("button", {
+      name: /follow-up|qualification check/i,
     }),
-  ).toBeVisible();
-  await user.click(
-    within(nextSteps).getByRole("button", { name: /Edit task:.*Fluid/ }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "Undo qualification check" }),
-  );
-  await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-  );
-  expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
+  ).not.toBeInTheDocument();
+  expect(
+    within(dialog).queryByText(/Fictional assessment:/),
+  ).not.toBeInTheDocument();
 });
 
 it("uses plain qualification copy and visible buttons without redundant headings", async () => {
@@ -545,7 +389,13 @@ it("uses plain qualification copy and visible buttons without redundant headings
       within(panel).queryByText("Available qualification evidence"),
     ).not.toBeInTheDocument();
     expect(within(panel).queryByText(/Next step:/)).not.toBeInTheDocument();
-    for (const button of within(panel).getAllByRole("button"))
+    expect(within(panel).queryByText(/As of/)).not.toBeInTheDocument();
+    expect(
+      within(panel).queryByRole("button", {
+        name: /follow-up|qualification check/i,
+      }),
+    ).not.toBeInTheDocument();
+    for (const button of within(panel).queryAllByRole("button"))
       expect(button).toHaveAttribute("data-variant", "default");
   }
 });

@@ -143,11 +143,11 @@ export function Workspace({
                 </Button>
               </Group>
             ))}
-          {drafts.length > 0 && (
+          {
             <Button variant="subtle" size="compact-sm" onClick={onDiscussion}>
               Discussion with Eimhin ({drafts.length})
             </Button>
-          )}{" "}
+          }{" "}
           {tasks.length === 0 && drafts.length === 0 && (
             <Text size="sm" c="dimmed">
               No tasks recorded.
