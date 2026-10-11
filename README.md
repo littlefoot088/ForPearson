@@ -15,10 +15,11 @@ Open the local URL printed by Vite. `npm run build` creates the production bundl
 
 ## What it demonstrates
 
-- Three experience areas linked to eleven verbatim raw log entries, with exact highlighted passages, source locations, interpretations and limitations.
-- Formal qualification coverage kept separate from practical experience. Individual modules never stand in for complete certificates.
-- An evidence drawer with dated record selection, previous/next controls, keyboard support and a narrow-screen layout.
-- Editable clarification drafts, qualification verification flags and reversible review decisions.
+- A concise Review focus summary beneath the candidate’s name, followed by nine compact requirement rows.
+- Progressive disclosure from requirement to assessment to original evidence. Mechanical or electrical maintenance remains one requirement with two distinct evidence routes.
+- Eleven verbatim raw log entries and four training records, with source locations, exact highlights and separate interpretations.
+- Evidence-state labels that distinguish experience evidence, recorded modules, attendance and unresolved requirements without scores or unsupported certification claims.
+- Editable local clarification drafts, a draft-review dialog shown on demand, qualification flags, and independent Worth progressing / Clarification needed controls.
 
 The review date is fixed at **31 December 2026**, an explicitly agreed fictional scenario date. All records are synthetic. Source dates show selected evidence, not the number of times a person performed an activity.
 
@@ -32,6 +33,8 @@ See [information architecture](docs/information-architecture.md) and [data decis
 
 ## Validation
 
-Production build and four fixture tests pass. The eleven log entries were compared directly with the supplied ZIP. Desktop Chrome checks covered evidence navigation, highlighted passages, Escape and focus restoration, edited draft saving, qualification flags and progression while keeping outstanding requirements visible.
+Production build and six focused data/state tests pass. Tests cover verbatim source integrity, the retained pre-joining-date records, qualification distinctions, requirement-to-evidence reachability and every combination of the independent review states.
 
-Responsive CSS includes a single-column narrow-screen layout and a full-width evidence drawer. Mobile visual QA remains unverified: the browser automation connection failed when switching to device preview. No claim of a full accessibility audit is made.
+Desktop Chrome checks covered row expansion, source inspection, Escape/focus return, editing and removing drafts, qualification flags and simultaneous progression/clarification. Narrow-width reflow and the full-width evidence drawer were visually checked at 250% and 300% browser zoom. The action bar returns to normal flow in short viewports. This is a responsive/reflow check, not testing on physical mobile devices or a full accessibility audit.
+
+Remaining design review: test comprehension of the evidence-state labels with redeployment officers and validate touch interactions on a physical mobile device. Data limitations, including certificate acceptance and unresolved scope of work, remain visible in expanded assessments.

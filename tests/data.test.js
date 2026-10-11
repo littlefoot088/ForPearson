@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  assessmentStates,
+  requirementGroups,
+  initialReview,
+  toggleReview,
   claims,
   sources,
   trainingRecords,
@@ -72,4 +76,52 @@ test("earlier experience is retained despite the personnel joining date", () => 
     assert.equal(source.personRef, person.id);
     assert.ok(claims.some((claim) => claim.sourceIds.includes(source.id)));
   }
+});
+
+test("requirement-led assessment keeps every source and training record reachable", () => {
+  const reachableClaims = requirements.flatMap((r) => r.claimIds ?? []);
+  const reachableQualifications = requirements.flatMap(
+    (r) => r.qualificationIds ?? [],
+  );
+  assert.deepEqual(new Set(reachableClaims), new Set(claims.map((c) => c.id)));
+  assert.deepEqual(
+    new Set(reachableQualifications),
+    new Set(qualifications.map((q) => q.id)),
+  );
+  assert.equal(requirements.length, 9);
+  assert.equal(requirements.filter((r) => r.id === "maintenance").length, 1);
+  assert.match(
+    requirements.find((r) => r.id === "maintenance").text,
+    /mechanical or electrical/i,
+  );
+  for (const requirement of requirements) {
+    assert.ok(assessmentStates[requirement.assessment]);
+    assert.ok(
+      requirementGroups.some((group) => group.id === requirement.group),
+    );
+  }
+  assert.ok(requirements.every((r) => r.assessment !== "documented"));
+  assert.equal(requirements.find((r) => r.id === "sea").assessment, "module");
+  assert.equal(
+    requirements.find((r) => r.id === "fire").assessment,
+    "attendance",
+  );
+});
+
+test("progression and clarification can coexist and be reversed independently", () => {
+  const progressing = toggleReview(initialReview, "progressing");
+  assert.deepEqual(progressing, { progressing: true, clarification: false });
+  const both = toggleReview(progressing, "clarification");
+  assert.deepEqual(both, { progressing: true, clarification: true });
+  const clarificationOnly = toggleReview(both, "progressing");
+  assert.deepEqual(clarificationOnly, {
+    progressing: false,
+    clarification: true,
+  });
+  assert.deepEqual(
+    toggleReview(clarificationOnly, "clarification"),
+    initialReview,
+  );
+  assert.deepEqual(toggleReview(both, "clarification"), progressing);
+  assert.deepEqual(initialReview, { progressing: false, clarification: false });
 });

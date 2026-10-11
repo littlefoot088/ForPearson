@@ -58,3 +58,13 @@ The NOSF Offshore Wind Turbine Technician occupation was inspected for context, 
 `src/data.js` separates the person, vacancy, job requirements, experience claims, interpretations and qualification requirements. `src/records.js` separates source and training records. Clarification drafts, verification flags and review status live in React state. Claims refer to requirements and source IDs; qualifications refer to training record IDs where present.
 
 This is curated decision support, not live inference, certification validation or matching. No raw personnel or appraisal corpus is shipped. No expensive training is recommended from missing evidence. All review changes reset on refresh, and progression does not establish offshore eligibility.
+
+## Requirement-led assessment
+
+The same eleven original log entries and four training records are retained. Requirements now carry group/order, an assessment state, and explicit links to existing experience claims or qualification records. Mechanical and electrical evidence are alternative routes within one employer requirement. Supporting modules are disclosed there, not promoted into additional mandatory certificates.
+
+The collapsed labels describe evidence states. Evidence found means relevant work is documented, not competence verified. Module recorded means a passed module exists, not the complete certificate. Attendance recorded preserves the distinction from completion. Needs clarification identifies an unresolved question; Not established describes the selected records without asserting that the keeper lacks experience or credentials. Documented is reserved for sufficient qualification evidence and is not assigned to any current required qualification.
+
+The offshore-working-conditions and mentoring rows represent actual employer requirements/preferences. No new evidence has been invented for them. All expiry interpretations still use the agreed fictional review date, 31 December 2026, shown in qualification detail rather than the overview.
+
+Review progression and clarification-needed flags are independent officer decisions. They are separate from assessment labels, local drafts and verification flags. These states do not recalculate or override evidence.

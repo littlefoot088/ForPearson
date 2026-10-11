@@ -16,29 +16,121 @@ export const vacancy = {
   pattern: "14 days on / 14 days off",
   source: "employers/carrowmore-array-om-technician.md",
 };
+export const requirementGroups = [
+  { id: "experience", label: "Essential experience & working conditions" },
+  { id: "clearance", label: "Required safety coverage & clearance" },
+  { id: "preferred", label: "Additional employer preferences" },
+];
+export const assessmentStates = {
+  evidence: { label: "Evidence found", icon: "file", tone: "evidence" },
+  module: { label: "Module recorded", icon: "module", tone: "neutral" },
+  attendance: { label: "Attendance recorded", icon: "clock", tone: "neutral" },
+  clarify: {
+    label: "Needs clarification",
+    icon: "question",
+    tone: "attention",
+  },
+  unknown: { label: "Not established", icon: "circle", tone: "neutral" },
+  documented: { label: "Documented", icon: "check", tone: "documented" },
+};
 export const requirements = [
   {
     id: "maintenance",
-    text: "Hands-on mechanical or electrical maintenance",
+    text: "Mechanical or electrical maintenance",
     required: true,
+    group: "experience",
+    type: "experience",
+    assessment: "evidence",
+    claimIds: ["pump", "electrical"],
+    qualificationIds: ["pumped", "generator"],
+    detail:
+      "The employer accepts either mechanical or electrical maintenance on plant the candidate was responsible for. Generating-plant experience and electrical fault-finding are also valued.",
   },
-  {
-    id: "safety",
-    text: "Valid offshore safety and survival coverage",
-    required: true,
-  },
-  { id: "medical", text: "Offshore medical fitness", required: true },
   {
     id: "environment",
     text: "Comfort at height, in enclosed spaces and on boats in a swell",
     required: true,
+    group: "experience",
+    type: "clarification",
+    assessment: "clarify",
+    detail:
+      "The role involves tower climbs, enclosed turbine spaces and transfers from a moving vessel. The selected records do not establish Eimhin’s current comfort with these conditions.",
+    question:
+      "Are you comfortable working at height, in enclosed spaces and on small boats in a swell? Please describe relevant recent experience and any working conditions you would like to discuss.",
+  },
+  {
+    id: "sea",
+    text: "Sea survival",
+    required: true,
+    group: "clearance",
+    type: "qualification",
+    assessment: "module",
+    qualificationIds: ["sea"],
+  },
+  {
+    id: "fire",
+    text: "Fire prevention and response",
+    required: true,
+    group: "clearance",
+    type: "qualification",
+    assessment: "attendance",
+    qualificationIds: ["fire"],
+  },
+  {
+    id: "first-aid",
+    text: "First aid",
+    required: true,
+    group: "clearance",
+    type: "qualification",
+    assessment: "unknown",
+    qualificationIds: ["first-aid"],
+  },
+  {
+    id: "height",
+    text: "Working-at-height certification",
+    required: true,
+    group: "clearance",
+    type: "qualification",
+    assessment: "unknown",
+    qualificationIds: ["height"],
+  },
+  {
+    id: "medical",
+    text: "Offshore medical fitness",
+    required: true,
+    group: "clearance",
+    type: "qualification",
+    assessment: "unknown",
+    qualificationIds: ["medical"],
   },
   {
     id: "permits",
-    text: "Experience working to a permit system",
+    text: "Permit-system experience",
     required: false,
+    group: "preferred",
+    type: "experience",
+    assessment: "clarify",
+    claimIds: ["safety"],
+    detail:
+      "The employer values permit-system experience. Planning and permit-issuing responsibility are recorded; the scope and currency of that authority need clarification.",
+  },
+  {
+    id: "mentoring",
+    text: "Training and supporting colleagues",
+    required: false,
+    group: "preferred",
+    type: "clarification",
+    assessment: "unknown",
+    detail:
+      "The employer values people who have trained and supported younger colleagues. This is not established by the selected records; it is not evidence that Eimhin lacks this experience.",
+    question:
+      "Have you trained or supported less experienced colleagues? Please describe your role and a recent example.",
   },
 ];
+export const initialReview = { progressing: false, clarification: false };
+export function toggleReview(state, field) {
+  return { ...state, [field]: !state[field] };
+}
 export const claims = [
   {
     id: "pump",

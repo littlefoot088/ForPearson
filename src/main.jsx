@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowUpRight,
@@ -7,120 +7,90 @@ import {
   ChevronLeft,
   X,
   Check,
-  Plus,
   FileText,
   CircleHelp,
-  CheckCircle2,
-  Clock3,
   Pencil,
   ClipboardList,
   Waves,
-  ShieldCheck,
+  Trash2,
 } from "lucide-react";
 import {
   person,
   vacancy,
+  requirements,
+  requirementGroups,
   claims,
   qualifications,
   trainingRecords,
   interpretations,
   getSources,
   dateLabel,
+  initialReview,
+  toggleReview,
 } from "./data";
+import { Icon, Dialog, Highlight } from "./components";
+import { RequirementRow, ExpandedAssessment } from "./assessment";
 import "@fontsource-variable/dm-sans";
 import "@fontsource-variable/manrope";
 import "./styles.css";
 
-function Icon({ icon: Component, ...props }) {
-  return (
-    <Component size={16} strokeWidth={1.7} aria-hidden="true" {...props} />
-  );
-}
-function Dialog({ title, eyebrow, onClose, children, wide = false }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const trigger = document.activeElement;
-    ref.current.showModal();
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-      trigger?.focus();
-    };
-  }, []);
-  return (
-    <dialog
-      ref={ref}
-      className={wide ? "drawer" : "modal"}
-      onCancel={(e) => {
-        e.preventDefault();
-        onClose();
-      }}
-      onClick={(e) => {
-        if (e.target === ref.current) onClose();
-      }}
-      aria-labelledby="dialog-title"
-    >
-      <div className="dialog-inner">
-        <header className="dialog-header">
-          <div>
-            <p className="eyebrow">{eyebrow}</p>
-            <h2 id="dialog-title">{title}</h2>
-          </div>
-          <button
-            className="icon-button"
-            onClick={onClose}
-            aria-label="Close dialog"
-            autoFocus
-          >
-            <Icon icon={X} size={22} />
-          </button>
-        </header>
-        {children}
-      </div>
-    </dialog>
-  );
-}
-function Highlight({ text, passage }) {
-  const start = text.indexOf(passage);
-  if (start < 0) return text;
-  return (
-    <>
-      {text.slice(0, start)}
-      <mark>{passage}</mark>
-      {text.slice(start + passage.length)}
-    </>
-  );
-}
 function App() {
-  const [status, setStatus] = useState("In review");
+  const [expanded, setExpanded] = useState(null);
+  const [review, setReview] = useState(initialReview);
   const [drawer, setDrawer] = useState(null);
   const [index, setIndex] = useState(0);
   const [composer, setComposer] = useState(null);
   const [question, setQuestion] = useState("");
   const [drafts, setDrafts] = useState([]);
+  const [draftOpen, setDraftOpen] = useState(false);
+  const [returnToDraft, setReturnToDraft] = useState(false);
   const [notice, setNotice] = useState("");
   const [jobOpen, setJobOpen] = useState(false);
   const [verifications, setVerifications] = useState([]);
-  const [moreTraining, setMoreTraining] = useState(false);
-  function inspect(claim, i = 0) {
-    setIndex(i);
-    setDrawer({ type: "claim", item: claim });
+  const focusOrigin = useRef(null);
+  function rememberFocus() {
+    if (!drawer && !composer && !draftOpen && !jobOpen)
+      focusOrigin.current = document.activeElement;
   }
-  function clarify(item) {
+  function inspect(item, type, requirement) {
+    rememberFocus();
+    setIndex(0);
+    setDrawer({ type, item, requirement });
+  }
+  function clarify(item, requirement, fromDraft = false) {
+    rememberFocus();
+    setReturnToDraft(fromDraft);
     setDrawer(null);
-    setComposer(item);
+    setDraftOpen(false);
+    setComposer({ item, requirement });
     setQuestion(drafts.find((d) => d.id === item.id)?.text ?? item.question);
+  }
+  function closeComposer() {
+    setComposer(null);
+    if (returnToDraft) setDraftOpen(true);
   }
   function saveDraft(e) {
     e.preventDefault();
     const draft = {
-      id: composer.id,
-      title: composer.title,
+      id: composer.item.id,
+      requirementId: composer.requirement.id,
+      title: composer.item.title,
       text: question.trim(),
     };
-    setDrafts((ds) => [...ds.filter((d) => d.id !== draft.id), draft]);
-    setComposer(null);
-    setNotice("Clarification draft saved locally. Nothing has been sent.");
+    setDrafts((ds) =>
+      ds.some((d) => d.id === draft.id)
+        ? ds.map((d) => (d.id === draft.id ? draft : d))
+        : [...ds, draft],
+    );
+    closeComposer();
+    setNotice("Clarification draft saved. Nothing has been sent.");
+  }
+  function editDraft(draft) {
+    const requirement = requirements.find((r) => r.id === draft.requirementId);
+    const item = [...claims, ...qualifications].find(
+      (i) => i.id === draft.id,
+    ) ?? { ...requirement, title: requirement.text };
+    clarify(item, requirement, true);
   }
   function flag(q) {
     setVerifications((v) =>
@@ -129,7 +99,19 @@ function App() {
     setNotice(
       verifications.includes(q.id)
         ? "Verification flag removed."
-        : "Flagged for verification in this review.",
+        : "Flagged for verification. The evidence status is unchanged.",
+    );
+  }
+  function changeReview(field) {
+    setReview((current) => toggleReview(current, field));
+    setNotice(
+      field === "progressing"
+        ? review.progressing
+          ? "Progression mark removed."
+          : "Marked as worth progressing. Outstanding requirements remain open."
+        : review.clarification
+          ? "Clarification-needed mark removed."
+          : "Marked as clarification needed. Nothing has been sent.",
     );
   }
   const selectedSources =
@@ -153,384 +135,169 @@ function App() {
             carrowmore<span className="brand-sub">LIGHT AUTHORITY</span>
           </span>
         </div>
-        <div className="product-name">Keeper redeployment</div>
+        <span className="product-name">Keeper redeployment</span>
         <div className="officer">
-          <span className="officer-dot" />
           Officer workspace<span className="avatar small">RO</span>
         </div>
       </header>
       <div className="contextbar">
-        <div className="breadcrumbs">
+        <nav aria-label="Review context" className="breadcrumbs">
           <span>Assigned vacancies</span>
           <Icon icon={ChevronRight} size={13} />
           <span>Carrowmore Array</span>
           <Icon icon={ChevronRight} size={13} />
           <strong>Candidate review</strong>
-        </div>
-        <span className="prototype">
-          <span />
-          Prototype · local review
-        </span>
+        </nav>
       </div>
       <main id="main" className="page">
-        <section className="vacancy-bar">
-          <div>
-            <span className="eyebrow">REVIEWING FOR</span>
-            <div className="vacancy-title">
-              {vacancy.title}
-              <span className="vacancy-divider" />
-              <span>{vacancy.employer}</span>
+        <section
+          className="candidate-overview"
+          aria-labelledby="candidate-name"
+        >
+          <div className="candidate-heading">
+            <div className="candidate-name">
+              <div className="avatar large" aria-hidden="true">
+                EM
+              </div>
+              <div>
+                <p className="eyebrow">CANDIDATE REVIEW</p>
+                <h1 id="candidate-name">{person.name}</h1>
+                <p className="candidate-meta">Lighthouse keeper</p>
+              </div>
             </div>
           </div>
-          <div className="vacancy-end">
-            <span className="openings">{vacancy.openings}</span>
-            <button className="text-button" onClick={() => setJobOpen(true)}>
-              Role requirements <Icon icon={ArrowUpRight} />
-            </button>
-          </div>
-        </section>
-        <section className="candidate-header">
-          <div className="candidate-name">
-            <div className="avatar large">EM</div>
-            <div>
-              <p className="eyebrow">
-                SUGGESTED CANDIDATE{" "}
-                <span className="keeper-id">/ {person.id}</span>
-              </p>
-              <h1>{person.name}</h1>
-              <p className="candidate-meta">
-                Lighthouse keeper <span>·</span> Personnel joining date: 6 Nov
-                2009
-              </p>
-            </div>
-          </div>
-          <div className="review-state">
-            <span
-              className={
-                "status " +
-                (status === "Worth progressing" ? "progressing" : "")
-              }
-            >
-              <span />
-              {status}
-            </span>
-            <span>Review as of 31 Dec 2026</span>
-          </div>
-        </section>
-        <section className="rationale">
-          <div className="rationale-label">
-            <span className="spark">↗</span>
-            <span>WHY SUGGESTED</span>
-          </div>
-          <div>
-            <h2>
-              Practical maintenance experience. A credible starting point.
-            </h2>
+          <div className="review-focus">
+            <h2>Review focus</h2>
             <p>
-              Records describe repeated pump repairs and electrical
-              fault-finding, alongside permit responsibility. Offshore
-              certification and the scope of independent work still need
-              clarification.
+              Records show repeated pump repairs and electrical fault-finding,
+              alongside permit-issuing responsibility. Clarify the scope of
+              independent work and current permit authority. Verify complete
+              offshore safety coverage, medical clearance and comfort with
+              offshore working conditions before mobilisation.
             </p>
           </div>
-          <span className="curated-label">
-            <Icon icon={FileText} />
-            Curated evidence
-          </span>
-        </section>
-        <div className="review-grid">
-          <section className="experience" aria-labelledby="experience-heading">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">WHAT THE RECORDS SUGGEST</p>
-                <h2 id="experience-heading">Potential relevant experience</h2>
-              </div>
-              <span className="count-label">3 areas</span>
-            </div>
-            <p className="section-intro">
-              Transferable experience, with the evidence and its limits in view.
-            </p>
-            <div className="experience-list">
-              {claims.map((claim) => {
-                const records = getSources(claim);
-                return (
-                  <article className="experience-item" key={claim.id}>
-                    <div className="experience-top">
-                      <span className="area-number">{claim.number}</span>
-                      <div>
-                        <h3>{claim.title}</h3>
-                        <span className="pattern">{claim.pattern}</span>
-                      </div>
-                      <button
-                        className="evidence-arrow"
-                        onClick={() => inspect(claim)}
-                        aria-label={"Inspect " + claim.title + " evidence"}
-                      >
-                        <Icon icon={ArrowUpRight} size={21} />
-                      </button>
-                    </div>
-                    <p className="experience-summary">{claim.summary}</p>
-                    <p className="relevance">{claim.relevance}</p>
-                    <div
-                      className="evidence-strip"
-                      aria-label="Selected source dates"
-                    >
-                      {records.map((record, i) => (
-                        <button
-                          className="date-marker"
-                          key={record.id}
-                          onClick={() => inspect(claim, i)}
-                          aria-label={
-                            "Inspect record dated " + dateLabel(record.date)
-                          }
-                        >
-                          <span className="marker-dot" />
-                          <span>{dateLabel(record.date)}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div className="evidence-meta">
-                      <span>
-                        <Icon icon={FileText} />
-                        {records.length} selected supporting records
-                      </span>
-                      <span>{claim.involvement}</span>
-                    </div>
-                    <div className="limitation">
-                      <Icon icon={CircleHelp} />
-                      <p>{claim.limitation}</p>
-                    </div>
-                    <div className="claim-actions">
-                      <button
-                        className="text-button"
-                        onClick={() => inspect(claim)}
-                      >
-                        Inspect evidence <Icon icon={ArrowRight} />
-                      </button>
-                      <button
-                        className="subtle-button"
-                        onClick={() => clarify(claim)}
-                      >
-                        <Icon
-                          icon={
-                            drafts.some((d) => d.id === claim.id)
-                              ? Pencil
-                              : Plus
-                          }
-                        />
-                        {drafts.some((d) => d.id === claim.id)
-                          ? "Edit draft"
-                          : "Draft a question"}
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-            <p className="evidence-footnote">
-              <Icon icon={CircleHelp} />
-              Dates show selected records, not every occasion the work was
-              performed. Gaps do not indicate inactivity. Present competence has
-              not been independently assessed.
-            </p>
-          </section>
-          <aside
-            className="qualifications"
-            aria-labelledby="qualifications-heading"
-          >
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">WHAT THE ROLE REQUIRES</p>
-                <h2 id="qualifications-heading">Formal qualifications</h2>
-              </div>
-              <Icon icon={ShieldCheck} size={24} />
-            </div>
-            <p className="section-intro">
-              Practical experience and certification are separate.
-            </p>
-            <div className="readiness-note">
-              <Icon icon={CircleHelp} size={18} />
-              <div>
-                <strong>Mobilisation readiness is not established</strong>
-                <p>
-                  Check certificate coverage and currency before offshore
-                  mobilisation.
-                </p>
-              </div>
-            </div>
-            <p className="qualification-group">
-              REQUIRED COVERAGE <span>5 checks</span>
-            </p>
-            {qualifications
-              .filter((q) => q.required)
-              .map((q) => (
-                <Qualification
-                  key={q.id}
-                  q={q}
-                  flagged={verifications.includes(q.id)}
-                  onInspect={() => {
-                    setIndex(0);
-                    setDrawer({ type: "qualification", item: q });
-                  }}
-                  onFlag={() => flag(q)}
-                  onClarify={() => clarify(q)}
-                />
-              ))}
-            <div className="scheme-note">
-              The vacancy includes height coverage; the supplied offshore scheme
-              lists height separately. Confirm accepted certification with the
-              employer.
+          <div className="vacancy-context">
+            <div>
+              <span className="context-label">Being considered for</span>
+              <p>
+                <strong>{vacancy.title}</strong>
+                <span className="vacancy-dot">·</span>
+                {vacancy.employer}
+              </p>
             </div>
             <button
-              className="additional-toggle"
-              onClick={() => setMoreTraining(!moreTraining)}
-              aria-expanded={moreTraining}
+              className="text-button"
+              onClick={() => {
+                rememberFocus();
+                setJobOpen(true);
+              }}
             >
-              <span>
-                Additional relevant training{" "}
-                <span className="mini-count">2</span>
-              </span>
-              <Icon icon={moreTraining ? X : Plus} />
+              View role <Icon icon={ArrowUpRight} />
             </button>
-            {moreTraining &&
-              qualifications
-                .filter((q) => !q.required)
-                .map((q) => (
-                  <Qualification
-                    key={q.id}
-                    q={q}
-                    flagged={verifications.includes(q.id)}
-                    onInspect={() =>
-                      setDrawer({ type: "qualification", item: q })
-                    }
-                    onFlag={() => flag(q)}
-                    onClarify={() => clarify(q)}
-                  />
-                ))}
-            <div className="qualification-footer">
-              <Icon icon={FileText} />
-              <p>
-                Module records are not complete certificates. “Not established”
-                means the selected records do not answer the question.
-              </p>
-            </div>
-          </aside>
-        </div>
-        <section className="next-step" aria-labelledby="next-heading">
-          <div className="next-heading">
-            <span className="next-icon">
-              <Icon icon={ClipboardList} size={22} />
-            </span>
-            <div>
-              <p className="eyebrow">YOUR JUDGEMENT, YOUR NEXT STEP</p>
-              <h2 id="next-heading">Bring the open questions into focus</h2>
-              <p>
-                Clarify existing experience and certificates before identifying
-                training needs.
-              </p>
-            </div>
           </div>
-          <div className="drafts-header">
-            <strong>
-              Clarification drafts{" "}
-              <span className="mini-count">{drafts.length}</span>
-            </strong>
-            <span>Local only · nothing is sent</span>
+        </section>
+        <section
+          className="requirements-section"
+          aria-labelledby="requirements-heading"
+        >
+          <div className="assessment-heading">
+            <h2 id="requirements-heading">Requirements assessment</h2>
+            <span>Select a requirement to investigate</span>
           </div>
-          {drafts.length === 0 ? (
-            <div className="empty-drafts">
-              <Icon icon={Pencil} size={19} />
-              <span>
-                No drafts yet. Start from an experience area or qualification.
-              </span>
-            </div>
-          ) : (
-            <div className="draft-list">
-              {drafts.map((d) => (
-                <article key={d.id}>
-                  <span className="draft-tag">DRAFT</span>
-                  <div>
-                    <h3>{d.title}</h3>
-                    <p>{d.text}</p>
-                  </div>
-                  <button
-                    className="icon-button"
-                    aria-label={"Edit draft for " + d.title}
-                    onClick={() =>
-                      clarify(
-                        [...claims, ...qualifications].find(
-                          (i) => i.id === d.id,
-                        ),
-                      )
-                    }
-                  >
-                    <Icon icon={Pencil} />
-                  </button>
-                  <button
-                    className="icon-button"
-                    aria-label={"Remove draft for " + d.title}
-                    onClick={() => {
-                      setDrafts((ds) => ds.filter((x) => x.id !== d.id));
-                      setNotice("Draft removed.");
-                    }}
-                  >
-                    <Icon icon={X} />
-                  </button>
-                </article>
-              ))}
-            </div>
-          )}
-          <div className="decision-row">
-            <div>
-              <strong>Record your review</strong>
-              <p>Progressing a candidate does not confirm eligibility.</p>
-            </div>
+          <div className="requirements-list">
+            {requirementGroups.map((group) => (
+              <section
+                className="requirement-group"
+                key={group.id}
+                aria-labelledby={"group-" + group.id}
+              >
+                <div className="requirement-group-heading">
+                  <h3 id={"group-" + group.id}>{group.label}</h3>
+                  <span>Recorded assessment</span>
+                </div>
+                {requirements
+                  .filter((r) => r.group === group.id)
+                  .map((requirement) => (
+                    <RequirementRow
+                      key={requirement.id}
+                      requirement={requirement}
+                      expanded={expanded === requirement.id}
+                      onToggle={() =>
+                        setExpanded((current) =>
+                          current === requirement.id ? null : requirement.id,
+                        )
+                      }
+                    >
+                      <ExpandedAssessment
+                        requirement={requirement}
+                        onInspect={inspect}
+                        onClarify={clarify}
+                        drafts={drafts}
+                        verifications={verifications}
+                        onFlag={flag}
+                      />
+                    </RequirementRow>
+                  ))}
+              </section>
+            ))}
+          </div>
+        </section>
+        <section className="review-actions-bar" aria-label="Review actions">
+          <div className="review-action-context">
+            <strong>Your review</strong>
+            <p>
+              {review.progressing && review.clarification
+                ? "Worth progressing · clarification needed"
+                : review.progressing
+                  ? "Worth progressing"
+                  : review.clarification
+                    ? "Clarification needed"
+                    : "No decision recorded"}
+            </p>
+            {drafts.length > 0 && (
+              <button
+                className="draft-review-button"
+                onClick={() => {
+                  rememberFocus();
+                  setDraftOpen(true);
+                }}
+              >
+                <Icon icon={ClipboardList} />
+                Review draft ({drafts.length})
+              </button>
+            )}
+          </div>
+          <div className="review-controls">
             <div className="decision-actions">
               <button
-                className="secondary-button"
-                onClick={() => {
-                  setStatus("Clarification required");
-                  setNotice(
-                    "Review marked as clarification required. Nothing has been sent.",
-                  );
-                }}
+                className={
+                  "secondary-button" + (review.clarification ? " selected" : "")
+                }
+                aria-pressed={review.clarification}
+                onClick={() => changeReview("clarification")}
               >
-                <Icon icon={CircleHelp} />
-                Clarification required
+                <Icon icon={review.clarification ? Check : CircleHelp} />
+                Clarification needed
               </button>
               <button
-                className="primary-button"
-                onClick={() => {
-                  setStatus("Worth progressing");
-                  setNotice(
-                    "Marked as worth progressing. Outstanding requirements remain open.",
-                  );
-                }}
+                className={
+                  "primary-button" + (review.progressing ? " selected" : "")
+                }
+                aria-pressed={review.progressing}
+                onClick={() => changeReview("progressing")}
               >
-                <Icon icon={Check} />
+                <Icon icon={review.progressing ? Check : ArrowRight} />
                 Worth progressing
               </button>
             </div>
+            <p>Both can apply. Progression does not confirm eligibility.</p>
           </div>
-          {status !== "In review" && (
-            <button
-              className="reset-status text-button"
-              onClick={() => {
-                setStatus("In review");
-                setNotice("Review decision cleared.");
-              }}
-            >
-              Clear review decision
-            </button>
-          )}
         </section>
         <footer className="page-footer">
           <span>
-            CARROWMORE <span> / </span> KEEPER REDEPLOYMENT
+            CARROWMORE LIGHT AUTHORITY <span>/</span> KEEPER REDEPLOYMENT
           </span>
-          <span>
-            Synthetic records · Demonstration only · Changes reset on refresh
-          </span>
+          <span>Changes are local and reset on refresh.</span>
         </footer>
       </main>
       <div role="status" className={notice ? "toast" : "sr-only"}>
@@ -544,6 +311,64 @@ function App() {
           </button>
         )}
       </div>
+      {draftOpen && (
+        <Dialog
+          title="Clarification draft"
+          eyebrow="EIMHIN MAC NEIDHE"
+          returnFocus={focusOrigin}
+          onClose={() => setDraftOpen(false)}
+        >
+          <div className="draft-review">
+            <p className="draft-review-intro">
+              Review your questions before any future contact. Nothing has been
+              sent.
+            </p>
+            {drafts.length === 0 ? (
+              <p className="draft-empty">
+                No questions remain. Add a question from a requirement.
+              </p>
+            ) : (
+              drafts.map((draft) => (
+                <article className="draft-item" key={draft.id}>
+                  <p className="eyebrow">
+                    {
+                      requirements.find((r) => r.id === draft.requirementId)
+                        .text
+                    }
+                  </p>
+                  <h3>{draft.title}</h3>
+                  <p className="draft-question">{draft.text}</p>
+                  <div className="detail-actions">
+                    <button
+                      className="text-button"
+                      onClick={() => editDraft(draft)}
+                    >
+                      <Icon icon={Pencil} />
+                      Edit question
+                    </button>
+                    <button
+                      className="subtle-button"
+                      onClick={() => {
+                        if (drafts.length === 1) {
+                          focusOrigin.current = document.getElementById(
+                            "requirement-" + draft.requirementId,
+                          );
+                          setDraftOpen(false);
+                        }
+                        setDrafts((ds) => ds.filter((d) => d.id !== draft.id));
+                        setNotice("Question removed from the draft.");
+                      }}
+                    >
+                      <Icon icon={Trash2} size={14} />
+                      Remove
+                    </button>
+                  </div>
+                </article>
+              ))
+            )}
+          </div>
+        </Dialog>
+      )}
       {drawer && (
         <Dialog
           wide
@@ -553,9 +378,14 @@ function App() {
               : "QUALIFICATION RECORD"
           }
           title={drawer.item.title}
+          returnFocus={focusOrigin}
           onClose={() => setDrawer(null)}
         >
           <div className="drawer-body">
+            <p className="evidence-context">
+              {drawer.requirement.text} <Icon icon={ChevronRight} size={13} />{" "}
+              Supporting evidence
+            </p>
             {source ? (
               <>
                 <p className="drawer-intro">
@@ -705,23 +535,24 @@ function App() {
           <footer className="drawer-footer">
             <button
               className="primary-button"
-              onClick={() => clarify(drawer.item)}
+              onClick={() => clarify(drawer.item, drawer.requirement)}
             >
               <Icon icon={Pencil} />
               Draft a clarification
             </button>
-            <span>Saved locally. Not sent.</span>
+            <span>Draft only · not sent.</span>
           </footer>
         </Dialog>
       )}
       {composer && (
         <Dialog
           title="Draft a clarification"
-          eyebrow={composer.title}
-          onClose={() => setComposer(null)}
+          eyebrow={composer.requirement.text}
+          returnFocus={focusOrigin}
+          onClose={closeComposer}
         >
           <form className="composer" onSubmit={saveDraft}>
-            <p>For Eimhin Mac Neidhe · linked to this review</p>
+            <p>For Eimhin Mac Neidhe · {composer.item.title}</p>
             <label htmlFor="question">Question for the keeper</label>
             <textarea
               id="question"
@@ -739,7 +570,7 @@ function App() {
               <button
                 type="button"
                 className="secondary-button"
-                onClick={() => setComposer(null)}
+                onClick={closeComposer}
               >
                 Cancel
               </button>
@@ -754,6 +585,7 @@ function App() {
         <Dialog
           title="Wind Turbine Technician"
           eyebrow="CARROWMORE ARRAY · O&M"
+          returnFocus={focusOrigin}
           onClose={() => setJobOpen(false)}
         >
           <div className="job-details">
@@ -794,51 +626,6 @@ function App() {
         </Dialog>
       )}
     </>
-  );
-}
-function Qualification({ q, flagged, onInspect, onFlag, onClarify }) {
-  return (
-    <article className="qualification">
-      <h3>{q.title}</h3>
-      <div className={"qualification-status " + q.tone}>
-        <Icon
-          icon={
-            q.tone === "positive"
-              ? CheckCircle2
-              : q.tone === "attention"
-                ? Clock3
-                : CircleHelp
-          }
-        />
-        {q.status}
-      </div>
-      <p>{q.detail}</p>
-      <div className="qualification-actions">
-        {q.recordId ? (
-          <button onClick={onInspect}>
-            View record <Icon icon={ArrowUpRight} size={13} />
-          </button>
-        ) : (
-          <button onClick={onClarify}>
-            Draft a question <Icon icon={Plus} size={13} />
-          </button>
-        )}
-        <button
-          onClick={onFlag}
-          aria-pressed={flagged}
-          className={flagged ? "flagged" : ""}
-        >
-          {flagged ? (
-            <>
-              <Icon icon={Check} size={13} />
-              Flagged
-            </>
-          ) : (
-            "Flag for verification"
-          )}
-        </button>
-      </div>
-    </article>
   );
 }
 createRoot(document.getElementById("root")).render(<App />);
