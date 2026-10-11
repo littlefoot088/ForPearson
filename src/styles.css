@@ -60,3 +60,19 @@
     gap: var(--mantine-spacing-xs);
   }
 }
+
+/* Keep the review workspace available without covering the assessment. */
+@media (min-width: $mantine-breakpoint-md) {
+  .review-workspace {
+    position: sticky;
+    top: var(--mantine-spacing-md);
+    max-height: calc(100dvh - 2 * var(--mantine-spacing-md));
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scroll-padding-block: var(--mantine-spacing-md);
+  }
+}
+.review-workspace:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}

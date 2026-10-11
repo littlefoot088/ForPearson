@@ -27,3 +27,5 @@ Experience evidence is not verified competence. Training modules and attendance 
 Use the person’s name in actions and prompts (for example, Suggest to Eimhin and Record Eimhin’s response). Address the signed-in user as “you” or “your”; do not label their own controls “Officer”. Keep authentic job titles and original source-field labels unchanged. Notes are editable reminders, never evidence or an inferred record of a previous conversation.
 
 Prototype persistence: notes and review state last only until refresh, as explicitly selected. Do not imply browser persistence or recovery of previous sessions.
+
+From Mantine’s md breakpoint, the right-hand review workspace stays visible with sticky positioning while the assessment scrolls. Its height is limited to the viewport, with keyboard-accessible internal scrolling when needed so notes and controls remain reachable. Below md it returns to normal document flow. Positioning uses Mantine spacing variables; no fixed overlay covers assessment content.

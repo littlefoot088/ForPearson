@@ -479,6 +479,8 @@ export default function App() {
               span={{ base: 12, md: 4 }}
               component="aside"
               aria-label="Your review workspace"
+              className="review-workspace"
+              tabIndex={0}
             >
               <Stack gap="md">
                 <OpportunityActions
