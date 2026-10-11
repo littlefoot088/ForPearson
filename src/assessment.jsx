@@ -135,7 +135,6 @@ export function ExpandedAssessment({
           >
             <DetailSection title="Recorded experience">
               <Text size="sm">{claim.introductionSummary}</Text>
-              <Text size="sm">{claim.relevance}</Text>
             </DetailSection>
             <DetailSection title="Supporting evidence">
               <Text size="sm">
@@ -151,11 +150,12 @@ export function ExpandedAssessment({
                   unresolved.
                 </Text>
               )}
-              <Text size="sm">
-                {claim.id === "safety"
-                  ? "The records do not show whether Eimhin’s permit authority is still current."
-                  : "The entries describe the work, but not whether anyone assisted or supervised."}
-              </Text>
+              {claim.id === "safety" && (
+                <Text size="sm">
+                  The records do not show whether Eimhin’s permit authority is
+                  still current.
+                </Text>
+              )}
               <Button
                 variant="light"
                 size="sm"
@@ -168,12 +168,7 @@ export function ExpandedAssessment({
             {linkedQualifications.map((q) => (
               <DetailSection key={q.id} title="Related training">
                 <Text size="sm">{q.title}</Text>
-                <Text size="sm">
-                  {q.status === "Not established"
-                    ? "No record found"
-                    : q.status}{" "}
-                  · Supporting module
-                </Text>
+                <Text size="sm">{q.summary}</Text>
                 <Button
                   variant="default"
                   size="sm"

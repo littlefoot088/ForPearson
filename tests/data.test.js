@@ -59,7 +59,7 @@ test("expiry labels agree with the fixed review date for recorded passes", () =>
     const r = trainingRecords.find((r) => r.id === q.recordId);
     assert.equal(r.keeper_code, person.id);
     assert.equal(r.outcome, "Pass");
-    assert.equal(q.status === "Module passed", r.expires_on > reviewDate);
+    assert.equal(q.status === "Pass recorded", r.expires_on > reviewDate);
   }
   assert.equal(qualifications.find((q) => q.id === "pumped").required, false);
   assert.equal(

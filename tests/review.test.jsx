@@ -113,7 +113,9 @@ describe("Mantine review interactions", () => {
     expect(
       within(dialog).getByRole("button", { name: "Record flagged · undo" }),
     ).toBeVisible();
-    expect(within(dialog).getByText(/date discrepancy is unresolved/)).toBeVisible();
+    expect(
+      within(dialog).getByText(/date discrepancy is unresolved/),
+    ).toBeVisible();
     await user.click(
       within(dialog).getByRole("button", { name: "Record flagged · undo" }),
     );
@@ -173,7 +175,7 @@ describe("Mantine review interactions", () => {
 
   it("retains qualification records, verification flags and supporting modules", async () => {
     const user = setup();
-    await user.click(requirement(/Sea survival.*Module recorded/));
+    await user.click(requirement(/Sea survival.*Training recorded/));
     await user.click(
       await screen.findByRole("button", { name: "View training record" }),
     );
@@ -301,7 +303,7 @@ it("keeps optional discussion prompts available after saving a contextual questi
 it("keeps all four training records reachable in their experience or qualification context", async () => {
   const user = setup();
   for (const [row, id, supporting] of [
-    [/Sea survival.*Module recorded/, "LH500010", false],
+    [/Sea survival.*Training recorded/, "LH500010", false],
     [/Fire prevention and response.*Attendance recorded/, "LH500003", false],
     [maintenance, "LH500008", true],
     [/Electrical fault-finding & control/, "LH500001", true],
@@ -349,6 +351,15 @@ it("shows experience facts directly and keeps supporting-module actions in the i
   const user = setup();
   await user.click(requirement(maintenance));
   const panel = await screen.findByRole("region", { name: maintenance });
+  expect(
+    within(panel).queryByText(
+      /This work is relevant|assisted or supervised|Supporting module/,
+    ),
+  ).not.toBeInTheDocument();
+  expect(
+    within(panel).getByText("Passed. Training record expires 5 December 2028."),
+  ).toBeVisible();
+
   expect(within(panel).getByText(/5 supporting records/)).toBeVisible();
   expect(
     within(panel).getByText(/entry uses Eimhin’s name and code/),

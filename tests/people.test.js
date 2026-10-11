@@ -21,7 +21,7 @@ test("workspace uses pair tasks and progress without inferring overall intention
   state = workspaceReducer(state, { type: "task-toggle", id: "certificates" });
   assert.equal(
     assessmentOverview(state).nextAction,
-    "Clarify independent maintenance responsibilities",
+    "Discuss Eimhin’s maintenance experience",
   );
   state = workspaceReducer(state, {
     type: "referral-save",

@@ -145,10 +145,9 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
           </Text>
           <Paper p="sm" bg="clarification.0">
             <Text size="sm" c="clarification.7">
-              Still unresolved: independent maintenance scope, current permit
-              authority, complete offshore safety coverage, medical clearance
-              and offshore working conditions. Career preferences have not been
-              discussed.
+              Still unresolved: current permit authority, complete offshore
+              safety coverage, medical clearance and offshore working
+              conditions. Career preferences have not been discussed.
             </Text>
           </Paper>
           <NativeSelect

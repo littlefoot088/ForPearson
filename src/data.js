@@ -24,7 +24,7 @@ export const requirementGroups = [
 ];
 export const assessmentStates = {
   evidence: { label: "Evidence found", icon: "file", tone: "evidence" },
-  module: { label: "Module recorded", icon: "module", tone: "neutral" },
+  module: { label: "Training recorded", icon: "module", tone: "neutral" },
   attendance: { label: "Attendance recorded", icon: "clock", tone: "neutral" },
   clarify: {
     label: "Needs clarification",
@@ -201,7 +201,7 @@ export const qualifications = [
     id: "sea",
     title: "Sea survival",
     required: true,
-    status: "Module passed",
+    status: "Pass recorded",
     tone: "positive",
     recordId: "LH500010",
     detail:
@@ -257,11 +257,12 @@ export const qualifications = [
     id: "pumped",
     title: "Fluid transfer & pumped systems",
     required: false,
-    status: "Module passed",
+    status: "Pass recorded",
     tone: "positive",
     recordId: "LH500008",
+    summary: "Passed. Training record expires 5 December 2028.",
     detail:
-      "Expires 5 December 2028. This is a training module, not a full certificate.",
+      "Training record expires 5 December 2028. This record covers one part of the training, not a full certificate.",
     question:
       "Do you have the award record for your pumped-systems module and any related maintenance certification?",
   },
@@ -269,11 +270,12 @@ export const qualifications = [
     id: "generator",
     title: "Rotating plant & generator control",
     required: false,
-    status: "Module expired",
+    status: "Training record expired",
     tone: "attention",
     recordId: "LH500001",
+    summary: "Passed. Training record expired 14 July 2022.",
     detail:
-      "Passed module; expired 14 July 2022. This does not change the work recorded in the logbooks.",
+      "Passed. Training record expired 14 July 2022. This record covers one part of the training, not a full certificate.",
     question: "Do you have a newer record for the generator-control module?",
   },
 ];
@@ -328,7 +330,7 @@ export const requirementNextSteps = {
 
 // Curated conclusions grounded in the linked claims and O&M vacancy, not a score.
 export const candidateSummary = {
-  text: "Eimhin has recorded pump-repair and electrical fault-finding experience. The employer accepts maintenance experience from other plant and does not require previous wind experience. His independent responsibilities need clarification; complete safety certification and medical fitness still need checking.",
+  text: "Eimhin has recorded pump-repair and electrical fault-finding experience. The employer accepts maintenance experience from other plant and does not require previous wind experience. Offshore safety certificates and medical fitness still need checking.",
   claimIds: ["pump", "electrical"],
   sourceIds: [
     "pump_2010-08-06",

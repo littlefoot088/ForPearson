@@ -95,9 +95,7 @@ it("navigates directly to the assessment and back without resetting tasks or sav
   ).toBeChecked();
   const eimhin = screen.getByRole("region", { name: "Eimhin Mac Neidhe" });
   expect(
-    within(eimhin).getByText(
-      "Clarify independent maintenance responsibilities",
-    ),
+    within(eimhin).getByText("Discuss Eimhin’s maintenance experience"),
   ).toBeInTheDocument();
   expect(
     within(eimhin).queryByText("Check existing offshore certificates"),

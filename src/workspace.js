@@ -48,7 +48,7 @@ export function initialWorkspace() {
       },
       {
         id: "responsibilities",
-        title: "Clarify independent maintenance responsibilities",
+        title: "Discuss Eimhin’s maintenance experience",
         done: false,
       },
       {
@@ -73,7 +73,7 @@ export function createReferral() {
     qualifications:
       "Sea-survival training is recorded, but complete offshore safety certification and medical fitness still need verification. Safety certification is required before mobilisation; the vacancy does not specify when medical fitness must be verified.",
     recommendation:
-      "We recommend considering Eimhin for an initial technical interview to explore how his maintenance experience could transfer to offshore wind operations and clarify his independent responsibilities.",
+      "We recommend considering Eimhin for an initial technical interview to explore how his maintenance experience could transfer to offshore wind operations.",
     includedReports: [],
     editedFields: [],
     needsReview: false,
