@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  Accordion,
-  Button,
-  Group,
-  Stack,
-  Text,
-  Title,
-  Paper,
-  SimpleGrid,
-} from "@mantine/core";
+import { Accordion, Button, Group, Stack, Text } from "@mantine/core";
 import {
   FileText,
   Files,
@@ -16,10 +7,6 @@ import {
   CircleHelp,
   CircleDashed,
   CheckCircle2,
-  ArrowUpRight,
-  Pencil,
-  Check,
-  Flag,
 } from "lucide-react";
 import { Icon } from "./components";
 import {
@@ -84,258 +71,40 @@ export function RequirementRow({ requirement, children }) {
   );
 }
 
-function ExperienceDetail({
-  claim,
-  onInspect,
-  onClarify,
-  drafted,
-  onReport,
-  report,
-}) {
-  const records = getSources(claim);
+export function QualificationActions({ q, onClarify, drafted, task, onFlag }) {
   return (
-    <Stack component="section" gap="md" aria-label={claim.title}>
-      <Paper p="md" radius="sm" bg="gray.0">
-        <Stack gap="sm">
-          <Title order={4} size="h5">
-            Experience recorded
-          </Title>
-          <Text>{claim.summary}</Text>
+    <Group gap="xs">
+      {task ? (
+        <>
           <Text size="sm">
-            <Text component="span" fw={600}>
-              Relevance to this role:{" "}
-            </Text>
-            {claim.relevance}
+            Qualification check {task.done ? "completed" : "added"}
           </Text>
-          <Text size="sm" c="dimmed">
-            {records.length} selected records
-            {records.some((r) => r.date < person.joined) &&
-              " · 1 needs attribution checking"}
-          </Text>
-          <Group>
-            <Button
-              variant="light"
-              leftSection={<Icon icon={FileText} />}
-              onClick={() => onInspect(claim)}
-            >
-              View supporting records ({records.length})
-            </Button>
-          </Group>
-          <Accordion variant="default" order={5}>
-            <Accordion.Item value="coverage">
-              <Accordion.Control>
-                <Text component="span" size="sm">
-                  Record coverage and involvement
-                </Text>
-              </Accordion.Control>
-              <Accordion.Panel>
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                  <div>
-                    <Text size="xs" c="dimmed">
-                      Selected date range
-                    </Text>
-                    <Text size="sm">
-                      {dateLabel(records[0].date)} –{" "}
-                      {dateLabel(records.at(-1).date)}
-                    </Text>
-                  </div>
-                  <div>
-                    <Text size="xs" c="dimmed">
-                      Latest selected activity
-                    </Text>
-                    <Text size="sm">{dateLabel(records.at(-1).date)}</Text>
-                  </div>
-                </SimpleGrid>
-                <Text size="sm" mt="sm">
-                  <strong>Involvement: </strong>
-                  {claim.involvement}
-                </Text>
-              </Accordion.Panel>
-            </Accordion.Item>
-          </Accordion>
-        </Stack>
-      </Paper>
-      <Paper p="md" radius="sm" bg="clarification.0">
-        <Stack gap="xs">
-          <Title order={4} size="h5">
-            What to clarify with Eimhin
-          </Title>
-          <Text size="sm">{claim.limitation}</Text>
-          {report && (
-            <Text size="sm" className="source-quote">
-              <strong>Reported by Eimhin · {dateLabel(report.date)}:</strong>{" "}
-              {report.text}{" "}
-              <Text component="span" c="dimmed">
-                Recorded by you; not independently verified.
-              </Text>
-            </Text>
-          )}
-          <Group>
-            <Button
-              variant="subtle"
-              size="compact-sm"
-              leftSection={<Icon icon={Pencil} />}
-              onClick={() => onClarify(claim)}
-            >
-              {drafted ? "Edit discussion question" : "Add to discussion"}
-            </Button>
-            {onReport && ["pump", "electrical"].includes(claim.id) && (
-              <Button
-                variant="subtle"
-                size="compact-sm"
-                onClick={() => onReport(claim)}
-              >
-                {report ? "Edit Eimhin’s account" : "Record Eimhin’s account"}
-              </Button>
-            )}
-          </Group>
-        </Stack>
-      </Paper>
-    </Stack>
+          <Button variant="subtle" size="compact-sm" onClick={() => onFlag(q)}>
+            Undo qualification check
+          </Button>
+        </>
+      ) : (
+        <Button variant="light" onClick={() => onFlag(q)}>
+          Check qualification
+        </Button>
+      )}
+      <Button variant="subtle" size="compact-sm" onClick={() => onClarify(q)}>
+        {drafted ? "Edit discussion question" : "Add to discussion"}
+      </Button>
+    </Group>
   );
 }
 
-function QualificationDetail({
-  q,
-  onInspect,
-  onClarify,
-  flagged,
-  onFlag,
-  drafted,
-  supporting = false,
-}) {
-  if (supporting)
-    return (
-      <Stack gap="sm" component="section" aria-label={q.title}>
-        <Text fw={600} size="sm">
-          {q.title}
-        </Text>
-        <Text size="sm">{q.status}</Text>
-        <Text size="sm" c="dimmed">
-          {q.detail}
-        </Text>
-        <Text size="xs" c="dimmed">
-          Expiry interpreted as of {dateLabel(reviewDate)}.
-        </Text>
-        <Group>
-          <Button
-            variant="subtle"
-            size="compact-sm"
-            leftSection={<Icon icon={FileText} />}
-            onClick={() => onInspect(q)}
-          >
-            View training record
-          </Button>
-        </Group>
-        <Accordion variant="default" order={5}>
-          <Accordion.Item value="followup">
-            <Accordion.Control>
-              <Text component="span" size="sm">
-                Follow up this module
-                {flagged
-                  ? " · check added"
-                  : drafted
-                    ? " · question saved"
-                    : ""}
-              </Text>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Stack gap="xs">
-                <Text size="sm" c="dimmed">
-                  Optional actions for this supporting module.
-                </Text>
-                <Group gap="xs">
-                  <Button
-                    variant="subtle"
-                    size="compact-sm"
-                    onClick={() => onClarify(q)}
-                  >
-                    {drafted ? "Edit discussion question" : "Add to discussion"}
-                  </Button>
-                  <Button
-                    variant="subtle"
-                    size="compact-sm"
-                    aria-pressed={flagged}
-                    onClick={() => onFlag(q)}
-                  >
-                    {flagged
-                      ? "Qualification check added"
-                      : "Add qualification check"}
-                  </Button>
-                </Group>
-                {flagged && (
-                  <Text size="xs" c="dimmed">
-                    Check with Eimhin, Authority training records or the
-                    provider. Select again to undo; this does not verify the
-                    module.
-                  </Text>
-                )}
-              </Stack>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-      </Stack>
-    );
+export function TrainingSummary({ q }) {
   return (
-    <Stack component="section" gap="sm" aria-label={q.title}>
-      {supporting && <Title order={5}>{q.title}</Title>}
-      <Group>
-        <Text fw={600}>{q.status}</Text>
-        {supporting && (
-          <Text size="sm" c="dimmed">
-            Supporting module
-          </Text>
-        )}
-      </Group>
-      <Text>{q.detail}</Text>
-      {!supporting && (
-        <Text size="sm">
-          <strong>Needs checking:</strong>{" "}
-          {q.id === "medical"
-            ? "Confirm current offshore clearance; clinical details are not needed."
-            : q.id === "height"
-              ? "Confirm the certificate and height coverage Carrowmore Array accepts."
-              : "Check the complete certificate and its current coverage."}
-        </Text>
-      )}
-      <Group gap="xs">
-        {q.recordId && (
-          <Button
-            variant="light"
-            rightSection={<Icon icon={ArrowUpRight} />}
-            onClick={() => onInspect(q)}
-          >
-            View training record
-          </Button>
-        )}
-        <Button
-          variant="subtle"
-          leftSection={<Icon icon={Pencil} />}
-          onClick={() => onClarify(q)}
-        >
-          {drafted ? "Edit discussion question" : "Add to discussion"}
-        </Button>
-        <Button
-          variant={flagged ? "light" : "subtle"}
-          color="clarification"
-          aria-pressed={flagged}
-          leftSection={<Icon icon={flagged ? Check : Flag} />}
-          onClick={() => onFlag(q)}
-        >
-          {flagged ? "Qualification check added" : "Add qualification check"}
-        </Button>
-      </Group>
-      {flagged && (
-        <Text size="sm" c="dimmed">
-          Check with Eimhin, Authority training records or the provider. Select
-          “Qualification check added” again to undo. This tracks the check, not
-          its outcome.
-        </Text>
-      )}
+    <Stack gap="xs">
+      <Text fw={600} size="sm">
+        {q.status}
+      </Text>
+      <Text size="sm">{q.detail}</Text>
     </Stack>
   );
 }
-
 export function ExpandedAssessment({
   requirement,
   contextRequirement = requirement,
@@ -344,7 +113,7 @@ export function ExpandedAssessment({
   onInspect,
   onClarify,
   drafts,
-  verifications,
+  tasks = [],
   onFlag,
 }) {
   const linkedClaims = (requirement.claimIds ?? []).map((id) =>
@@ -354,72 +123,132 @@ export function ExpandedAssessment({
     qualifications.find((q) => q.id === id),
   );
   const hasDraft = (id) => drafts.some((d) => d.id === id);
-  const trainingDetails = linkedQualifications.map((q) => (
-    <QualificationDetail
-      key={q.id}
-      q={q}
-      supporting={requirement.type === "experience"}
-      onInspect={(item) => onInspect(item, "qualification", contextRequirement)}
-      onClarify={(item) => onClarify(item, contextRequirement)}
-      flagged={verifications.includes(q.id)}
-      onFlag={onFlag}
-      drafted={hasDraft(q.id)}
-    />
-  ));
+  const inspect = (item, type) => onInspect(item, type, contextRequirement);
+  const clarify = (item) => onClarify(item, contextRequirement);
   return (
     <>
-      {requirement.detail && linkedClaims.length === 0 && (
-        <Text c="dimmed">{requirement.detail}</Text>
-      )}
-      {linkedClaims.map((claim) => (
-        <ExperienceDetail
-          key={claim.id}
-          claim={claim}
-          onReport={onReport}
-          report={reports[claim.id]}
-          onInspect={(item) => onInspect(item, "claim", contextRequirement)}
-          onClarify={(item) => onClarify(item, contextRequirement)}
-          drafted={hasDraft(claim.id)}
-        />
-      ))}
-      {requirement.type === "experience" && linkedQualifications.length > 0 ? (
-        <Accordion variant="default" order={4}>
-          <Accordion.Item value="training">
-            <Accordion.Control>
-              <Text component="span" size="sm" fw={600}>
-                Related training ({linkedQualifications.length})
+      {linkedClaims.map((claim) => {
+        const records = getSources(claim);
+        const report = reports[claim.id];
+        return (
+          <Stack
+            component="section"
+            gap="sm"
+            aria-label={claim.title}
+            key={claim.id}
+          >
+            <Text>{claim.summary}</Text>
+            <Text size="sm" c="dimmed">
+              {claim.relevance}
+            </Text>
+            <Text size="sm">
+              {records.length} supporting records ·{" "}
+              {records[0].date.slice(0, 4)}–{records.at(-1).date.slice(0, 4)} ·{" "}
+              {claim.involvement}
+            </Text>
+            {records.some((r) => r.date < person.joined) && (
+              <Text size="sm" c="clarification.8">
+                1 included record needs attribution checking.
               </Text>
-            </Accordion.Control>
-            <Accordion.Panel>
-              <Stack gap="lg">{trainingDetails}</Stack>
-            </Accordion.Panel>
-          </Accordion.Item>
-        </Accordion>
-      ) : (
-        trainingDetails
-      )}
-      {linkedQualifications.length > 0 && requirement.type !== "experience" && (
-        <Text size="sm" c="dimmed">
-          Expiry interpretation as of {dateLabel(reviewDate)}.
-        </Text>
-      )}
+            )}
+            {linkedQualifications.map((q) => (
+              <Group key={q.id} justify="space-between" gap="xs">
+                <Text size="sm">
+                  <strong>Related training:</strong> {q.title} · {q.status} ·
+                  Supporting module
+                </Text>
+                <Button
+                  variant="subtle"
+                  size="compact-sm"
+                  onClick={() => inspect(q, "qualification")}
+                >
+                  View training record
+                </Button>
+              </Group>
+            ))}
+            <Text size="sm">
+              <strong>Next step:</strong> {claim.limitation}
+            </Text>
+            {report && (
+              <Text size="sm" className="source-quote">
+                <strong>Reported by Eimhin · {dateLabel(report.date)}:</strong>{" "}
+                {report.text}{" "}
+                <Text span c="dimmed">
+                  Recorded by you; not independently verified.
+                </Text>
+              </Text>
+            )}
+            <Group gap="xs">
+              <Button variant="light" onClick={() => inspect(claim, "claim")}>
+                View evidence
+              </Button>
+              <Button variant="subtle" onClick={() => clarify(claim)}>
+                {hasDraft(claim.id)
+                  ? "Edit discussion question"
+                  : "Add to discussion"}
+              </Button>
+              {onReport && ["pump", "electrical"].includes(claim.id) && (
+                <Button
+                  variant="subtle"
+                  size="compact-sm"
+                  onClick={() => onReport(claim)}
+                >
+                  {report ? "Edit Eimhin’s account" : "Record Eimhin’s account"}
+                </Button>
+              )}
+            </Group>
+          </Stack>
+        );
+      })}
+      {requirement.type !== "experience" &&
+        linkedQualifications.map((q) => (
+          <Stack component="section" gap="sm" aria-label={q.title} key={q.id}>
+            <TrainingSummary q={q} />
+            <Text size="sm">
+              <strong>Next step:</strong>{" "}
+              {q.id === "medical"
+                ? "Confirm current offshore medical clearance."
+                : q.id === "height"
+                  ? "Confirm the certificate and height coverage Carrowmore Array accepts."
+                  : "Check the complete certificate and its current coverage."}
+            </Text>
+            {q.recordId && (
+              <Button
+                variant="subtle"
+                size="compact-sm"
+                w="fit-content"
+                onClick={() => inspect(q, "qualification")}
+              >
+                View training record
+              </Button>
+            )}
+            <QualificationActions
+              q={q}
+              onClarify={clarify}
+              drafted={hasDraft(q.id)}
+              task={tasks.find((t) => t.qualificationId === q.id)}
+              onFlag={onFlag}
+            />
+            {q.recordId && (
+              <Text size="xs" c="dimmed">
+                Expiry assessed at {dateLabel(reviewDate)}.
+              </Text>
+            )}
+          </Stack>
+        ))}
       {requirement.type === "clarification" && (
-        <Group>
+        <>
+          <Text size="sm">{requirement.detail}</Text>
           <Button
-            variant="light"
-            leftSection={<Icon icon={Pencil} />}
-            onClick={() =>
-              onClarify(
-                { ...requirement, title: requirement.text },
-                requirement,
-              )
-            }
+            variant="subtle"
+            w="fit-content"
+            onClick={() => clarify({ ...requirement, title: requirement.text })}
           >
             {hasDraft(requirement.id)
               ? "Edit discussion question"
               : "Add to discussion"}
           </Button>
-        </Group>
+        </>
       )}
     </>
   );

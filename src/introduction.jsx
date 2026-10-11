@@ -155,6 +155,10 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
   const [saved, setSaved] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const previewStart = useRef(null);
+  const savedStatus = useRef(null);
+  useEffect(() => {
+    if (saved) savedStatus.current?.focus({ preventScroll: true });
+  }, [saved]);
   const editStart = useRef(null);
   const resetTrigger = useRef(null);
   const regenerated = useRef(false);
@@ -255,37 +259,63 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                 />
               ))}
               {Object.values(state.reports).length > 0 && (
-                <Accordion>
-                  <Accordion.Item value="reported">
-                    <Accordion.Control>
-                      Include Eimhin-reported responsibilities (optional)
-                    </Accordion.Control>
-                    <Accordion.Panel>
-                      <Stack gap="sm">
-                        <Text size="sm" c="dimmed">
-                          Keep these distinct from documented experience. Only
-                          selected accounts appear in the introduction.
-                        </Text>
-                        {Object.values(state.reports).map((report) => {
-                          const included = working.includedReports.find(
-                            (r) => r.id === report.id,
-                          );
-                          return (
-                            <Stack gap="xs" key={report.id}>
-                              <Checkbox
-                                checked={Boolean(included)}
-                                label={`Include Eimhin’s account: ${claims.find((c) => c.id === report.id).title}`}
+                <section>
+                  <Text fw={600} mb="sm">
+                    Include Eimhin-reported responsibilities (optional)
+                  </Text>
+                  <Stack gap="sm">
+                    <Text size="sm" c="dimmed">
+                      Keep these distinct from documented experience. Only
+                      selected accounts appear in the introduction.
+                    </Text>
+                    {Object.values(state.reports).map((report) => {
+                      const included = working.includedReports.find(
+                        (r) => r.id === report.id,
+                      );
+                      return (
+                        <Stack gap="xs" key={report.id}>
+                          <Checkbox
+                            checked={Boolean(included)}
+                            label={`Include Eimhin’s account: ${claims.find((c) => c.id === report.id).title}`}
+                            onChange={(e) =>
+                              setWorking({
+                                ...working,
+                                includedReports: e.currentTarget.checked
+                                  ? [...working.includedReports, { ...report }]
+                                  : working.includedReports.filter(
+                                      (r) => r.id !== report.id,
+                                    ),
+                                editedFields: [
+                                  ...new Set([
+                                    ...working.editedFields,
+                                    "reported",
+                                  ]),
+                                ],
+                              })
+                            }
+                          />
+                          {included && (
+                            <>
+                              <Textarea
+                                label={`Eimhin-reported wording: ${claims.find((c) => c.id === report.id).title}`}
+                                autosize
+                                minRows={2}
+                                maxRows={4}
+                                maxLength={1200}
+                                required
+                                value={included.text}
                                 onChange={(e) =>
                                   setWorking({
                                     ...working,
-                                    includedReports: e.currentTarget.checked
-                                      ? [
-                                          ...working.includedReports,
-                                          { ...report },
-                                        ]
-                                      : working.includedReports.filter(
-                                          (r) => r.id !== report.id,
-                                        ),
+                                    includedReports:
+                                      working.includedReports.map((r) =>
+                                        r.id === report.id
+                                          ? {
+                                              ...r,
+                                              text: e.currentTarget.value,
+                                            }
+                                          : r,
+                                      ),
                                     editedFields: [
                                       ...new Set([
                                         ...working.editedFields,
@@ -295,74 +325,30 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                                   })
                                 }
                               />
-                              {included && (
-                                <>
-                                  <Textarea
-                                    label={`Eimhin-reported wording: ${claims.find((c) => c.id === report.id).title}`}
-                                    autosize
-                                    minRows={2}
-                                    maxRows={4}
-                                    maxLength={1200}
-                                    required
-                                    value={included.text}
-                                    onChange={(e) =>
-                                      setWorking({
-                                        ...working,
-                                        includedReports:
-                                          working.includedReports.map((r) =>
-                                            r.id === report.id
-                                              ? {
-                                                  ...r,
-                                                  text: e.currentTarget.value,
-                                                }
-                                              : r,
-                                          ),
-                                        editedFields: [
-                                          ...new Set([
-                                            ...working.editedFields,
-                                            "reported",
-                                          ]),
-                                        ],
-                                      })
-                                    }
-                                  />
-                                  <Button
-                                    variant="subtle"
-                                    size="compact-sm"
-                                    onClick={() =>
-                                      setWorking({
-                                        ...working,
-                                        includedReports:
-                                          working.includedReports.map((r) =>
-                                            r.id === report.id
-                                              ? { ...report }
-                                              : r,
-                                          ),
-                                      })
-                                    }
-                                  >
-                                    Use latest reported account
-                                  </Button>
-                                </>
-                              )}
-                            </Stack>
-                          );
-                        })}
-                      </Stack>
-                    </Accordion.Panel>
-                  </Accordion.Item>
-                </Accordion>
+                              <Button
+                                variant="subtle"
+                                size="compact-sm"
+                                onClick={() =>
+                                  setWorking({
+                                    ...working,
+                                    includedReports:
+                                      working.includedReports.map((r) =>
+                                        r.id === report.id ? { ...report } : r,
+                                      ),
+                                  })
+                                }
+                              >
+                                Use latest reported account
+                              </Button>
+                            </>
+                          )}
+                        </Stack>
+                      );
+                    })}
+                  </Stack>
+                </section>
               )}
-              <Group>
-                <Button
-                  type="submit"
-                  disabled={
-                    !referralFields.every(([key]) => working[key].trim()) ||
-                    working.includedReports.some((r) => !r.text.trim())
-                  }
-                >
-                  Review introduction
-                </Button>
+              <Group justify="flex-end">
                 <Button
                   variant="default"
                   onClick={() => {
@@ -371,6 +357,15 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                   }}
                 >
                   Cancel edits
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={
+                    !referralFields.every(([key]) => working[key].trim()) ||
+                    working.includedReports.some((r) => !r.text.trim())
+                  }
+                >
+                  Review introduction
                 </Button>
               </Group>
             </Stack>
@@ -393,8 +388,7 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                 </Button>
               </Group>
               <Text size="xs" c="dimmed">
-                An approved CV would accompany this introduction. No attachment
-                is required to save.
+                An approved CV would accompany the introduction.
               </Text>
               {draft.editedFields.length > 0 && (
                 <Text size="xs" c="dimmed">
@@ -403,7 +397,7 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                 </Text>
               )}
               {saved && (
-                <Text role="status" size="sm">
+                <Text ref={savedStatus} tabIndex={-1} role="status" size="sm">
                   {storageFailed
                     ? "Draft saved for this session. Browser storage is unavailable."
                     : "Candidate introduction saved on this browser."}
@@ -415,20 +409,22 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                 </Text>
               )}
               <Group>
-                <Button
-                  onClick={() => {
-                    const savedDraft = {
-                      ...draft,
-                      needsReview: false,
-                      assessmentSignature: assessmentSignature(),
-                    };
-                    dispatch({ type: "referral-save", referral: savedDraft });
-                    setDraft(savedDraft);
-                    setSaved(true);
-                  }}
-                >
-                  Save introduction draft
-                </Button>
+                {dirty && (
+                  <Button
+                    onClick={() => {
+                      const savedDraft = {
+                        ...draft,
+                        needsReview: false,
+                        assessmentSignature: assessmentSignature(),
+                      };
+                      dispatch({ type: "referral-save", referral: savedDraft });
+                      setDraft(savedDraft);
+                      setSaved(true);
+                    }}
+                  >
+                    Save introduction draft
+                  </Button>
+                )}
                 {!dirty &&
                   state.referral?.format === 2 &&
                   !state.referral.needsReview &&
@@ -451,8 +447,8 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                 )}
               </Group>
               <Text size="xs" c="dimmed">
-                Ready for review means prepared for Eimhin to check. His
-                approval to share is not recorded, and nothing is sent.
+                Eimhin’s approval is required before sharing. Nothing is sent
+                here.
               </Text>
               <Button
                 variant="subtle"
@@ -502,36 +498,6 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
           </Group>
         </Stack>
       </Modal>
-    </Stack>
-  );
-}
-export function IntroductionReview({ state, dispatch, onClose }) {
-  return (
-    <Stack gap="md">
-      <Title order={3} size="h4">
-        {state.ready
-          ? "Ready for Eimhin’s review"
-          : "Prepare for Eimhin’s review"}
-      </Title>
-      <Text>
-        The saved introduction is ready for Eimhin to check. This does not
-        record his approval or share anything with Carrowmore Array.
-      </Text>
-      {!readinessAllowed(state) && (
-        <Text size="sm" role="alert">
-          Save a reviewed candidate introduction and record Eimhin’s interest
-          first.
-        </Text>
-      )}
-      <Button
-        disabled={!readinessAllowed(state)}
-        onClick={() => {
-          dispatch({ type: state.ready ? "unready" : "ready" });
-          onClose();
-        }}
-      >
-        {state.ready ? "Return to draft" : "Mark ready for Eimhin’s review"}
-      </Button>
     </Stack>
   );
 }

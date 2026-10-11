@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Anchor,
   Badge,
@@ -24,10 +24,18 @@ import {
   peopleForWorkspace,
 } from "./people";
 
-export function PeopleWorkspace({ workspace, storageFailed }) {
-  const [search, setSearch] = useState("");
-  const [intention, setIntention] = useState(null);
-  const [attentionOnly, setAttentionOnly] = useState(false);
+export function PeopleWorkspace({
+  workspace,
+  storageFailed,
+  filters,
+  onFiltersChange,
+}) {
+  const { search, intention, attentionOnly } = filters;
+  const setSearch = (search) => onFiltersChange({ ...filters, search });
+  const setIntention = (intention) =>
+    onFiltersChange({ ...filters, intention });
+  const setAttentionOnly = (attentionOnly) =>
+    onFiltersChange({ ...filters, attentionOnly });
   const people = filterPeople(
     peopleForWorkspace(workspace),
     search,
@@ -202,9 +210,11 @@ export function PeopleWorkspace({ workspace, storageFailed }) {
               <Button
                 variant="subtle"
                 onClick={() => {
-                  setSearch("");
-                  setIntention(null);
-                  setAttentionOnly(false);
+                  onFiltersChange({
+                    search: "",
+                    intention: null,
+                    attentionOnly: false,
+                  });
                 }}
               >
                 Clear filters

@@ -83,17 +83,20 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
             label="Your assessment"
             value={assessment}
             onChange={(event) => setAssessment(event.currentTarget.value)}
-            data={Object.entries(officerAssessments).map(([value, label]) => ({
-              value,
-              label,
-              disabled: value === "worth-nominating",
-            }))}
+            data={Object.entries(officerAssessments)
+              .filter(
+                ([value]) =>
+                  value !== "worth-nominating" || state.assessment === value,
+              )
+              .map(([value, label]) => ({
+                value,
+                label,
+                disabled: value === "worth-nominating",
+              }))}
           />
           <Text size="sm" c="dimmed">
-            This is your judgement about the opportunity. Outstanding questions
-            and qualification statuses remain unchanged. “Worth nominating” is
-            recorded through the nomination decision after Eimhin expresses
-            interest.
+            Your judgement does not verify qualifications or resolve outstanding
+            questions.
           </Text>
           {state.nominationDecision && (
             <Text size="sm" c="clarification.7">

@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Accordion,
+  Divider,
   ActionIcon,
   Button,
   Group,
@@ -10,6 +10,7 @@ import {
   Mark,
 } from "@mantine/core";
 import { ChevronLeft, ChevronRight, Flag } from "lucide-react";
+import { QualificationActions, TrainingSummary } from "./assessment";
 import { Icon, Highlight, RecordFields } from "./components";
 import { dateLabel, person, reviewDate, interpretations } from "./data";
 
@@ -21,6 +22,10 @@ export function EvidenceContent({
   training,
   flagged,
   onFlag,
+  qualificationTask,
+  onQualificationCheck,
+  onClarify,
+  drafted,
 }) {
   const source = records[index];
   const early = source && source.date < person.joined;
@@ -32,6 +37,13 @@ export function EvidenceContent({
       <Text size="xs" c="dimmed">
         Fictional assessment: {dateLabel(reviewDate)}
       </Text>
+      {source && (
+        <Text size="sm">
+          Selected coverage: {dateLabel(records[0].date)}–
+          {dateLabel(records.at(-1).date)}. Latest selected activity:{" "}
+          {dateLabel(records.at(-1).date)}. {drawer.item.involvement}
+        </Text>
+      )}
       {source ? (
         <>
           <Text size="sm">
@@ -116,8 +128,7 @@ export function EvidenceContent({
         </>
       ) : (
         <>
-          <Text fw={600}>{drawer.item.status}</Text>
-          <Text>{drawer.item.detail}</Text>
+          <TrainingSummary q={drawer.item} />
           {training && (
             <RecordFields
               fields={[
@@ -133,61 +144,57 @@ export function EvidenceContent({
               ]}
             />
           )}
-          <Text size="sm">
-            {training?.outcome === "Attended"
-              ? "Attendance does not establish completion."
-              : "This documents a module, not the complete certificate."}
-          </Text>
+          {drawer.requirement.type === "experience" && (
+            <QualificationActions
+              q={drawer.item}
+              task={qualificationTask}
+              onFlag={onQualificationCheck}
+              onClarify={onClarify}
+              drafted={drafted}
+            />
+          )}
         </>
       )}
-      <Accordion variant="contained">
-        <Accordion.Item value="details">
-          <Accordion.Control>View source details</Accordion.Control>
-          <Accordion.Panel>
-            <Stack gap="sm">
-              {source ? (
-                <>
-                  <RecordFields
-                    fields={[
-                      ["Source file", source.source],
-                      ["Record", source.recordId],
-                      ["Person reference", source.personRef],
-                      ["Original date", source.rawDate],
-                    ]}
-                  />
-                  <Text size="sm">
-                    Identity linked using personnel postings and LearnHub’s
-                    keeper-code / payroll-reference pair.{" "}
-                    {early
-                      ? `This entry carries ${person.id}; attribution needs checking because it predates the personnel joining date of ${dateLabel(person.joined)}.`
-                      : "Attribution is curated, not externally verified."}
-                  </Text>
-                </>
-              ) : (
-                training && (
-                  <RecordFields
-                    fields={[
-                      ["Record ID", training.id],
-                      ["Keeper code", training.keeper_code],
-                      [
-                        "Source",
-                        "raw/training/vendor-c-learnhub-2017-2026.json",
-                      ],
-                    ]}
-                  />
-                )
-              )}
-              <Text component="pre" size="sm" className="source-quote" m={0}>
-                {source
-                  ? typeof source.rawRecord === "string"
-                    ? source.rawRecord
-                    : JSON.stringify(source.rawRecord, null, 2)
-                  : JSON.stringify(training, null, 2)}
-              </Text>
-            </Stack>
-          </Accordion.Panel>
-        </Accordion.Item>
-      </Accordion>
+      <Divider />
+      <Text fw={600}>Source details</Text>
+      <Stack gap="sm">
+        {source ? (
+          <>
+            <RecordFields
+              fields={[
+                ["Source file", source.source],
+                ["Record", source.recordId],
+                ["Person reference", source.personRef],
+                ["Original date", source.rawDate],
+              ]}
+            />
+            <Text size="sm">
+              Identity linked using personnel postings and LearnHub’s
+              keeper-code / payroll-reference pair.{" "}
+              {early
+                ? `This entry carries ${person.id}; attribution needs checking because it predates the personnel joining date of ${dateLabel(person.joined)}.`
+                : "Attribution is curated, not externally verified."}
+            </Text>
+          </>
+        ) : (
+          training && (
+            <RecordFields
+              fields={[
+                ["Record ID", training.id],
+                ["Keeper code", training.keeper_code],
+                ["Source", "raw/training/vendor-c-learnhub-2017-2026.json"],
+              ]}
+            />
+          )
+        )}
+        <Text component="pre" size="sm" className="source-quote" m={0}>
+          {source
+            ? typeof source.rawRecord === "string"
+              ? source.rawRecord
+              : JSON.stringify(source.rawRecord, null, 2)
+            : JSON.stringify(training, null, 2)}
+        </Text>
+      </Stack>
     </Stack>
   );
 }

@@ -87,6 +87,12 @@ export default function App() {
       previousPage.current = page;
     }
   }, [page]);
+  const [peopleFilters, setPeopleFilters] = useState({
+    search: "",
+    intention: null,
+    attentionOnly: false,
+  });
+  const returnEvidence = useRef(null);
   const [expanded, setExpanded] = useState(null);
   const [loaded] = useState(() =>
     loadWorkspace({ getItem: (key) => window.localStorage.getItem(key) }),
@@ -165,6 +171,10 @@ export default function App() {
   function closeComposer() {
     setComposer(null);
     if (returnToDraft) setDraftOpen(true);
+    else if (returnEvidence.current) {
+      setDrawer(returnEvidence.current);
+      returnEvidence.current = null;
+    }
   }
   function saveDraft(e) {
     e.preventDefault();
@@ -281,7 +291,7 @@ export default function App() {
             onInspect={inspect}
             onClarify={clarify}
             drafts={drafts}
-            verifications={verifications}
+            tasks={workspace.tasks}
             onFlag={flag}
             reports={workspace.reports}
             onReport={(claim) => openWorkspace("report", claim)}
@@ -337,7 +347,12 @@ export default function App() {
         </Container>
       </Paper>
       {page === "people" ? (
-        <PeopleWorkspace workspace={workspace} storageFailed={storageFailed} />
+        <PeopleWorkspace
+          workspace={workspace}
+          storageFailed={storageFailed}
+          filters={peopleFilters}
+          onFiltersChange={setPeopleFilters}
+        />
       ) : (
         <Container size="lg" py="lg" component="main" id="main" tabIndex={-1}>
           <Stack gap="md">
@@ -683,6 +698,15 @@ export default function App() {
             index={index}
             setIndex={setIndex}
             training={training}
+            qualificationTask={workspace.tasks.find(
+              (t) => t.qualificationId === drawer.item.id,
+            )}
+            onQualificationCheck={flag}
+            drafted={drafts.some((d) => d.id === drawer.item.id)}
+            onClarify={(q) => {
+              returnEvidence.current = drawer;
+              clarify(q, drawer.requirement);
+            }}
             flagged={recordFlags.includes(source?.id)}
             onFlag={(id) =>
               setRecordFlags((flags) =>

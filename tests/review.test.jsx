@@ -35,7 +35,7 @@ const maintenance = /Pump maintenance & repair.*Repeated pump repairs/;
 async function openPump(user) {
   await user.click(requirement(maintenance));
   const inspect = await screen.findByRole("button", {
-    name: "View supporting records (5)",
+    name: "View evidence",
   });
   await user.click(inspect);
   return inspect;
@@ -44,9 +44,7 @@ async function openPump(user) {
 describe("Mantine review interactions", () => {
   it("starts collapsed and opens one named assessment across all groups", async () => {
     const user = setup();
-    expect(
-      screen.queryByRole("button", { name: "View supporting records (5)" }),
-    ).not.toBeInTheDocument();
+    expect(requirement(maintenance)).toHaveAttribute("aria-expanded", "false");
     const control = requirement(maintenance);
     control.focus();
     await user.keyboard("{Enter}");
@@ -58,19 +56,17 @@ describe("Mantine review interactions", () => {
     expect(control).toHaveAttribute("aria-expanded", "false");
     expect(
       await screen.findByRole("button", {
-        name: "View supporting records (4)",
+        name: "View evidence",
       }),
     ).toBeVisible();
     await user.click(
       requirement(/Safe-work planning & permits.*Planning and permit issuing/),
     );
     expect(control).toHaveAttribute("aria-expanded", "false");
-    expect(
-      screen.queryByRole("button", { name: "View supporting records (5)" }),
-    ).not.toBeInTheDocument();
+    expect(requirement(maintenance)).toHaveAttribute("aria-expanded", "false");
     expect(
       await screen.findByRole("button", {
-        name: "View supporting records (2)",
+        name: "View evidence",
       }),
     ).toBeVisible();
   });
@@ -94,15 +90,13 @@ describe("Mantine review interactions", () => {
         /5 selected supporting records.*1 needs attribution/,
       ),
     ).toBeVisible();
-    expect(
-      within(dialog).getByRole("button", { name: "View source details" }),
-    ).toHaveAttribute("aria-expanded", "false");
+    expect(within(dialog).getByText("Source details")).toBeVisible();
     await user.click(
       within(dialog).getByRole("button", { name: "Flag record for review" }),
     );
     expect(
       within(dialog).getByRole("button", { name: "Record flagged · undo" }),
-    ).toHaveAttribute("aria-pressed", "true");
+    ).toBeVisible();
     expect(within(dialog).getByText(/Confirm it belongs to him/)).toBeVisible();
     await user.click(
       within(dialog).getByRole("button", { name: "Record flagged · undo" }),
@@ -122,11 +116,6 @@ describe("Mantine review interactions", () => {
     );
     await waitFor(() =>
       expect(within(dialog).getByText("Record 1 of 5")).toBeVisible(),
-    );
-    await user.click(
-      within(dialog).getByRole("button", {
-        name: "View source details",
-      }),
     );
     await waitFor(() => expect(dialog.querySelector("pre")).toBeVisible());
     const close = within(dialog).getByRole("button", {
@@ -198,16 +187,13 @@ describe("Mantine review interactions", () => {
     const user = setup();
     await user.click(requirement(/Sea survival.*Module recorded/));
     await user.click(
-      await screen.findByRole("button", { name: "Add qualification check" }),
+      await screen.findByRole("button", { name: "Check qualification" }),
     );
     expect(
-      screen.getByRole("button", { name: "Qualification check added" }),
-    ).toHaveAttribute("aria-pressed", "true");
+      screen.getByRole("button", { name: "Undo qualification check" }),
+    ).toBeVisible();
     await user.click(
       screen.getByRole("button", { name: "View training record" }),
-    );
-    await user.click(
-      await screen.findByRole("button", { name: "View source details" }),
     );
     await waitFor(() => expect(screen.getByText("LH500010")).toBeVisible());
     await user.keyboard("{Escape}");
@@ -215,17 +201,12 @@ describe("Mantine review interactions", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     await user.click(
-      screen.getByRole("button", { name: "Qualification check added" }),
+      screen.getByRole("button", { name: "Undo qualification check" }),
     );
     expect(
-      screen.getByRole("button", { name: "Add qualification check" }),
-    ).toHaveAttribute("aria-pressed", "false");
+      screen.getByRole("button", { name: "Check qualification" }),
+    ).toBeVisible();
     await user.click(requirement(maintenance));
-    await user.click(
-      await screen.findByRole("button", {
-        name: "Related training (1)",
-      }),
-    );
     expect(
       await screen.findAllByRole("button", { name: "View training record" }),
     ).toHaveLength(1);
@@ -290,7 +271,7 @@ it("keeps discussion topics unique and distinct from qualification checks", asyn
   const user = setup();
   await user.click(requirement(/Sea survival.*Module recorded/));
   await user.click(
-    await screen.findByRole("button", { name: "Add qualification check" }),
+    await screen.findByRole("button", { name: "Check qualification" }),
   );
   await user.click(screen.getByRole("button", { name: "Add to discussion" }));
   await user.click(
@@ -315,8 +296,8 @@ it("keeps discussion topics unique and distinct from qualification checks", asyn
     screen.getByRole("button", { name: "Discussion with Eimhin (1)" }),
   ).toBeVisible();
   expect(
-    screen.getByRole("button", { name: "Qualification check added" }),
-  ).toHaveAttribute("aria-pressed", "true");
+    screen.getByRole("button", { name: "Undo qualification check" }),
+  ).toBeVisible();
   expect(requirement(/Sea survival.*Module recorded/)).toBeVisible();
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
   await user.click(
@@ -341,7 +322,7 @@ it("opens every selected log with its exact highlight through the requirement as
       await user.click(control);
     await user.click(
       await screen.findByRole("button", {
-        name: `View supporting records (${count})`,
+        name: "View evidence",
       }),
     );
     const dialog = await screen.findByRole("dialog");
@@ -415,17 +396,10 @@ it("keeps all four training records reachable in their experience or qualificati
     [/Electrical fault-finding & control/, "LH500001", true],
   ]) {
     await user.click(requirement(row));
-    if (supporting)
-      await user.click(
-        await screen.findByRole("button", { name: "Related training (1)" }),
-      );
     await user.click(
       await screen.findByRole("button", { name: "View training record" }),
     );
     const dialog = await screen.findByRole("dialog");
-    await user.click(
-      within(dialog).getByRole("button", { name: "View source details" }),
-    );
     await waitFor(() => expect(within(dialog).getByText(id)).toBeVisible());
     expect(dialog.querySelector("pre").textContent).toContain(id);
     await user.keyboard("{Escape}");
@@ -450,7 +424,7 @@ it("gives every section one purpose and keeps qualification tasks discoverable",
   ).toBeVisible();
   await user.click(requirement(/Sea survival.*Module recorded/));
   await user.click(
-    await screen.findByRole("button", { name: "Add qualification check" }),
+    await screen.findByRole("button", { name: "Check qualification" }),
   );
   await user.click(requirement(maintenance));
   const checks = screen.getByRole("region", { name: "Next steps" });
@@ -468,39 +442,51 @@ it("gives every section one purpose and keeps qualification tasks discoverable",
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
 });
 
-it("separates experience clarification from source coverage and optional module follow-up", async () => {
+it("shows experience facts directly and keeps supporting-module actions in the inspector", async () => {
   const user = setup();
   await user.click(requirement(maintenance));
   const panel = await screen.findByRole("region", { name: maintenance });
   expect(
-    within(panel).getByRole("heading", { name: "Experience recorded" }),
+    within(panel).getByText(/5 supporting records · 2009–2026/),
   ).toBeVisible();
   expect(
-    within(panel).getByRole("heading", { name: "What to clarify with Eimhin" }),
+    within(panel).getByText(/1 included record needs attribution/),
   ).toBeVisible();
-  const coverage = within(panel).getByRole("button", {
-    name: "Record coverage and involvement",
-  });
-  expect(coverage).toHaveAttribute("aria-expanded", "false");
-  await user.click(coverage);
+  expect(panel.querySelector("[aria-expanded]")).toBeNull();
+  expect(within(panel).getByText(/Fluid transfer/)).toBeVisible();
+  expect(
+    within(panel).queryByRole("button", { name: "Check qualification" }),
+  ).not.toBeInTheDocument();
+  await user.click(
+    within(panel).getByRole("button", { name: "View training record" }),
+  );
+  let dialog = await screen.findByRole("dialog");
   await waitFor(() =>
-    expect(within(panel).getByText("Selected date range")).toBeVisible(),
+    expect(within(dialog).getByText("LH500008")).toBeVisible(),
   );
   await user.click(
-    within(panel).getByRole("button", { name: "Related training (1)" }),
+    within(dialog).getByRole("button", { name: "Check qualification" }),
   );
-  const followup = await within(panel).findByRole("button", {
-    name: "Follow up this module",
-  });
-  expect(followup).toHaveAttribute("aria-expanded", "false");
-  await user.click(followup);
   await user.click(
-    await within(panel).findByRole("button", {
-      name: "Add qualification check",
-    }),
+    within(dialog).getByRole("button", { name: "Add to discussion" }),
   );
-  expect(
-    within(panel).getByRole("button", { name: "Qualification check added" }),
-  ).toHaveAttribute("aria-pressed", "true");
+  await user.click(
+    await screen.findByRole("button", { name: "Save question" }),
+  );
+  dialog = await screen.findByRole("dialog", { name: /QUALIFICATION RECORD/ });
+  await waitFor(() =>
+    expect(
+      within(dialog).getByRole("button", { name: "Edit discussion question" }),
+    ).toBeVisible(),
+  );
+  await user.click(
+    within(dialog).getByRole("button", { name: "Undo qualification check" }),
+  );
+  await user.keyboard("{Escape}");
+  await waitFor(() =>
+    expect(
+      within(panel).getByRole("button", { name: "View training record" }),
+    ).toHaveFocus(),
+  );
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
 });

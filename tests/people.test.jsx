@@ -70,6 +70,11 @@ it("opens a people-first list and combines search, intention and attention filte
 it("navigates directly to the assessment and back without resetting tasks or saved state", async () => {
   const user = userEvent.setup();
   mount();
+  await user.type(
+    screen.getByRole("textbox", { name: "Search by name" }),
+    "Eimhin",
+  );
+  await user.click(screen.getByRole("checkbox", { name: "Needs attention" }));
   await user.click(
     screen.getByRole("link", { name: "Wind Turbine Technician" }),
   );
@@ -82,6 +87,12 @@ it("navigates directly to the assessment and back without resetting tasks or sav
   );
   await user.click(screen.getByRole("link", { name: "People" }));
   await screen.findByRole("heading", { name: "Redeployment workspace" });
+  expect(screen.getByRole("textbox", { name: "Search by name" })).toHaveValue(
+    "Eimhin",
+  );
+  expect(
+    screen.getByRole("checkbox", { name: "Needs attention" }),
+  ).toBeChecked();
   const eimhin = screen.getByRole("region", { name: "Eimhin Mac Neidhe" });
   expect(
     within(eimhin).getByText(

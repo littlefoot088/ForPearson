@@ -15,12 +15,12 @@ import {
 } from "@mantine/core";
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { claims, dateLabel, qualifications } from "./data";
+import { assessmentOverview } from "./people";
 import { officerAssessments } from "./workflow";
-import { CandidateIntroduction, IntroductionReview } from "./introduction";
+import { CandidateIntroduction } from "./introduction";
 
 export const workspaceTitles = {
   referral: "Prepare candidate introduction",
-  ready: "Eimhin’s review",
   task: "Next step",
   notes: "Conversation notes",
   report: "Eimhin’s account",
@@ -37,7 +37,7 @@ export function Workspace({
     (a, b) =>
       b.date.localeCompare(a.date) || (b.recordedAt ?? 0) - (a.recordedAt ?? 0),
   )[0];
-  const held = state.opportunity.interest !== "interested";
+  const overview = assessmentOverview(state);
   const tasks = [...state.tasks].sort(
     (a, b) => Number(a.done) - Number(b.done),
   );
@@ -56,36 +56,12 @@ export function Workspace({
           <Title order={2} size="h4">
             Opportunity progress
           </Title>
-          <Text fw={600}>
-            {held
-              ? "Introduction on hold"
-              : state.ready
-                ? "Ready for Eimhin’s review"
-                : "Preparing candidate introduction"}
-          </Text>
-          <Text size="sm" c="dimmed">
-            {held
-              ? "Review the assessment and Eimhin’s response before progressing."
-              : state.ready
-                ? "Prepared for Eimhin to check. Not approved or submitted."
-                : "Review the evidence and prepare a recommendation for Carrowmore Array."}
-          </Text>
+          <Text fw={600}>{overview.progress}</Text>
           <Button onClick={() => onOpen("referral")}>
             {state.referral
               ? "Review candidate introduction"
               : "Prepare candidate introduction"}
           </Button>
-          {state.referral?.format === 2 && (
-            <Button
-              variant="subtle"
-              size="compact-sm"
-              onClick={() => onOpen("ready")}
-            >
-              {state.ready
-                ? "Review preparation status"
-                : "Mark ready for Eimhin’s review"}
-            </Button>
-          )}
           {state.referral?.format === 2 && state.referral.needsReview && (
             <Text size="sm" c="clarification.8">
               Assessment information changed. Review and save the introduction
@@ -248,10 +224,6 @@ export function WorkspacePanel({
         storageFailed={storageFailed}
       />
     );
-  if (mode === "ready")
-    return (
-      <IntroductionReview state={state} dispatch={dispatch} onClose={onClose} />
-    );
   if (mode === "notes")
     return (
       <NotesEditor
@@ -264,6 +236,7 @@ export function WorkspacePanel({
     return (
       <ReportEditor
         id={item.id}
+        onCancel={onClose}
         report={state.reports[item.id]}
         onSave={(report) => {
           dispatch({ type: "report-save", report });
@@ -274,6 +247,7 @@ export function WorkspacePanel({
   return (
     <TaskEditor
       task={item}
+      onCancel={onClose}
       onSave={(task) => {
         dispatch({ type: "task-save", task });
         onClose();
@@ -281,7 +255,7 @@ export function WorkspacePanel({
     />
   );
 }
-function TaskEditor({ task, onSave }) {
+function TaskEditor({ task, onSave, onCancel }) {
   const [title, setTitle] = useState(task?.title ?? "");
   return (
     <Stack
@@ -312,9 +286,14 @@ function TaskEditor({ task, onSave }) {
           Check with Eimhin, Authority training records or the provider.
         </Text>
       )}
-      <Button type="submit" disabled={!title.trim()}>
-        Save task
-      </Button>
+      <Group justify="flex-end">
+        <Button variant="default" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={!title.trim()}>
+          Save task
+        </Button>
+      </Group>
     </Stack>
   );
 }
@@ -336,8 +315,7 @@ function NotesEditor({ notes, newNote, onSave }) {
   return (
     <Stack gap="md">
       <Text size="sm" c="dimmed">
-        Private working notes. These are never automatically included in the
-        referral.
+        Private notes; not included in the candidate introduction.
       </Text>
       {saved && (
         <Text role="status" size="sm">
@@ -378,25 +356,20 @@ function NotesEditor({ notes, newNote, onSave }) {
               setEditing({ ...editing, text: e.currentTarget.value })
             }
           />
-          <Textarea
-            label="Follow-up (optional)"
-            description="A reminder within this note; it does not create a task."
-            autosize
-            maxLength={1000}
-            value={editing.followup}
-            onChange={(e) =>
-              setEditing({ ...editing, followup: e.currentTarget.value })
-            }
-          />
-          <Group>
+          {editing.followup && (
+            <Text size="sm">
+              <strong>Previous follow-up:</strong> {editing.followup}
+            </Text>
+          )}
+          <Group justify="flex-end">
+            <Button variant="default" onClick={() => setEditing(null)}>
+              Cancel
+            </Button>
             <Button
               type="submit"
               disabled={!editing.date || !editing.text.trim()}
             >
               Save note
-            </Button>
-            <Button variant="default" onClick={() => setEditing(null)}>
-              Cancel
             </Button>
           </Group>
         </Stack>
@@ -444,7 +417,7 @@ function NotesEditor({ notes, newNote, onSave }) {
     </Stack>
   );
 }
-function ReportEditor({ id, report, onSave }) {
+function ReportEditor({ id, report, onSave, onCancel }) {
   const [value, setValue] = useState(report ?? { id, date: "", text: "" });
   return (
     <Stack
@@ -482,9 +455,14 @@ function ReportEditor({ id, report, onSave }) {
         Saved separately from private notes. You can choose whether to include
         this account in the candidate introduction.
       </Text>
-      <Button type="submit" disabled={!value.date || !value.text.trim()}>
-        Save Eimhin’s account
-      </Button>
+      <Group justify="flex-end">
+        <Button variant="default" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={!value.date || !value.text.trim()}>
+          Save Eimhin’s account
+        </Button>
+      </Group>
     </Stack>
   );
 }

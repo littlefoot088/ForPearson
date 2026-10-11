@@ -82,7 +82,7 @@ This is a design proposal for operational validation, not a claimed existing bus
 
 The initial three tasks concern existing offshore certificates, independent maintenance responsibilities and preparing a referral. Officers may add, edit, complete, reopen or remove tasks. Individual qualification checks appear as linked tasks; completing one records work done, not qualification verification. No task is generated automatically for every uncertain source. Task completion never alters evidence attribution or career interest.
 
-Recent conversation starts empty. Add note opens a drawer for a required date and text plus an optional follow-up reminder. The latest note is previewed in the sidebar; earlier notes and editing are available in the drawer. Notes are private working context, not historical evidence. Follow-up text does not silently create a task.
+Recent conversation starts empty. Add note opens a drawer for a required date and text. The latest note is previewed in the sidebar; earlier notes and editing are available in the drawer. Notes are private working context, not historical evidence. Existing follow-up text remains readable and survives note edits. New outstanding actions use Next steps; no automatic conversion occurs.
 
 Discussion with Eimhin retains one editable question per topic. Mechanical and electrical questions remain separate. Questions and notes are not automatically included in referrals.
 
@@ -111,3 +111,7 @@ Not built: a full workforce directory, vacancy directory, additional assessments
 Once an actual interview invitation exists, a future workspace could support selecting career examples, reviewing requirements, preparing employer questions and tracking the date/outcome. No interview-preparation tasks or preview are shown in this prototype’s earlier referral stage.
 
 Potential benefits include less manual record reading, better opportunity prioritisation, fewer unsuitable referrals, reduced risk of overlooking transferable experience, more defensible decisions and better redeployment outcomes. Checking existing certificates could avoid duplicate training and direct investment towards genuine gaps. These are hypotheses, not measured cost savings, ROI or performance results. The applicant’s reflection is not written by this prototype.
+
+## Simplified interaction model
+
+One expanded assessment provides decision context; the evidence drawer provides original records and directly visible provenance. No nested assessment disclosures are used. Supporting-module follow-ups live only in their training inspector. Candidate introduction is the sole readiness interface, requiring a saved draft and recorded interest without implying sharing consent. People and the assessment workspace share progress derivation. People search and filters remain in app state while visiting and returning from the assessment.

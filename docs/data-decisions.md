@@ -67,7 +67,7 @@ Safety certification is required before mobilisation. Medical fitness is essenti
 
 The initial Interested response is illustrative workflow state, visibly labelled; it is not a historical fact. Career intention remains unknown and preferences remain null. Edited responses are manually recorded prototype responses. No automatic consent or communication occurs.
 
-Private conversation notes require a user-entered date and text, with optional follow-up. No dates or conversations are fabricated. Notes remain excluded from generated referrals. A follow-up within a note is a reminder, not an automatically created task.
+Private conversation notes require a user-entered date and text, without a separate follow-up input. No dates or conversations are fabricated. Notes remain excluded from generated referrals. Previously stored follow-up text is retained during edits and displayed as historical context; new actions use tasks.
 
 The small new-information example records pump/electrical responsibilities explicitly as reported by Eimhin, with a date supplied by the user. It neither overwrites original evidence nor independently verifies competence. Explicit inclusion copies a snapshot into the referral under self-reported information; edited referral wording retains that provenance. Changes to an included account invalidate readiness and mark the draft for review. They never silently overwrite saved wording; the editor offers Use latest reported account.
 
@@ -90,3 +90,5 @@ Original fixtures remain unchanged. Invalid saved data falls back to the illustr
 ## Entry workspace sample
 
 The people list is a separate illustrative fixture in `src/people.js`, not evidence of employment intentions or successful matching. Aoife Ní Mhurchú (K0847) and Coilean Ó Caomhthaigh (K0147) are names from `clean/keepers.json`; Fintan Ó Ceallaigh is a wholly illustrative person and retirement choice from the product brief. Additional titles/employers are sourced from `employers/port-of-cnoc-marine-electrician.md`, `employers/coastguard-watch-officer.md` and `employers/deepline-offshore-survey-tech.md`. Their associations and progress are invented examples, clearly labelled in the interface. No employment history, qualifications, submissions or interview outcomes have been invented. Eimhin’s intention remains Not yet discussed. His implemented opportunity reads live tasks and introduction/response state from the existing workspace; no duplicate progression record is persisted.
+
+The interaction simplification changes no evidence fixtures, storage schema or identifiers. Both early records remain in counts with attribution caveats. Module checks, questions, source flags and reported accounts remain independent; moving their controls does not change their semantics.

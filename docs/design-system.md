@@ -8,7 +8,7 @@ Use aligned Paper sections to group decision-relevant content. The wider left co
 
 ## Overlay convention
 
-**Use a drawer for viewing details or doing contextual work.** This includes source evidence, role details, discussion preparation, question editing, officer assessment, simulated keeper responses and referral drafts, reported responsibilities, dated notes, tasks and readiness decisions.
+**Use a drawer for viewing details or doing contextual work.** This includes source evidence, role details, discussion preparation, question editing, officer assessment, simulated keeper responses and referral drafts, reported responsibilities, dated notes, tasks. Readiness is managed only within the candidate introduction.
 
 - Drawers open from the right, using Mantine’s `lg` size on desktop and full width at or below its `sm` breakpoint.
 - Use the same title/context pattern and a labelled close control throughout.
@@ -30,7 +30,16 @@ Prototype persistence: explicitly saved notes, tasks and review state survive re
 
 From Mantine’s md breakpoint, the right-hand review workspace stays visible with sticky positioning while the assessment scrolls. Its height is limited to the viewport, with keyboard-accessible internal scrolling when needed so notes and controls remain reachable. Below md it returns to normal document flow. Positioning uses Mantine spacing variables; no fixed overlay covers assessment content.
 
-Expanded experience uses a neutral evidence panel (recorded activity, role relevance, selected-record count with attribution caveat, source inspection) and a separate amber clarification panel with its own discussion action. Date range, latest selected activity and involvement are disclosed through Record coverage and involvement. Related training stays secondary, with compact module details and optional follow-up actions behind a disclosure. Expiry context stays with the module. Source fixtures and qualification semantics are unchanged.
+## Three information levels
+
+Scan the page, expand one assessment to understand it, then open the evidence drawer to investigate. Never nest accordions. Experience details show activity and relevance, count/year range/involvement, attribution caveats, related module outcome, and one next step. Detailed dates and latest activity belong in the inspector.
+
+Supporting modules have direct training-record access; module questions and checks appear only in that inspector. Required qualifications use the same record summary, followed by their specific uncertainty, next step and actions. Qualification checks show task state and an explicit Undo control; completion never means verified.
+
+Source passage, interpretation, uncertainty and provenance are visible in the same drawer, without another disclosure. Keep sequential navigation and direct dated selection. Use one discussion mechanism, one qualification-task mechanism and separate source-review flags.
+
+Editors use Cancel and a specifically labelled save action. Introduction readiness is available only in its preview; optional reported-account inclusion is directly visible while editing. Next steps owns outstanding actions. Notes retain existing follow-up text as history, without a new follow-up field.
+
 
 ## Candidate introduction
 

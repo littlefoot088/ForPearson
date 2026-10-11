@@ -21,7 +21,7 @@ The development URL is printed by Vite (normally http://127.0.0.1:5173). Keep th
 - Explicit current/prospective roles, a curated suitability narrative, illustrative Interested state and unknown career preferences.
 - One expanded assessment at a time; mechanical or electrical maintenance meets the experience requirement. Permits and supporting colleagues remain preferences.
 - All eleven original log records and four training records, exact highlights, source navigation, original-field disclosure and independent record-review flags. Two early records retain attribution caveats.
-- Opportunity progress, editable/completable tasks and dated private conversation notes with optional follow-up reminders.
+- Opportunity progress, editable/completable tasks and dated private conversation notes with retained historical follow-up text.
 - Qualification checks as linked tasks, independent of evidence outcomes. Completing a task does not verify a qualification.
 - Editable Discussion with Eimhin questions, deduplicated by topic. Separately recorded responsibilities attributed to Eimhin, not treated as independent proof.
 - **Prepare candidate introduction** opens a document preview of approximately 200 words, with a short recommendation, three experience points, qualification readiness and an interview recommendation. Candidate CV: Not attached is informational only.
@@ -51,3 +51,9 @@ Storage envelopes now use version 2 under the existing pair-specific key. Versio
 This iteration passes 41 tests (21 fixture/state tests and 20 component tests), plus the production build. Chrome checks covered the document preview, explicit legacy conversion, edit/cancel transitions, confirmation return focus, Escape and return focus to the workspace trigger. At 250% zoom, the drawer becomes full-width and its text and controls remain within the viewport. This zoom-based narrow-layout check is not a physical mobile-device test; no full screen-reader audit is claimed. Saving, persistence and readiness combinations were verified by automated tests.
 
 The redeployment entry-page iteration passes 45 tests (23 fixture/state tests and 22 component tests) and the production build. Added coverage checks search/filter combinations, retirement with no recommendations, shared task/progress derivation, direct navigation, focus and retained state. Chrome checks covered name search, opening the assessment, returning through People, desktop alignment and stacked fields at 250% zoom. No physical mobile-device or full screen-reader audit was performed.
+
+### Consistent interaction model
+
+Assessments have one expansion level. Experience coverage and related module outcomes are visible directly; evidence drawers show provenance without another disclosure. Supporting-module follow-ups live in their training inspector. Introduction readiness is managed only inside the introduction. New outstanding actions use Next steps; older note follow-ups remain intact. People search and filters survive assessment navigation, and both pages share progress derivation. This refactor changes no evidence fixtures or storage schema.
+
+Validation for the interaction simplification: all 46 tests (23 fixture/state and 23 component tests) and the production build pass. Tests cover direct facts/provenance, all eleven logs and four training records, supporting-module follow-ups, retained note follow-ups, navigation filters, readiness and overlay return focus. Desktop overview inspection completed in Chrome. Further browser interaction repeatedly failed with `noWindowsAvailable`, so the complete rendered journey, updated narrow layouts and exhaustive saved/editing states remain unverified in this iteration. No physical-device or screen-reader audit was performed.

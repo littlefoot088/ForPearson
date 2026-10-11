@@ -87,10 +87,9 @@ it("saves dated private notes with follow-up, edits them and excludes their text
     screen.getByRole("textbox", { name: "Private note" }),
     "Private conversation reminder",
   );
-  await user.type(
-    screen.getByRole("textbox", { name: "Follow-up (optional)" }),
-    "Ask about travel",
-  );
+  expect(
+    screen.queryByRole("textbox", { name: "Follow-up (optional)" }),
+  ).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Save note" }));
   await user.click(
     await screen.findByRole("button", { name: "Edit note from 31 Dec 2026" }),
@@ -104,7 +103,7 @@ it("saves dated private notes with follow-up, edits them and excludes their text
   expect(
     screen.getByText("Private conversation reminder — updated"),
   ).toBeVisible();
-  expect(screen.getByText(/Ask about travel/)).toBeVisible();
+
   await user.click(
     screen.getByRole("button", { name: "Prepare candidate introduction" }),
   );
@@ -155,9 +154,12 @@ it("previews a concise document, supports edit/review/save and marks ready only 
     screen.getByText("Candidate introduction saved on this browser."),
   ).toBeVisible();
   await close(user);
-  expect(screen.getByText("Preparing candidate introduction")).toBeVisible();
+  expect(screen.getByText("Preparing introduction")).toBeVisible();
+  expect(
+    screen.queryByRole("button", { name: "Mark ready for Eimhin’s review" }),
+  ).not.toBeInTheDocument();
   await user.click(
-    screen.getByRole("button", { name: "Mark ready for Eimhin’s review" }),
+    screen.getByRole("button", { name: "Review candidate introduction" }),
   );
   dialog = await screen.findByRole("dialog");
   expect(within(dialog).queryByRole("textbox")).not.toBeInTheDocument();
@@ -166,9 +168,7 @@ it("previews a concise document, supports edit/review/save and marks ready only 
       name: "Mark ready for Eimhin’s review",
     }),
   );
-  await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-  );
+  await close(user);
   expect(screen.getByText("Ready for Eimhin’s review")).toBeVisible();
   await user.click(
     screen.getByRole("checkbox", {
@@ -189,7 +189,9 @@ it("previews a concise document, supports edit/review/save and marks ready only 
   await waitFor(() =>
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
-  expect(screen.getByText("Introduction on hold")).toBeVisible();
+  expect(screen.getByTestId("keeper-interest")).toHaveTextContent(
+    "Not interested",
+  );
   const snapshot = JSON.parse(localStorage.getItem(storageKey));
   expect(snapshot.workspace.ready).toBeNull();
   expect(snapshot.workspace.opportunity.employerProgression).toBe(
@@ -233,11 +235,6 @@ it("records responsibilities separately and includes them only on explicit selec
   );
   await user.click(
     await screen.findByRole("button", { name: "Edit introduction" }),
-  );
-  await user.click(
-    screen.getByRole("button", {
-      name: "Include Eimhin-reported responsibilities (optional)",
-    }),
   );
   const include = await screen.findByRole("checkbox", {
     name: /Include Eimhin’s account/,
@@ -481,4 +478,39 @@ it("does not replace a legacy referral until explicitly requested", async () => 
     JSON.parse(localStorage.getItem(storageKey)).workspace.referral
       .previousDraft.why,
   ).toBe("Original manual wording");
+});
+
+it("preserves legacy note follow-ups when editing without creating tasks", async () => {
+  const { initialWorkspace } = await import("../src/workspace");
+  const workspace = initialWorkspace();
+  workspace.notes = [
+    {
+      id: "old-note",
+      date: "2026-12-01",
+      text: "Private original",
+      followup: "Ask about travel",
+      recordedAt: 1,
+    },
+  ];
+  localStorage.setItem(
+    storageKey,
+    JSON.stringify({ version: 2, workspace, drafts: [], recordFlags: [] }),
+  );
+  const user = userEvent.setup();
+  mount();
+  await user.click(screen.getByRole("button", { name: "View notes (1)" }));
+  await user.click(
+    await screen.findByRole("button", { name: "Edit note from 1 Dec 2026" }),
+  );
+  expect(
+    screen.queryByLabelText("Follow-up (optional)"),
+  ).not.toBeInTheDocument();
+  await user.type(
+    screen.getByRole("textbox", { name: "Private note" }),
+    " edited",
+  );
+  await user.click(screen.getByRole("button", { name: "Save note" }));
+  const saved = JSON.parse(localStorage.getItem(storageKey)).workspace;
+  expect(saved.notes[0].followup).toBe("Ask about travel");
+  expect(saved.tasks).toEqual(workspace.tasks);
 });
