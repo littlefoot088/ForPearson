@@ -103,7 +103,7 @@ The hierarchy remains **requirement → assessment → source**. Mechanical and 
 
 The inspector retains all eleven logs and four training records: verbatim text, exact highlights, raw dates, document/record identifiers, original fields, interpretation and limitations. The two pre-joining-date records remain counted, with explicit attribution caveats; their attribution remains unresolved. Planning and authorisation are distinguished from performing a task; independence and current competence are not invented. The agreed fictional date of 31 December 2026 governs expiry interpretation.
 
-Mantine remains responsible for standard components, typography, tokens, modal focus containment, Escape and scroll locking. The source drawer fills narrow screens; the recommendation section stays in normal flow at all widths. Closing an inspector retains the expanded row and restores focus. Career and opportunity questions join the same editable Discussion with Eimhin list as requirement questions. Source fixtures and qualification statuses are unchanged by workflow actions.
+Mantine remains responsible for standard components, typography, tokens, drawer focus containment, Escape and scroll locking. The source drawer fills narrow screens; the recommendation section stays in normal flow at all widths. Closing an inspector retains the expanded row and restores focus. Career and opportunity questions join the same editable Discussion with Eimhin list as requirement questions. Source fixtures and qualification statuses are unchanged by workflow actions.
 
 ## Scope and assumptions
 
@@ -143,3 +143,5 @@ Each decision-relevant fact has one home rather than appearing in several status
 The header explicitly labels **Current role** (Lighthouse keeper, Carrowmore Light Authority) and **Opportunity being assessed** (Wind Turbine Technician, Carrowmore Array). The interest section has one status, without a second unknown-preferences sentence or competing question/response buttons. Discussion preparation and response recording have separate, explicit purposes in the next-step section.
 
 Visual grouping uses aligned Mantine Paper sections on the off-white canvas. Candidate/current role and the prospective role share a responsive Grid, with the opportunity in a neutral inset. The full-width suitability summary has a restrained teal background; its former independent 75-character width cap is removed. Assessment sections own their borders, with accordion dividers inside rather than nested bordered boxes. All panel spacing, radii and breakpoints use Mantine tokens. Desktop and 250% zoom stacking were visually checked.
+
+Overlay conventions are defined in [the design system](design-system.md). Details, evidence and editing flows all use right-hand drawers; modals are reserved for brief confirmations.

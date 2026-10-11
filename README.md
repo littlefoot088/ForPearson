@@ -36,7 +36,7 @@ See [information architecture](docs/information-architecture.md) and [data decis
 
 Mantine owns typography, spacing, component sizes, radii, breakpoints and standard interaction behaviour. `src/theme.js` changes only brand/semantic colours and the canvas/text colours. The application stays in light mode. `src/styles.css` contains only branding, skip-link positioning, status-column alignment, verbatim/source wrapping, notification placement. Do not recreate button, input, modal or typography scales in CSS.
 
-Requirement assessments, exact substring highlighting and record metadata remain domain-specific compositions. `src/App.jsx` holds local UI state; `src/workflow.js` separates opportunity decisions and their guards, and `src/opportunity.jsx` presents the shared state-based recommendation and contextual actions; `src/main.jsx` installs the provider and library styles. Mantine Modal/Drawer handle focus containment, Escape and scroll locking; the app restores the original opener after overlay transitions, including removal of the final discussion question.
+Requirement assessments, exact substring highlighting and record metadata remain domain-specific compositions. `src/App.jsx` holds local UI state; `src/workflow.js` separates opportunity decisions and their guards, and `src/opportunity.jsx` presents the shared state-based recommendation and contextual actions; `src/main.jsx` installs the provider and library styles. Mantine drawers handle focus containment, Escape and scroll locking; the app restores the original opener after overlay transitions, including removal of the final discussion question.
 
 ## Validation
 
@@ -63,8 +63,10 @@ Each fact has one home: candidate/opportunity context → suitability narrative 
 
 Prepare discussion offers an editable role/offshore discussion prompt. Add qualification check creates a task, not a verification result; added checks are listed below qualifications and can be removed without reopening a row. Interest is read-only. Response recording is in the next-step section, introduced by “Already spoken with Eimhin?”; officer assessment editing sits beside the judgement. An unsuitable assessment can remain on hold. Evidence opens on the first post-joining selected record, while every early record and attribution caveat remains accessible in chronological navigation.
 
-Latest hierarchy review: desktop rendering and narrow layout at 250% browser zoom were inspected. Controls wrapped without visible horizontal overflow. Physical-mobile and screen-reader testing were not performed; modal behaviour and focus restoration are covered by the component suite. The local preview is left running.
+Latest hierarchy review: desktop rendering and narrow layout at 250% browser zoom were inspected. Controls wrapped without visible horizontal overflow. Physical-mobile and screen-reader testing were not performed; drawer behaviour and focus restoration are covered by the component suite. The local preview is left running.
 
 The header explicitly labels **Current role** (Lighthouse keeper, Carrowmore Light Authority) and **Opportunity being assessed** (Wind Turbine Technician, Carrowmore Array). The interest section has one status, without a second unknown-preferences sentence or competing question/response buttons. Discussion preparation and response recording have separate, explicit purposes in the next-step section.
 
 Visual grouping uses aligned Mantine Paper sections on the off-white canvas. Candidate/current role and the prospective role share a responsive Grid, with the opportunity in a neutral inset. The full-width suitability summary has a restrained teal background; its former independent 75-character width cap is removed. Assessment sections own their borders, with accordion dividers inside rather than nested bordered boxes. All panel spacing, radii and breakpoints use Mantine tokens. Desktop and 250% zoom stacking were visually checked.
+
+Overlay conventions are defined in [the design system](docs/design-system.md). Details, evidence and editing flows all use right-hand drawers; modals are reserved for brief confirmations.

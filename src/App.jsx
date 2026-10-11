@@ -11,7 +11,6 @@ import {
   Group,
   Grid,
   List,
-  Modal,
   Notification,
   Paper,
   Stack,
@@ -176,7 +175,7 @@ export default function App() {
     if (draftOpen) discussionStart.current?.focus();
   }, [draftOpen]);
   useEffect(() => {
-    // Editing a draft changes content inside an already-open Modal.
+    // Editing a draft changes content inside an already-open drawer.
     if (composer) composerInput.current?.focus();
   }, [composer]);
   function restoreFocus() {
@@ -187,14 +186,14 @@ export default function App() {
       target?.focus();
     }
   }
-  const modalTitle = composer
+  const overlayTitle = composer
     ? "Add to discussion"
     : draftOpen
       ? "Discussion with Eimhin"
       : workflowDialog
         ? workflowTitles[workflowDialog]
         : "Wind Turbine Technician";
-  const modalContext = composer
+  const overlayContext = composer
     ? composer.requirement.text
     : draftOpen
       ? person.name
@@ -538,7 +537,7 @@ export default function App() {
           />
         )}
       </Drawer>
-      <Modal
+      <Drawer
         opened={Boolean(composer || draftOpen || jobOpen || workflowDialog)}
         onClose={
           composer
@@ -549,20 +548,21 @@ export default function App() {
                 setWorkflowDialog(null);
               }
         }
-        size="lg"
+        position="right"
+        size={narrow ? "100%" : "lg"}
         returnFocus={false}
         onExitTransitionEnd={restoreFocus}
         title={
           <span>
             <Text component="span" display="block" size="xs" c="dimmed">
-              {modalContext}
+              {overlayContext}
             </Text>
             <Text component="span" fw={600}>
-              {modalTitle}
+              {overlayTitle}
             </Text>
           </span>
         }
-        closeButtonProps={{ "aria-label": "Close dialog" }}
+        closeButtonProps={{ "aria-label": "Close panel" }}
       >
         {draftOpen && (
           <Stack gap="md">
@@ -707,7 +707,7 @@ export default function App() {
             </Text>
           </Stack>
         )}
-      </Modal>
+      </Drawer>
     </>
   );
 }
