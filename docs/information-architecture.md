@@ -1,39 +1,120 @@
-# Information architecture
+# Carrowmore redeployment — proposed information architecture
 
-## Officer workflow
+## Objective and chosen moment
 
-My assigned vacancies → vacancy workspace → suggested candidates → candidate review → clarification and review decision.
+The Authority needs to help approximately 340 keepers whose jobs are being automated decide what to do next. Successful employee transitions are the primary business outcome; filling external vacancies is one possible route. Keepers may seek employment, explore different careers or choose retirement. Their agency and the officer’s professional judgement matter alongside technical suitability.
 
-The vacancy workspace conceptually includes employer/job details, requirements, suggested candidates and review statuses. An officer is responsible for several vacancies and reviews each person in the context of a particular role.
+The **redeployment officer is the primary user**. The keeper is a secondary user whose intentions, preferences and opportunity-specific interest inform the officer’s decision. The prototype explores **one officer assessing one keeper against one opportunity**: Eimhin Mac Neidhe and Carrowmore Array’s Wind Turbine Technician role. It does not build a redeployment platform.
 
-## Implemented moment
+Pearson’s brief asks which **40 potential interview candidates** from the Authority’s workforce should be considered next month and on what evidence. Forty is not presented as a count of available job openings. The Authority employs the officer and keeper; Carrowmore Array is the external recruiting employer.
 
-Only the candidate review for Carrowmore Array’s Wind Turbine Technician vacancy is built. Breadcrumbs are contextual text, not links to unbuilt pages. The role-requirements dialog is a summary of the supplied O&M vacancy.
+The workflow below is a **design proposal**, not a description of an established Carrowmore operating process. The brief establishes the assessment need but does not prescribe these stages or statuses.
 
-The review puts information in this order:
+## Two entry points, one assessment
 
-1. Candidate name and background, with a short Review focus summary describing relevant experience and the main verification questions. The Authority is the redeploying organisation; Carrowmore Array is the external employer.
-2. One compact requirements assessment, grouped into essential experience/working conditions, required safety coverage/clearance, and additional employer preferences. Rows show only a requirement, status icon/text and expansion control by default.
-3. A compact review action bar. Worth progressing and Clarification needed are independent, reversible states; both may apply. A Review draft control appears only when questions exist.
+**People-first is the primary workflow:** People → keeper profile → suggested opportunities → opportunity assessment. The question is “What suitable opportunities are available for this person?” A profile would bring together career intentions, preferences, relevant opportunities, opportunities already pursued and redeployment progress.
 
-There are three disclosure levels: requirement → assessment → supporting evidence. One requirement expands at a time. Mechanical or electrical maintenance is a single essential requirement with two alternative evidence routes. Its expanded view retains separate claim summaries, selected-record counts and dates, involvement, limitations and related training. Safety coverage remains separate from practical experience even though both use the same list. Comfort offshore and mentoring are not inferred from other evidence.
+**Vacancy-first is complementary:** Vacancies → vacancy details → suggested keepers → the same opportunity assessment. The question is “Which of our keepers should we recommend for this vacancy?” This supports comparison of evidence, readiness, interest and outstanding questions before employer referrals.
 
-Evidence opens in a side drawer on wider screens and fills the viewport on narrow screens. The parent requirement remains named in the drawer. Exact source text and metadata are separate from interpretation and limitations; original raw fields remain available. Closing retains the expanded requirement and restores focus to its originating control. Mantine Modal and Drawer contain focus and support Escape. On narrow screens and at short viewport heights the review bar returns to normal flow so it does not obstruct the assessment.
+One keeper can have several opportunities; one vacancy can suit several keepers. The assessment belongs to a **keeper–vacancy pair** (here `K0104` + `array-om`). The two routes would open the same assessment and actions, not duplicate logic or conflicting statuses. Person-level preferences would be shared across all of that keeper’s assessments. Interest and officer decisions apply only to the specific opportunity.
 
-Questions originate in the relevant assessment. The officer can edit a suggested question, save a local draft, review all draft questions, revise them and remove them. Mechanical and electrical questions remain distinct. Saving a question never sends it or changes either review state. Qualification verification flags are also reversible and do not change the evidence status or establish eligibility.
+## Wider structure — conceptual except where marked
 
-## Conceptual keeper experience
+```text
+CARROWMORE REDEPLOYMENT
+├── People
+│   ├── All keepers
+│   │   ├── Seeking employment
+│   │   ├── Exploring options
+│   │   ├── Planning retirement
+│   │   └── Preferences unknown
+│   └── Keeper profile
+│       ├── Career intentions and preferences
+│       ├── Suggested opportunities
+│       │   └── Opportunity assessment [IMPLEMENTED FOR ONE PAIR]
+│       │       ├── Job requirements
+│       │       ├── Experience evidence
+│       │       ├── Qualifications
+│       │       ├── Supporting source records
+│       │       ├── Outstanding questions
+│       │       ├── Keeper interest
+│       │       └── Next actions
+│       ├── Opportunities being pursued
+│       └── Redeployment status
+└── Vacancies
+    ├── Employer vacancies
+    └── Vacancy details
+        ├── Job requirements
+        ├── Suggested keepers
+        ├── Interested keepers
+        ├── Candidates under review
+        ├── Candidates nominated
+        └── Interview outcomes
+```
 
-Suggested job opportunities → role-specific transferable experience → formal requirements → evidence to clarify or correct → eligibility actions.
+The current breadcrumb is People → Eimhin Mac Neidhe → Wind Turbine Technician. These labels provide context; directories and profiles are not implemented navigation destinations.
 
-A keeper could provide missing certificates, correct attribution, explain their involvement or clarify how regularly work occurred. These actions make existing experience visible; they do not confer competence. Training would address a confirmed qualification need after existing evidence and employer acceptance have been checked.
+## Intentions, preferences and retirement
 
-No keeper screen, assigned-vacancies dashboard, candidate search, full vacancy workspace or messaging service is implemented.
+Three questions remain distinct: does the work suit the keeper’s experience; can they meet formal requirements; and do they want to pursue this particular opportunity?
 
-## Component ownership
+Person-level intention can be **Seeking employment**, **Exploring career options**, **Planning retirement**, or **Not yet discussed**. It must be explicitly provided by the keeper, never inferred from age, tenure, previous jobs or appraisals. Known preferences could cover work type, environment, location, travel, offshore willingness and further training. Unknown preferences are not agreement.
 
-The requirements-led hierarchy is unchanged by the Mantine migration. A controlled Mantine Accordion spans all requirement groups; separate nested disclosures expose supporting modules and original record fields. Mantine layout primitives and default tokens provide the shared rhythm and component sizing. Semantic status icons remain Lucide icons with text, composed inside the Mantine controls.
+Eimhin’s selected records do not establish these preferences. The page therefore shows **Career intention: Not yet discussed** and **Career preferences not yet discussed**. “Discuss preferences” opens an editable question using the existing clarification-draft flow. Saving the question does not populate preferences or imply a conversation occurred. Recording an interest response for this role does not change career intentions.
 
-The theme centralises the existing Carrowmore palette while retaining Mantine’s default system fonts and scales. Remaining custom CSS is limited to the wordmark symbol, skip link, aligned requirement/status columns, source-text wrapping, notification position and the review bar’s sticky-to-flow behaviour. Evidence drawers use the default large size on desktop and the full viewport width below the standard `sm` breakpoint.
+Conceptually, an explicit retirement intention leaves a keeper visible in People, clearly labelled, but suppresses employment recommendations and automatic vacancy suggestions. The keeper can change the preference later. Age and tenure never trigger this behaviour.
 
-One Modal hosts role details, the clarification editor and draft review; a Drawer hosts evidence. Mantine owns focus trapping and scroll locking. The application tracks the outer opener across overlay transitions and restores it only once the final overlay closes. Removing the last draft restores focus to its requirement control because the draft-review button no longer exists. Domain state is independent of component appearance and remains local to React.
+**Illustrative prototype directory example — not derived from employment records:** Fintan Ó Ceallaigh · Planning retirement · No job recommendations. This example is documentation only; it does not change any source fixture or build a directory. How to handle already-active referrals when a keeper changes their intention would require operational research and a conversation with the keeper, rather than automatic assumptions.
+
+## Proposed opportunity workflow
+
+| Stage                  | Meaning                                                                                                                              | Prototype treatment                                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Opportunity identified | A system suggestion considers relevant experience, requirements and known preferences; unknowns remain unknown.                      | Existing curated suggestion, with an explanation. No matching algorithm.                                                                               |
+| Officer reviews        | The officer inspects requirements, sources, gaps and preferences, deciding whether this is worth discussing.                         | Primary implemented moment.                                                                                                                            |
+| Suggested to keeper    | The officer recommends exploring the opportunity; this does not record the keeper’s agreement.                                       | A dialog summarises the role, rota, relevant evidence and open questions. “Record suggestion locally” changes local suggestion state only.             |
+| Keeper responds        | Interested, Not interested or Wants more information about this specific opportunity.                                                | Explicitly simulated response, entered by the officer and labelled in the page. It can be revised or reset to Not yet discussed. No automatic consent. |
+| Consider nomination    | Interest is necessary but does not establish suitability. The officer weighs experience, qualifications and unresolved requirements. | Interested keepers expose a nomination-decision form: defer to resolve questions, or recommend for employer consideration.                             |
+| Candidate nominated    | An actual referral means recommended for employer consideration, not interview confirmed.                                            | Conceptual. The prototype saves only a local decision; employer progression remains Not submitted.                                                     |
+| Employer responds      | The employer may invite an interview, ask for more information or decline.                                                           | Conceptual only; the officer cannot set employer hiring outcomes here.                                                                                 |
+
+The user explicitly selected allowing a local recommendation decision with unresolved qualification gaps. Recording it requires **interest, a written rationale and explicit acknowledgement of the remaining requirements**. The dialog names the open experience, safety, medical and working-condition questions. It does not imply eligibility or turn missing evidence into verification.
+
+The action bar progressively exposes the next decision: Suggest to keeper → Awaiting keeper response / Record keeper response → Consider for nomination. Wants more information exposes a contextual follow-up draft; Not interested removes nomination actions. Officer assessment and response revision sit in a secondary Review actions dialog. There are no five equally prominent buttons.
+
+## Distinct status dimensions
+
+| Dimension                  | Proposed values                                                                               | What is implemented                                                                                             |
+| -------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Person-level intention     | Seeking employment; Exploring career options; Planning retirement; Not yet discussed          | Eimhin starts at Not yet discussed. Discussion draft only; no inferred or simulated personal preference editor. |
+| Opportunity-level interest | Not yet discussed; Suggested to keeper; Interested; Not interested; Wants more information    | Local suggestion event plus a separate explicit simulated response. “Suggested” never overwrites a response.    |
+| Officer assessment         | Not reviewed; Needs clarification; Worth discussing; Not currently suitable; Worth nominating | Editable judgement. Worth nominating requires the nomination decision flow, not a direct dropdown bypass.       |
+| Employer progression       | Not submitted; Nominated; More information requested; Interview invited; Not selected         | Remains Not submitted. Later employer stages are documented only.                                               |
+
+The suggestion event and response are stored separately even though “Suggested to keeper” is useful display language. Marking Worth discussing neither records interest nor sends a suggestion. Not currently suitable suppresses the initial Suggest action until the assessment is reconsidered. Requirement-level evidence states, verification flags and clarification drafts remain separate from every workflow dimension.
+
+Changing a keeper response clears a prior local nomination decision; if it had set Worth nominating, the officer assessment returns to Not reviewed. A keeper who later becomes interested requires a fresh decision. Changing the officer assessment also clears a previous nomination decision. These are explicit prototype defaults to avoid stale recommendations; no submission history is deleted because no real submissions exist. Saving a draft changes no workflow status. All local state resets on refresh.
+
+## Implemented assessment and evidence hierarchy
+
+The keeper is the main subject, followed by the opportunity/employer, a concise Review focus, current interest and compact career-preference context. The nine-row requirements assessment remains the primary visual component. Rows initially show only the requirement, evidence status and disclosure control; one requirement expands at a time.
+
+The hierarchy remains **requirement → assessment → source**. Mechanical and electrical maintenance are alternative routes within one requirement, with distinct questions and supporting modules. Experience is not a certificate. Selected-record counts, spans, latest activity and involvement remain in the expanded view. Missing evidence means not established from these records, not confirmed absence. No percentage scores or unsupported competence claims are used.
+
+The inspector retains all eleven logs and four training records: verbatim text, exact highlights, raw dates, document/record identifiers, original fields, interpretation and limitations. Pre-joining-date experience remains included with neutral context. Planning and authorisation are distinguished from performing a task; independence and current competence are not invented. The agreed fictional date of 31 December 2026 governs expiry interpretation.
+
+Mantine remains responsible for standard components, typography, tokens, modal focus containment, Escape and scroll locking. The source drawer fills narrow screens; the compact action bar returns to normal flow at narrow widths/short heights. Closing an inspector retains the expanded row and restores focus. Career and opportunity questions reuse the same editable local-draft flow as requirements. Source fixtures and qualification statuses are unchanged by workflow actions.
+
+## Scope and assumptions
+
+Built: one opportunity assessment, source investigation, requirement and preference discussion drafts, officer judgement, a local suggestion, simulated opportunity responses, and a local nomination decision with rationale. The existing role summary is retained.
+
+Conceptual: the people directory, vacancy dashboard, complete profiles, multiple opportunities, retirement filtering, keeper-facing experience, actual recommendations/messages, employer submissions, employer portal and interview outcomes. No authentication, backend, matching algorithm, training-management system or interview scheduling is added.
+
+The scope assumes that an officer may record a keeper’s response after an offline conversation in a future service. The prototype instead clearly marks every entered response as simulated and does not claim such a conversation occurred. Operational ownership, evidence needed to record real responses, audit history and referral policies would need validation before a production implementation.
+
+## Potential business value — hypotheses, not measured results
+
+Traceable summaries could reduce manual record-reading time and help officers prioritise relevant opportunities without overlooking people with transferable experience. Separating evidence, qualification readiness and keeper interest could reduce unsuitable referrals and make professional decisions more defensible.
+
+Checking existing certificates before recommending training could avoid unnecessary or duplicate courses and direct investment towards genuine gaps. Respecting preferences and retirement intentions could support better employee transitions and redeployment outcomes. These are potential operational and financial benefits, not proven savings: no ROI, cost or performance figures have been measured or invented. They are inputs for a later applicant reflection; that reflection has not been written here.

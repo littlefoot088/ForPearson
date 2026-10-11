@@ -6,12 +6,13 @@ export const person = {
   role: "Lighthouse keeper",
   joined: "2009-11-06",
   payrollRef: "0012801",
+  careerIntention: "Not yet discussed",
+  careerPreferences: null,
 };
 export const vacancy = {
   id: "array-om",
   title: "Wind Turbine Technician",
   employer: "Carrowmore Array",
-  openings: "Approx. 40 openings",
   base: "Cnoc Operations Base",
   pattern: "14 days on / 14 days off",
   source: "employers/carrowmore-array-om-technician.md",
@@ -127,10 +128,6 @@ export const requirements = [
       "Have you trained or supported less experienced colleagues? Please describe your role and a recent example.",
   },
 ];
-export const initialReview = { progressing: false, clarification: false };
-export function toggleReview(state, field) {
-  return { ...state, [field]: !state[field] };
-}
 export const claims = [
   {
     id: "pump",

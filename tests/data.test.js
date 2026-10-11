@@ -3,8 +3,6 @@ import assert from "node:assert/strict";
 import {
   assessmentStates,
   requirementGroups,
-  initialReview,
-  toggleReview,
   claims,
   sources,
   trainingRecords,
@@ -106,22 +104,4 @@ test("requirement-led assessment keeps every source and training record reachabl
     requirements.find((r) => r.id === "fire").assessment,
     "attendance",
   );
-});
-
-test("progression and clarification can coexist and be reversed independently", () => {
-  const progressing = toggleReview(initialReview, "progressing");
-  assert.deepEqual(progressing, { progressing: true, clarification: false });
-  const both = toggleReview(progressing, "clarification");
-  assert.deepEqual(both, { progressing: true, clarification: true });
-  const clarificationOnly = toggleReview(both, "progressing");
-  assert.deepEqual(clarificationOnly, {
-    progressing: false,
-    clarification: true,
-  });
-  assert.deepEqual(
-    toggleReview(clarificationOnly, "clarification"),
-    initialReview,
-  );
-  assert.deepEqual(toggleReview(both, "clarification"), progressing);
-  assert.deepEqual(initialReview, { progressing: false, clarification: false });
 });

@@ -2,7 +2,7 @@
 
 ## Selected person and vacancy
 
-Eimhin Mac Neidhe, keeper code **K0104**, is reviewed against `employers/carrowmore-array-om-technician.md`. The vacancy describes approximately 40 openings and requires hands-on maintenance, offshore safety coverage, medical fitness and comfort in the offshore working environment. It values permit experience; it does not require prior wind experience or the separate HV Authorised Person award.
+Eimhin Mac Neidhe, keeper code **K0104**, is reviewed against `employers/carrowmore-array-om-technician.md`. The brief asks for 40 potential interview candidates, not 40 available openings. The vacancy requires hands-on maintenance, offshore safety coverage, medical fitness and comfort in the offshore working environment. It values permit experience; it does not require prior wind experience or the separate HV Authorised Person award.
 
 The selected records demonstrate repeated repairs, older and recent electrical work, and planning/permit responsibility. No observation or supervision label has been invented where the records do not establish it. “Hands-on work recorded” does not claim independent performance.
 
@@ -55,9 +55,9 @@ The NOSF Offshore Wind Turbine Technician occupation was inspected for context, 
 
 ## Simplifications and boundaries
 
-`src/data.js` separates the person, vacancy, job requirements, experience claims, interpretations and qualification requirements. `src/records.js` separates source and training records. Clarification drafts, verification flags and review status live in React state. Claims refer to requirements and source IDs; qualifications refer to training record IDs where present.
+`src/data.js` separates the person, vacancy, job requirements, experience claims, interpretations and qualification requirements. `src/records.js` separates source and training records. Clarification drafts and verification flags live in React state. Opportunity-specific workflow state is managed separately in `src/workflow.js`. Claims refer to requirements and source IDs; qualifications refer to training record IDs where present.
 
-This is curated decision support, not live inference, certification validation or matching. No raw personnel or appraisal corpus is shipped. No expensive training is recommended from missing evidence. All review changes reset on refresh, and progression does not establish offshore eligibility.
+This is curated decision support, not live inference, certification validation or matching. No raw personnel or appraisal corpus is shipped. No expensive training is recommended from missing evidence. All review changes reset on refresh, and neither interest nor a local nomination decision establishes offshore eligibility.
 
 ## Requirement-led assessment
 
@@ -67,10 +67,16 @@ The collapsed labels describe evidence states. Evidence found means relevant wor
 
 The offshore-working-conditions and mentoring rows represent actual employer requirements/preferences. No new evidence has been invented for them. All expiry interpretations still use the agreed fictional review date, 31 December 2026, shown in qualification detail rather than the overview.
 
-Review progression and clarification-needed flags are independent officer decisions. They are separate from assessment labels, local drafts and verification flags. These states do not recalculate or override evidence.
+Officer assessment, opportunity suggestion, keeper response and nomination decision are distinct from requirement evidence labels, local drafts and verification flags. These states do not recalculate or override evidence. Employer progression remains Not submitted in this prototype.
 
 ## Mantine presentation migration
 
 No evidence fixtures, qualification interpretations, source quotations, identity links or requirement definitions changed during this migration. All eleven logs and four training records remain reachable. The fixed 31 December 2026 review date still governs expiry interpretation.
 
 Mantine theme colours express the existing evidence states; they do not calculate ratings or certification readiness. Module/attendance labels remain neutral, clarification remains amber and evidence remains blue. The exact substring highlighter wraps the original passage in Mantine Mark without changing the source text. Review decisions, drafts and verification flags retain their separate state and never promote a qualification to Documented.
+
+## Career context and workflow provenance
+
+Eimhin’s career intention is explicitly unknown and career preferences are null. These are absence-of-information states, not facts inferred from age, tenure or historical appraisals. The preference discussion question is authored prototype copy, not a source quotation. Opportunity responses entered through the UI are explicitly simulated and never written into personnel or evidence fixtures.
+
+The user approved local nomination decisions with outstanding gaps, provided interest is recorded and the officer supplies a rationale and acknowledges unresolved requirements. A saved recommendation means an officer decision for possible employer consideration; it never marks an employer submission or interview. Retirement filtering and the illustrative Fintan Ó Ceallaigh example exist only in the information-architecture proposal and are not source-derived personnel data.

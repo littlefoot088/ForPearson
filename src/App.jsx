@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useReducer, useRef, useEffect } from "react";
 import {
   Accordion,
   ActionIcon,
@@ -25,13 +25,10 @@ import {
 import { useMediaQuery } from "@mantine/hooks";
 import {
   ArrowUpRight,
-  ArrowRight,
   ChevronRight,
   ChevronLeft,
   Check,
-  CircleHelp,
   Pencil,
-  ClipboardList,
   Waves,
   Trash2,
 } from "lucide-react";
@@ -46,15 +43,35 @@ import {
   interpretations,
   getSources,
   dateLabel,
-  initialReview,
-  toggleReview,
 } from "./data";
 import { Icon, Highlight, RecordFields } from "./components";
 import { RequirementRow, ExpandedAssessment } from "./assessment";
 
+import {
+  careerContext,
+  opportunityContext,
+  initialOpportunity,
+  opportunityReducer,
+  interestLabel,
+} from "./workflow";
+import {
+  OpportunityActions,
+  WorkflowForm,
+  workflowTitles,
+} from "./opportunity";
+const clarificationContexts = [
+  ...requirements,
+  careerContext,
+  opportunityContext,
+];
+
 export default function App() {
   const [expanded, setExpanded] = useState(null);
-  const [review, setReview] = useState(initialReview);
+  const [opportunity, dispatchOpportunity] = useReducer(
+    opportunityReducer,
+    initialOpportunity,
+  );
+  const [workflowDialog, setWorkflowDialog] = useState(null);
   const [drawer, setDrawer] = useState(null);
   const [index, setIndex] = useState(0);
   const [composer, setComposer] = useState(null);
@@ -67,7 +84,7 @@ export default function App() {
   const [verifications, setVerifications] = useState([]);
   const focusOrigin = useRef(null);
   function rememberFocus() {
-    if (!drawer && !composer && !draftOpen && !jobOpen)
+    if (!drawer && !composer && !draftOpen && !jobOpen && !workflowDialog)
       focusOrigin.current = document.activeElement;
   }
   function inspect(item, type, requirement) {
@@ -105,7 +122,9 @@ export default function App() {
     setNotice("Clarification draft saved. Nothing has been sent.");
   }
   function editDraft(draft) {
-    const requirement = requirements.find((r) => r.id === draft.requirementId);
+    const requirement = clarificationContexts.find(
+      (r) => r.id === draft.requirementId,
+    );
     const item = [...claims, ...qualifications].find(
       (i) => i.id === draft.id,
     ) ?? { ...requirement, title: requirement.text };
@@ -121,16 +140,21 @@ export default function App() {
         : "Flagged for verification. The evidence status is unchanged.",
     );
   }
-  function changeReview(field) {
-    setReview((current) => toggleReview(current, field));
+  function openWorkflow(mode) {
+    rememberFocus();
+    setWorkflowDialog(mode);
+  }
+  function saveWorkflow(action) {
+    dispatchOpportunity(action);
+    setWorkflowDialog(null);
     setNotice(
-      field === "progressing"
-        ? review.progressing
-          ? "Progression mark removed."
-          : "Marked as worth progressing. Outstanding requirements remain open."
-        : review.clarification
-          ? "Clarification-needed mark removed."
-          : "Marked as clarification needed. Nothing has been sent.",
+      action.type === "suggest"
+        ? "Suggestion recorded locally. Nothing has been sent."
+        : action.type === "response"
+          ? "Simulated keeper response saved."
+          : action.type === "nomination"
+            ? "Nomination decision saved locally. Nothing has been submitted."
+            : "Officer assessment saved. Evidence statuses are unchanged.",
     );
   }
   const selectedSources =
@@ -143,31 +167,41 @@ export default function App() {
   const mantineTheme = useMantineTheme();
   const narrow = useMediaQuery(`(max-width: ${mantineTheme.breakpoints.sm})`);
   const overlayActive = useRef(false);
-  overlayActive.current = Boolean(drawer || composer || draftOpen || jobOpen);
+  overlayActive.current = Boolean(
+    drawer || composer || draftOpen || jobOpen || workflowDialog,
+  );
   const composerInput = useRef(null);
   useEffect(() => {
     // Editing a draft changes content inside an already-open Modal.
     if (composer) composerInput.current?.focus();
   }, [composer]);
   function restoreFocus() {
-    if (!overlayActive.current && focusOrigin.current?.isConnected)
-      focusOrigin.current.focus();
+    if (!overlayActive.current) {
+      const target = focusOrigin.current?.isConnected
+        ? focusOrigin.current
+        : document.getElementById("opportunity-actions");
+      target?.focus();
+    }
   }
   const modalTitle = composer
     ? "Draft a clarification"
     : draftOpen
       ? "Clarification draft"
-      : "Wind Turbine Technician";
+      : workflowDialog
+        ? workflowTitles[workflowDialog]
+        : "Wind Turbine Technician";
   const modalContext = composer
     ? composer.requirement.text
     : draftOpen
       ? person.name
-      : "CARROWMORE ARRAY · O&M";
+      : workflowDialog
+        ? `${person.name} · ${vacancy.title}`
+        : "CARROWMORE ARRAY · O&M";
 
   return (
     <>
       <Anchor className="skip" href="#main">
-        Skip to candidate review
+        Skip to opportunity assessment
       </Anchor>
       <Paper component="header" withBorder radius={0} p="md">
         <Container size="lg">
@@ -186,7 +220,7 @@ export default function App() {
               </div>
             </Group>
             <Text c="dimmed" visibleFrom="sm">
-              Keeper redeployment
+              Redeployment
             </Text>
             <Group gap="sm">
               <Text size="sm" c="dimmed" visibleFrom="xs">
@@ -207,12 +241,12 @@ export default function App() {
             aria-label="Review context"
           >
             <Text size="sm" c="dimmed">
-              Assigned vacancies
+              People
             </Text>
             <Text size="sm" c="dimmed">
-              Carrowmore Array
+              {person.name}
             </Text>
-            <Text size="sm">Candidate review</Text>
+            <Text size="sm">{vacancy.title}</Text>
           </Breadcrumbs>
           <Stack component="section" gap="md" aria-labelledby="candidate-name">
             <Group wrap="nowrap" align="flex-start">
@@ -221,7 +255,7 @@ export default function App() {
               </Avatar>
               <Box miw={0}>
                 <Text size="xs" c="dimmed">
-                  CANDIDATE REVIEW
+                  OPPORTUNITY ASSESSMENT
                 </Text>
                 <Title order={1} id="candidate-name">
                   {person.name}
@@ -234,21 +268,25 @@ export default function App() {
                 Review focus
               </Title>
               <Text>
-                Records show repeated pump repairs and electrical fault-finding,
-                alongside permit-issuing responsibility. Clarify the scope of
-                independent work and current permit authority. Verify complete
-                offshore safety coverage, medical clearance and comfort with
-                offshore working conditions before mobilisation.
+                Repeated pump repairs, electrical fault-finding and permit
+                responsibility make this opportunity worth exploring. Clarify
+                independent work and current authority; verify offshore
+                qualifications and working conditions. Career preferences also
+                need discussion.
               </Text>
             </Stack>
             <Paper withBorder p="md">
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed">
-                    Being considered for
+                    System-suggested opportunity
                   </Text>
                   <Text>
                     <strong>{vacancy.title}</strong> · {vacancy.employer}
+                  </Text>
+                  <Text size="sm" c="dimmed">
+                    Keeper interest: {interestLabel(opportunity)}
+                    {opportunity.responseOrigin && " · simulated response"}
                   </Text>
                 </div>
                 <Button
@@ -263,6 +301,24 @@ export default function App() {
                 </Button>
               </Group>
             </Paper>
+            <Group justify="space-between" align="center" gap="sm">
+              <div>
+                <Text size="sm">
+                  <strong>Career intention:</strong> {person.careerIntention}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Career preferences not yet discussed
+                </Text>
+              </div>
+              <Button
+                id="requirement-career-preferences"
+                variant="subtle"
+                leftSection={<Icon icon={Pencil} />}
+                onClick={() => clarify(careerContext, careerContext)}
+              >
+                Discuss preferences
+              </Button>
+            </Group>
           </Stack>
           <Stack
             component="section"
@@ -319,71 +375,16 @@ export default function App() {
               </Accordion>
             </Paper>
           </Stack>
-          <Paper
-            component="section"
-            className="review-actions-bar"
-            withBorder
-            p="md"
-            shadow="sm"
-            aria-label="Review actions"
-          >
-            <Group justify="space-between" align="center">
-              <Stack gap="xs">
-                <div>
-                  <Text fw={600}>Your review</Text>
-                  <Text size="sm" c="dimmed">
-                    {review.progressing && review.clarification
-                      ? "Worth progressing · clarification needed"
-                      : review.progressing
-                        ? "Worth progressing"
-                        : review.clarification
-                          ? "Clarification needed"
-                          : "No decision recorded"}
-                  </Text>
-                </div>
-                {drafts.length > 0 && (
-                  <Button
-                    variant="subtle"
-                    leftSection={<Icon icon={ClipboardList} />}
-                    onClick={() => {
-                      rememberFocus();
-                      setDraftOpen(true);
-                    }}
-                  >
-                    Review draft ({drafts.length})
-                  </Button>
-                )}
-              </Stack>
-              <Stack gap="xs">
-                <Group gap="xs">
-                  <Button
-                    color="clarification"
-                    variant={review.clarification ? "filled" : "outline"}
-                    aria-pressed={review.clarification}
-                    leftSection={
-                      <Icon icon={review.clarification ? Check : CircleHelp} />
-                    }
-                    onClick={() => changeReview("clarification")}
-                  >
-                    Clarification needed
-                  </Button>
-                  <Button
-                    variant={review.progressing ? "filled" : "outline"}
-                    aria-pressed={review.progressing}
-                    leftSection={
-                      <Icon icon={review.progressing ? Check : ArrowRight} />
-                    }
-                    onClick={() => changeReview("progressing")}
-                  >
-                    Worth progressing
-                  </Button>
-                </Group>
-                <Text size="xs" c="dimmed">
-                  Both can apply. Progression does not confirm eligibility.
-                </Text>
-              </Stack>
-            </Group>
-          </Paper>
+          <OpportunityActions
+            state={opportunity}
+            drafts={drafts}
+            onOpen={openWorkflow}
+            onClarify={() => clarify(opportunityContext, opportunityContext)}
+            onReviewDrafts={() => {
+              rememberFocus();
+              setDraftOpen(true);
+            }}
+          />
           <Group component="footer" justify="space-between" gap="xs">
             <Text size="xs" c="dimmed">
               CARROWMORE LIGHT AUTHORITY / KEEPER REDEPLOYMENT
@@ -617,13 +618,14 @@ export default function App() {
         )}
       </Drawer>
       <Modal
-        opened={Boolean(composer || draftOpen || jobOpen)}
+        opened={Boolean(composer || draftOpen || jobOpen || workflowDialog)}
         onClose={
           composer
             ? closeComposer
             : () => {
                 setDraftOpen(false);
                 setJobOpen(false);
+                setWorkflowDialog(null);
               }
         }
         size="lg"
@@ -652,8 +654,9 @@ export default function App() {
                 <Stack gap="sm">
                   <Text size="sm" c="dimmed">
                     {
-                      requirements.find((r) => r.id === draft.requirementId)
-                        .text
+                      clarificationContexts.find(
+                        (r) => r.id === draft.requirementId,
+                      ).text
                     }
                   </Text>
                   <Title order={4}>{draft.title}</Title>
@@ -671,9 +674,10 @@ export default function App() {
                       leftSection={<Icon icon={Trash2} />}
                       onClick={() => {
                         if (drafts.length === 1) {
-                          focusOrigin.current = document.getElementById(
-                            "requirement-" + draft.requirementId,
-                          );
+                          focusOrigin.current =
+                            document.getElementById(
+                              "requirement-" + draft.requirementId,
+                            ) ?? document.getElementById("opportunity-actions");
                           setDraftOpen(false);
                         }
                         setDrafts((ds) => ds.filter((d) => d.id !== draft.id));
@@ -721,11 +725,19 @@ export default function App() {
             </Group>
           </Stack>
         )}
+        {workflowDialog && (
+          <WorkflowForm
+            key={workflowDialog}
+            mode={workflowDialog}
+            state={opportunity}
+            onSave={saveWorkflow}
+            onOpen={openWorkflow}
+            onCancel={() => setWorkflowDialog(null)}
+          />
+        )}
         {jobOpen && (
           <Stack gap="md">
-            <Text>
-              {vacancy.base} · {vacancy.openings}
-            </Text>
+            <Text>{vacancy.base}</Text>
             <Text>
               {vacancy.pattern}, based on the service operations vessel.
             </Text>
