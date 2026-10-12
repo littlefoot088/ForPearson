@@ -26,6 +26,8 @@ People groups opportunities by person on one white list surface. Keep intention 
 
 Profiles use the existing rounded white career-context and opportunity panels. Career context and opportunity selection use drawers; they do not need separate edit pages.
 
+For Not yet decided intentions, use a simple follow-up block across the list's opportunity area: Clarify employment plans, followed by conversation/questionnaire guidance. Do not show job rows or opportunity progress badges. Profiles use the same guidance and keep earlier selections collapsed under Previously considered opportunities.
+
 The assessment separates candidate/opportunity context and Why this could work, relevant experience, and safety/medical requirements into white panels. Name and rationale share a panel. The neutral officer workspace contains progress/status, tasks and conversations. Desktop uses the existing 8/4 Mantine grid and bounded sticky workspace. Below md, progress appears after the summary and before experience through the existing portal; tasks and conversations follow the assessment. Do not duplicate the progress component or change reading order through CSS alone.
 
 ## Consistent actions

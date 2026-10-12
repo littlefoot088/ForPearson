@@ -4,6 +4,25 @@ import { initialWorkspace, workspaceReducer as reduce, loadWorkspace, persistWor
 import { peopleForWorkspace, filterPeople, profileHash, profileIdForHash } from '../src/people.js';
 import { introductionVersion } from '../src/workflowState.js';
 const eimhin = (state) => peopleForWorkspace(state).find((p) => p.currentPerson);
+test('undecided intentions require follow-up and block new placements while preserving earlier selections', () => {
+  let s = initialWorkspace();
+  const id = 'K0147';
+  const keeper = () => peopleForWorkspace(s).find((p) => p.id === id);
+  assert.equal(keeper().opportunities.length, 0);
+  assert.equal(keeper().consideredOpportunities.length, 2);
+  assert.match(keeper().intentionFollowup, /questionnaire/);
+  assert.equal(filterPeople(peopleForWorkspace(s), 'Coilean', null, true).length, 1);
+  assert.equal(reduce(s, {type:'keeper-opportunity-add', id, opportunityId:'array-om'}), s);
+  s = reduce(s, {type:'keeper-context-save', id, intention:'Seeking employment', preferences:''});
+  assert.equal(keeper().opportunities.length, 2);
+  s = reduce(s, {type:'keeper-opportunity-add', id, opportunityId:'array-om'});
+  assert.equal(keeper().opportunities.length, 3);
+  s = reduce(s, {type:'keeper-context-save', id, intention:'Not yet decided', preferences:''});
+  let stored; persistWorkspace({setItem:(_,v)=>stored=v}, {workspace:s,drafts:[],recordFlags:[]});
+  s = loadWorkspace({getItem:()=>stored}).workspace;
+  assert.equal(keeper().opportunities.length, 0);
+  assert.equal(keeper().consideredOpportunities.length, 3);
+});
 test('profile edits and selections preserve assessment, notes, preferences and exact sent snapshots', () => {
   let s = initialWorkspace();
   s = reduce(s, {type:'opportunity',action:{type:'assessment',value:'worth-discussing'}});

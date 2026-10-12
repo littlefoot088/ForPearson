@@ -12,7 +12,7 @@ import { MantineProvider } from "@mantine/core";
 import App from "../src/App";
 import { theme } from "../src/theme";
 import { assessmentHash } from "../src/people";
-import { storageKey } from "../src/workspace";
+import { initialWorkspace, persistWorkspace, storageKey } from "../src/workspace";
 beforeEach(() => {
   window.history.replaceState(null, "", "/");
   vi.spyOn(window, "scrollTo").mockImplementation(() => {});
@@ -38,6 +38,13 @@ it("opens a people-first list and combines search, intention and attention filte
   expect(
     screen.getByRole("link", { name: "Wind Turbine Technician" }),
   ).toHaveAttribute("href", assessmentHash);
+  const eimhin = screen.getByRole('region', { name: 'Eimhin Mac Neidhe' });
+  expect(within(eimhin).getByText('Seeking employment')).toBeVisible();
+  expect(within(eimhin).getByText('Marine Electrician')).toBeVisible();
+  expect(within(eimhin).getByText('Watch Officer')).toBeVisible();
+  const coilean = screen.getByRole('region', { name: 'Coilean Ó Caomhthaigh' });
+  expect(within(coilean).getByText('Clarify employment plans')).toBeVisible();
+  expect(within(coilean).queryByText('Offshore Survey Technician')).not.toBeInTheDocument();
   expect(
     screen.queryByRole("link", { name: "Marine Electrician" }),
   ).not.toBeInTheDocument();
@@ -62,6 +69,9 @@ it("opens a people-first list and combines search, intention and attention filte
 });
 it("navigates directly to the assessment and back without resetting tasks or saved state", async () => {
   const user = userEvent.setup();
+  const workspace = initialWorkspace();
+  workspace.keeperProfiles.K0104 = { intention: 'Seeking employment', preferences: '' };
+  persistWorkspace(localStorage, { workspace, drafts: [], recordFlags: [] });
   mount();
   await user.type(
     screen.getByRole("textbox", { name: "Search by name" }),
@@ -121,6 +131,7 @@ it("opens a profile, edits career context, adds an opportunity and returns throu
   await user.click(screen.getByRole('link', {name:'View profile for Eimhin Mac Neidhe'}));
   await screen.findByRole('heading', {name:'Career context'});
   expect(screen.getByRole('heading', {name:'Opportunities under consideration'})).toBeVisible();
+  expect(screen.getByRole('button', {name:'Explore opportunities'})).toBeVisible();
   await user.click(screen.getByRole('button', {name:'Edit career context'}));
   await user.selectOptions(await screen.findByRole('combobox', {name:'Employment intention'}),'Seeking employment');
   await user.type(screen.getByRole('textbox', {name:'Career preferences'}),'Shore-based maintenance');

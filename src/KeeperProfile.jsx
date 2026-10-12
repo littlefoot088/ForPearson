@@ -13,8 +13,9 @@ export function KeeperProfile({ keeper, workspace, dispatch, storageFailed }) {
   if (!keeper) return null;
   const retired = keeper.intention === "Planning retirement";
   const arranged = keeper.intention === "Employment arranged";
+  const undecided = keeper.intention === "Not yet decided";
   const active = retired || arranged ? [] : keeper.opportunities.filter((o) => o.progress !== "On hold");
-  const previous = keeper.consideredOpportunities.filter((o) => retired || arranged || o.progress === "On hold");
+  const previous = keeper.consideredOpportunities.filter((o) => undecided || retired || arranged || o.progress === "On hold");
   const available = vacancyOptions.filter((o) => !keeper.consideredOpportunities.some((selected) => selected.id === o.id));
   const working = keeper.currentPerson && workspace.workingPreferences;
   const close = () => setEditor(null);
@@ -79,17 +80,26 @@ export function KeeperProfile({ keeper, workspace, dispatch, storageFailed }) {
           <Stack gap="lg">
             <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
               <Title order={2} size="h4" style={{ minWidth: 0 }}>Opportunities under consideration</Title>
-              {!retired && !arranged && <Button className="workspace-status-action" style={{ flexShrink: 0 }} size="compact-xs" variant="subtle" aria-label="Explore opportunities" onClick={() => setEditor("opportunities")}>Explore</Button>}
+              {!undecided && !retired && !arranged && <Button className="workspace-status-action" style={{ flexShrink: 0 }} size="compact-xs" variant="subtle" aria-label="Explore opportunities" onClick={() => setEditor("opportunities")}>Explore</Button>}
             </Group>
             {active.length ? active.map((o) => opportunityRow(o)) : <Stack gap="sm">
-              <Text size="sm">{retired ? "Planning retirement. No placement opportunities are being suggested."
+              <Text size="sm">{undecided ? "Clarify employment plans before considering opportunities."
+                : retired ? "Planning retirement. No placement opportunities are being suggested."
                 : arranged ? "Employment arranged. No further job search is needed."
                 : "No active opportunities under consideration."}</Text>
-              {!retired && !arranged && <Text size="sm" c="dimmed">Review career preferences, explore other vacancies or sectors, and agree a follow-up with the keeper. Discuss whether training would help with their chosen direction.</Text>}
+              {undecided && <Text size="sm">{keeper.intentionFollowup} Record their response in Career context.</Text>}
+              {!undecided && !retired && !arranged && <Text size="sm" c="dimmed">Review career preferences, explore other vacancies or sectors, and agree a follow-up with the keeper. Discuss whether training would help with their chosen direction.</Text>}
             </Stack>}
           </Stack>
         </Paper>
-        {previous.length > 0 && <Paper p="lg" radius="lg" bg="white"><Stack gap="lg">
+        {undecided && previous.length > 0 && <Paper p="lg" radius="lg" bg="white" component="details">
+          <Text component="summary" size="sm">Previously considered opportunities</Text>
+          <Stack gap="lg" mt="lg">
+            <Text size="sm" c="dimmed">Retained for reference. Clarify employment plans before continuing placement work.</Text>
+            {previous.map((o) => opportunityRow(o, false))}
+          </Stack>
+        </Paper>}
+        {!undecided && previous.length > 0 && <Paper p="lg" radius="lg" bg="white"><Stack gap="lg">
           <Title order={2} size="h4">{arranged ? "Employment and previous considerations" : retired ? "Previously considered" : "Opportunities on hold"}</Title>
           {!retired && !arranged && <Text size="sm" c="dimmed">An opportunity on hold does not close the keeper’s redeployment case.</Text>}
           {previous.map((o) => opportunityRow(o, false))}

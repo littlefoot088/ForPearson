@@ -4,11 +4,13 @@ This document describes current implemented behaviour. Use [design-system.md](de
 
 ## Navigation and scope
 
-People → keeper profile → opportunity assessment is the principal journey. The People → Eimhin turbine assessment shortcut remains. Assessment breadcrumbs link to both People and Eimhin's profile. Navigation preserves workspace state and in-app People filters.
+People → keeper profile → opportunity assessment is the principal journey. The People → Eimhin turbine assessment shortcut is available when his intention permits showing opportunities. Assessment breadcrumbs link to both People and Eimhin's profile. Navigation preserves workspace state and in-app People filters.
 
 All six existing keepers share the profile component. Only Eimhin's Wind Turbine Technician opportunity has a full assessment; other opportunities and interview/employment outcomes are illustrative directory scenarios. Curated vacancy selection adds an opportunity under consideration, not a new assessment or an algorithmic match. No aggregate person-level Progress is calculated.
 
 ## Vocabulary and ownership
+
+The starting directory uses Eimhin as a Seeking employment example with three opportunities under consideration. Aoife has Watch Officer (Interview invited) and Offshore Survey Technician (To do) under consideration. Coilean is the only Not yet decided example. These are illustrative intentions; explicitly saved profile choices continue to take precedence.
 
 | Label | Meaning and values |
 | --- | --- |
@@ -27,6 +29,8 @@ Early work stages are explicitly editable. A first introduction save normally mo
 Retirement cases sort after active cases and suppress placement exploration. Employment-arranged profiles suppress further job search. Changes of intention retain earlier selections for reference. A sent introduction resolves an earlier undecided intention to Seeking employment for display; a later explicit intention takes precedence. It does not imply approval for another referral. Profile edits do not rewrite dated offshore preferences or opportunity interest.
 
 ## Shared derivation and action priority
+
+Not yet decided intentions suppress job rows in People and disable opportunity exploration/addition in the profile and reducer. People instead prompts a discussion of employment plans or a questionnaire reminder; these cases remain in Needs attention. This is person-level follow-up, not an opportunity Progress stage. Previously considered opportunities remain available in a collapsed profile reference section without next actions. Recording Seeking employment enables exploration and restores retained selections. Questionnaire guidance does not send a message or assume a questionnaire response.
 
 `src/workflowState.js` is authoritative for `workflowView`, verification currentness and linked task completion. People/profile projections use that shared state rather than deriving their own version of the implemented opportunity's progress. Persist inputs and events, not derived progress or recommendations.
 

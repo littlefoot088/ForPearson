@@ -17,7 +17,7 @@ test("workspace uses pair tasks and progress without inferring overall intention
     progress: "To do",
     nextAction: "Review suitability",
   });
-  assert.equal(peopleForWorkspace(state)[0].intention, "Not yet decided");
+  assert.equal(peopleForWorkspace(state)[0].intention, "Seeking employment");
   state = workspaceReducer(state, { type: "task-toggle", id: "certificates" });
   assert.equal(
     assessmentOverview(state).nextAction,
@@ -48,6 +48,11 @@ test("search ignores accents, filters combine, retirement has no recommendations
   const people = peopleForWorkspace(initialWorkspace());
   assert.equal(people.length, 6);
   assert.equal(people[0].opportunities.length, 3);
+  const aoife = people.find((p) => p.id === 'K0847');
+  assert.deepEqual(aoife.opportunities.map((o) => o.id), ['coastguard', 'survey']);
+  assert.equal(aoife.opportunities[0].progress, 'Interview invited');
+  assert.equal(aoife.opportunities[1].nextAction, 'Review suitability');
+  assert.deepEqual(people.filter((p) => p.intention === 'Not yet decided').map((p) => p.id), ['K0147']);
   assert.equal(filterPeople(people, "EIMHIN", null, false).length, 1);
   assert.equal(
     filterPeople(people, "", "Planning retirement", false).length,
@@ -56,7 +61,7 @@ test("search ignores accents, filters combine, retirement has no recommendations
   assert.equal(filterPeople(people, "", null, true).length, 4);
   assert.equal(
     filterPeople(people, "Eimhin", "Seeking employment", false).length,
-    0,
+    1,
   );
   assert.equal(
     people.flatMap((p) => p.opportunities).filter((o) => o.implemented).length,
@@ -79,7 +84,6 @@ test("six workspace scenarios stay separate from evidence and have only one asse
   for (const status of [
     "Interview invited",
     "Reviewing documents",
-    "To do",
     "Employment arranged",
   ])
     assert.ok(progress.includes(status));

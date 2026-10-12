@@ -204,6 +204,11 @@ export function PeopleWorkspace({
                         </Grid>
                       ))}
                     </Stack>
+                  ) : p.intentionFollowup ? (
+                    <Stack gap={4}>
+                      <Text size="sm" fw={500}>Clarify employment plans</Text>
+                      <Text size="sm">{p.intentionFollowup}</Text>
+                    </Stack>
                   ) : (
                     <Text size="sm" c="dimmed">
                       No opportunities under consideration
