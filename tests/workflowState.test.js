@@ -179,7 +179,7 @@ test("v2 migration preserves manual work while moving the certificate check to v
         recordFlags: ["pump_2009-03-13"],
       }),
   });
-  assert.equal(loaded.version, 10);
+  assert.equal(loaded.version, 11);
   assert.equal(loaded.workspace.tasks[0].origin, "system");
   assert(
     !workflowTasks(loaded.workspace).find((t) => t.id === "certificates").done,

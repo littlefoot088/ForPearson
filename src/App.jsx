@@ -332,6 +332,7 @@ export default function App() {
             <ExpandedAssessment
               workspace={workspace}
               onVerify={(q) => openWorkspace("verification", q)}
+              onTraining={(q) => openWorkspace("training", q)}
               excludedRecordIds={workspace.excludedRecordIds}
               requirement={row}
               contextRequirement={context}
@@ -621,6 +622,7 @@ export default function App() {
             key={workspacePanel.session}
             storageFailed={storageFailed}
             onRecordAccount={(id) => openWorkspace("report", { id })}
+            onNavigate={openWorkspace}
             mode={workspacePanel.mode}
             item={workspacePanel.item}
             state={workspace}

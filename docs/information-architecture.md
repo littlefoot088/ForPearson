@@ -65,6 +65,14 @@ Verification requires issuer/provider, document reference, verification date, ex
 
 Qualification rows, explanations, outstanding checks, summary caveats and generated introductions read the same verification data. Expired/withdrawn evidence stays recorded but no longer satisfies the requirement. Task completion is never a substitute. Changes and time-based expiry invalidate readiness without silently regenerating officer prose.
 
+## Training support for job search
+
+The officer can explicitly assign training against one of the four safety requirements after confirming a certificate is not held, needs renewal, or requires training for the full certificate. Missing evidence alone does not establish that need. Course name and reason are required; provider and target date may be added when arranged. There is no invented course catalogue, provider booking, enrolment, funding approval or message to the keeper. Medical clearance remains separate.
+
+Assignments progress through Assigned, In progress, Completed (with a completion date) or Cancelled. Updates retain the previous record in `training[requirementId]`. One linked system task is created on first assignment. Completion closes that task only; verification checks remain open until a current certificate is explicitly verified. Task wording edits transfer ownership to the officer; removal is respected by later training updates. Cancellation removes the automatic task from the visible checklist without deleting its history. Existing verified certificates do not offer a new assignment; existing training records remain manageable.
+
+Qualification rows and generated qualification caveats share the training state. Assignment, progress changes and cancellation invalidate saved introduction readiness and require wording review while preserving edited prose and all sent snapshots. Only requirement-level training status enters generated introduction wording; course/provider administration stays internal. Editor save and regeneration use the same signature, including training. None of these actions infers interest, consent or a new employer outcome.
+
 ## Introduction and simulated sending
 
 The document flow is preview → explicit editing → review → save → review with Eimhin → sharing acknowledgement → simulated send. Ready for Eimhin's review is preparation, not consent. The editor and reducer must use the same assessment signature, including verification and exclusions, so a fresh save does not appear stale.
@@ -86,12 +94,13 @@ Assessment, interest, relevant preferences, evidence, verification and included-
 | `src/evidenceSelection.js` | Included evidence and affected summaries. |
 | `src/introduction.jsx` | Preview/edit/review, explicit saving, approval and historical document presentation. |
 | `src/workspace.jsx` | Status rows, task presentation and workspace editors. |
+| `src/TrainingEditor.jsx` | Explicit course assignment, updates, completion and retained training history. |
 | `src/App.jsx` | Routes, shared state and overlay orchestration. |
 
-The current storage envelope is version 10. Migrations are additive under the existing key: `carrowmore:workspace:v1:K0104:array-om`. The v1 in the key is not the envelope version. Preserve tasks, notes, historical follow-ups, questions, flags, exclusions, preferences, verifications, drafts, profile context and sent snapshots. Earlier workspaces gain no assumed verification, approval or sending history. Old intention values migrate to the four current choices.
+The current storage envelope is version 11. Migrations are additive under the existing key: `carrowmore:workspace:v1:K0104:array-om`. The v1 in the key is not the envelope version. Preserve tasks, notes, historical follow-ups, questions, flags, exclusions, preferences, verifications, drafts, profile context and sent snapshots. Version 10 gains an empty training history without invalidating unchanged documents. Earlier workspaces gain no assumed verification, approval or sending history. Old intention values migrate to the four current choices.
 
 Storage failure is visible and session work remains usable. Reset requires confirmation and preserves keeper profile context while resetting the pair workspace. Local browser persistence is not a backend or cross-device recovery mechanism. Never use a user's saved workspace as disposable test data.
 
 ## Boundaries
 
-The prototype has no real communications, uploads, authentication, backend, automated matching, additional detailed assessments, employer portal, interview scheduling or training-management workflow. Directory outcomes are illustrative; they are not implemented employer transitions. Production consent, retention and access policies remain outside this demonstration. Do not expand these boundaries incidentally while editing the UI.
+The prototype has no real communications, uploads, authentication, backend, automated matching, additional detailed assessments, employer portal, interview scheduling, course booking or learning-management integration. Training assignment and tracking are local officer records. Directory outcomes are illustrative; they are not implemented employer transitions. Production consent, retention and access policies remain outside this demonstration. Do not expand these boundaries incidentally while editing the UI.
