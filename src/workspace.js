@@ -1,3 +1,4 @@
+import { keeperIds, intentions, vacancyOptions, peopleForWorkspace, normalizeIntention } from "./people.js";
 import {
   canSendIntroduction,
   introductionDocument,
@@ -62,6 +63,7 @@ export function assessmentSignature(excluded = [], verifications = {}) {
 }
 export function initialWorkspace() {
   return {
+    keeperProfiles: {},
     interestScenarioVersion: 1,
     preferenceTaskVersion: 1,
     opportunity: {
@@ -158,6 +160,23 @@ const upsert = (items, item) =>
     : [...items, item];
 export function workspaceReducer(state, action) {
   switch (action.type) {
+    case "keeper-context-save": {
+      if (!keeperIds.includes(action.id) || !intentions.includes(action.intention) || typeof action.preferences !== "string") return state;
+      return { ...state, keeperProfiles: { ...state.keeperProfiles, [action.id]: {
+        ...state.keeperProfiles?.[action.id], intention: action.intention,
+        preferences: action.preferences.trim(), updatedAt: new Date().toISOString(),
+      } } };
+    }
+    case "keeper-opportunity-add": {
+      const keeper = peopleForWorkspace(state).find((p) => p.id === action.id);
+      if (!keeper || ["Planning retirement", "Employment arranged"].includes(keeper.intention)
+        || !vacancyOptions.some((v) => v.id === action.opportunityId)
+        || keeper.consideredOpportunities.some((o) => o.id === action.opportunityId)) return state;
+      const existing = state.keeperProfiles?.[action.id] ?? {};
+      return { ...state, keeperProfiles: { ...state.keeperProfiles, [action.id]: {
+        ...existing, opportunityIds: [...(existing.opportunityIds ?? []), action.opportunityId],
+      } } };
+    }
     case "verification-save": {
       if (
         !requiredQualifications.some((q) => q.id === action.id) ||
@@ -361,7 +380,14 @@ export function workspaceReducer(state, action) {
       const changed =
         JSON.stringify({ ...state.referral, needsReview: false }) !==
         JSON.stringify(referral);
-      return { ...state, referral, ready: changed ? null : state.ready };
+      return {
+        ...state,
+        opportunity: !state.referral && state.opportunity.workStage !== "discussing"
+          ? { ...state.opportunity, workStage: "preparing" }
+          : state.opportunity,
+        referral,
+        ready: changed ? null : state.ready,
+      };
     }
     case "simulate-send": {
       if (
@@ -394,7 +420,7 @@ export function workspaceReducer(state, action) {
     case "unready":
       return { ...state, ready: null };
     case "reset":
-      return initialWorkspace();
+      return { ...initialWorkspace(), keeperProfiles: state.keeperProfiles ?? {} };
     default:
       return state;
   }
@@ -422,6 +448,12 @@ function validVerification(r) {
 function validWorkspace(w) {
   return (
     w &&
+    w.keeperProfiles && typeof w.keeperProfiles === "object" && !Array.isArray(w.keeperProfiles) &&
+    Object.entries(w.keeperProfiles).every(([id, p]) => keeperIds.includes(id) && p &&
+      (p.intention == null || intentions.includes(p.intention)) &&
+      (p.preferences == null || string(p.preferences)) &&
+      (p.updatedAt == null || (string(p.updatedAt) && !Number.isNaN(Date.parse(p.updatedAt)))) &&
+      (p.opportunityIds == null || (Array.isArray(p.opportunityIds) && p.opportunityIds.every((id) => vacancyOptions.some((v) => v.id === id))))) &&
     (w.sentIntroductions == null ||
       (Array.isArray(w.sentIntroductions) &&
         w.sentIntroductions.every(
@@ -448,6 +480,7 @@ function validWorkspace(w) {
       (Array.isArray(w.excludedRecordIds) &&
         w.excludedRecordIds.every((id) => recordIds.has(id)))) &&
     w.opportunity &&
+    ["to-do", "reviewing", "discussing", "preparing"].includes(w.opportunity.workStage) &&
     w.opportunity.interest in keeperResponses &&
     w.opportunity.assessment in officerAssessments &&
     w.opportunity.employerProgression === "not-submitted" &&
@@ -468,7 +501,7 @@ function validWorkspace(w) {
         string(n.id) &&
         validDate(n.date) &&
         string(n.text) &&
-        string(n.followup),
+        string(n.followup) && (n.topics == null || list(n.topics, (t) => t && string(t.id) && string(t.title) && string(t.text))),
     ) &&
     (w.workingPreferences == null ||
       (validDate(w.workingPreferences.date) &&
@@ -621,6 +654,23 @@ export function loadWorkspace(storage) {
       );
       saved.version = 6;
     }
+    if (saved.version === 6 && saved.workspace?.opportunity) {
+      const opportunity = saved.workspace.opportunity;
+      opportunity.workStage = saved.workspace.referral ? "preparing"
+        : opportunity.assessment === "not-reviewed" ? "to-do" : "reviewing";
+      saved.version = 7;
+    }
+    if (saved.version === 7 && saved.workspace) {
+      saved.workspace.keeperProfiles ??= {};
+      saved.version = 8;
+    }
+    if (saved.version === 8 && saved.workspace) {
+      for (const profile of Object.values(saved.workspace.keeperProfiles ?? {})) {
+        if (profile?.intention) profile.intention = normalizeIntention(profile.intention);
+      }
+      saved.version = 9;
+    }
+    if (saved.version === 9 && saved.workspace) saved.version = 10;
     const topicIds = [
       "career-preferences",
       "existing-certificates",
@@ -631,7 +681,7 @@ export function loadWorkspace(storage) {
       ...qualifications.map((q) => q.id),
     ];
     if (
-      saved.version !== 6 ||
+      saved.version !== 10 ||
       !validWorkspace(saved.workspace) ||
       !list(
         saved.drafts,
@@ -668,7 +718,7 @@ export function loadWorkspace(storage) {
 }
 export function persistWorkspace(storage, snapshot) {
   try {
-    storage.setItem(storageKey, JSON.stringify({ ...snapshot, version: 6 }));
+    storage.setItem(storageKey, JSON.stringify({ ...snapshot, version: 10 }));
     return true;
   } catch {
     return false;

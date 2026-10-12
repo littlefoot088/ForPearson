@@ -1,4 +1,4 @@
-import { summaryWithQualifications } from "./workflowState";
+import { summaryWithQualifications, questionDiscussed } from "./workflowState";
 import {
   selectedCandidateSummary,
   includedRecords,
@@ -19,7 +19,7 @@ import {
   Grid,
   List,
   Notification,
-  NativeSelect,
+  MultiSelect,
   Modal,
   Paper,
   Stack,
@@ -62,7 +62,9 @@ import {
   workspaceReducer,
 } from "./workspace.js";
 import { PeopleWorkspace } from "./PeopleWorkspace";
-import { assessmentHash } from "./people";
+import { assessmentHash, profileHash, profileIdForHash, peopleForWorkspace } from "./people";
+import { KeeperProfile } from "./KeeperProfile";
+const pageForHash = () => window.location.hash === assessmentHash ? "assessment" : profileIdForHash(window.location.hash) ?? "people";
 
 const clarificationContexts = [
   ...requirements,
@@ -73,13 +75,13 @@ const clarificationContexts = [
 
 export default function App() {
   const [page, setPage] = useState(() =>
-    window.location.hash === assessmentHash ? "assessment" : "people",
+    pageForHash(),
   );
   useEffect(() => {
     const changePage = () => {
       if (window.location.hash === "#main") return;
       setPage(
-        window.location.hash === assessmentHash ? "assessment" : "people",
+        pageForHash(),
       );
     };
     window.addEventListener("hashchange", changePage);
@@ -96,7 +98,7 @@ export default function App() {
     document.title =
       page === "people"
         ? "Redeployment workspace · Carrowmore"
-        : "Eimhin Mac Neidhe · Carrowmore";
+        : page === "assessment" ? "Eimhin Mac Neidhe · Carrowmore" : `${peopleForWorkspace(workspace).find((p) => p.id === page)?.name ?? "Keeper profile"} · Carrowmore`;
     if (previousPage.current !== page) {
       document.getElementById("main")?.focus();
       window.scrollTo(0, 0);
@@ -127,7 +129,7 @@ export default function App() {
   const [question, setQuestion] = useState("");
   const [drafts, setDrafts] = useState(loaded.drafts);
   const [draftOpen, setDraftOpen] = useState(false);
-  const [questionTopic, setQuestionTopic] = useState("pump");
+  const [questionTopics, setQuestionTopics] = useState([]);
   const [returnToDraft, setReturnToDraft] = useState(false);
   const [notice, setNotice] = useState(loaded.message);
   const [jobOpen, setJobOpen] = useState(false);
@@ -195,7 +197,7 @@ export default function App() {
         : [...ds, draft];
     });
     closeComposer();
-    setNotice("Question saved in Next steps.");
+    setNotice("Question saved in Conversations.");
   }
   function editDraft(draft) {
     const requirement = clarificationContexts.find(
@@ -358,7 +360,7 @@ export default function App() {
       >
         {page === "people"
           ? "Skip to redeployment workspace"
-          : "Skip to opportunity assessment"}
+          : page === "assessment" ? "Skip to opportunity assessment" : "Skip to keeper profile"}
       </Anchor>
       <Paper component="header" className="app-header" radius={0} p="md">
         <Container size="lg">
@@ -388,6 +390,9 @@ export default function App() {
           filters={peopleFilters}
           onFiltersChange={setPeopleFilters}
         />
+      ) : page !== "assessment" ? (
+        <KeeperProfile key={page} keeper={peopleForWorkspace(workspace).find((p) => p.id === page)}
+          workspace={workspace} dispatch={dispatchWorkspace} storageFailed={storageFailed} />
       ) : (
         <Container size="lg" py="lg" component="main" id="main" tabIndex={-1}>
           <Stack gap="md">
@@ -399,9 +404,7 @@ export default function App() {
               <Anchor size="sm" href="#people">
                 People
               </Anchor>
-              <Text size="sm" c="dimmed">
-                {person.name}
-              </Text>
+              <Anchor size="sm" href={profileHash(person.id)}>{person.name}</Anchor>
               <Text size="sm">{vacancy.title}</Text>
             </Breadcrumbs>
             <Grid gutter="lg" align="flex-start">
@@ -556,22 +559,6 @@ export default function App() {
                   onOpen={openWorkspace}
                   onWorkflow={openWorkflow}
                   drafts={drafts}
-                  onDraftToggle={(id) =>
-                    setDrafts((items) =>
-                      items.map((draft) =>
-                        draft.id === id
-                          ? { ...draft, completed: !draft.completed }
-                          : draft,
-                      ),
-                    )
-                  }
-                  onEditDraft={editDraft}
-                  onRemoveDraft={(id) => {
-                    setDrafts((items) =>
-                      items.filter((draft) => draft.id !== id),
-                    );
-                    setNotice("Question removed from the discussion.");
-                  }}
                   onDiscussion={(origin) => {
                     rememberFocus();
                     if (origin instanceof HTMLElement)
@@ -633,6 +620,7 @@ export default function App() {
           <WorkspacePanel
             key={workspacePanel.session}
             storageFailed={storageFailed}
+            onRecordAccount={(id) => openWorkspace("report", { id })}
             mode={workspacePanel.mode}
             item={workspacePanel.item}
             state={workspace}
@@ -760,44 +748,23 @@ export default function App() {
               Save questions for your conversation with Eimhin. Questions stay
               local; nothing is sent.
             </Text>
-            <NativeSelect
-              label="Question topic"
-              value={questionTopic}
-              onChange={(e) => setQuestionTopic(e.currentTarget.value)}
+            <MultiSelect comboboxProps={{ withinPortal: false }} label="Question topics" placeholder="Select one or more topics" searchable
+              value={questionTopics} onChange={setQuestionTopics}
               data={[
-                ...claims,
-                ...qualifications,
-                ...discussionTopics,
-                ...requirements
-                  .filter((r) => r.type === "clarification")
-                  .map((r) => ({ ...r, title: r.text })),
-              ].map((topic) => ({ value: topic.id, label: topic.title }))}
-            />
-            <Button
-              variant="default"
-              onClick={() => {
-                const topic = [
-                  ...claims,
-                  ...qualifications,
-                  ...discussionTopics,
-                  ...requirements,
-                ].find((item) => item.id === questionTopic);
-                const context =
-                  clarificationContexts.find(
-                    (r) =>
-                      r.id === topic.requirementId ||
-                      r.qualificationIds?.includes(topic.id) ||
-                      r.id === topic.id,
-                  ) ?? requirements.find((r) => r.id === "maintenance");
-                clarify(
-                  { ...topic, title: topic.title ?? topic.text },
-                  context,
-                  true,
-                );
-              }}
-            >
-              Write question
-            </Button>
+                ...claims, ...qualifications, ...discussionTopics,
+                ...requirements.filter((r) => r.type === "clarification").map((r) => ({ ...r, title: r.text })),
+              ].map((topic) => ({ value: topic.id, label: topic.title, disabled: drafts.some((d) => d.id === topic.id) }))} />
+            <Button variant="default" disabled={!questionTopics.length} onClick={() => {
+              const additions = questionTopics.map((id) => {
+                const topic = [...claims, ...qualifications, ...discussionTopics, ...requirements].find((t) => t.id === id);
+                const context = clarificationContexts.find((r) => r.id === topic.requirementId || r.qualificationIds?.includes(id) || r.id === id)
+                  ?? requirements.find((r) => r.id === "maintenance");
+                return { id, requirementId: context.id, title: topic.title ?? topic.text, text: topic.question, completed: false };
+              });
+              setDrafts((ds) => [...ds, ...additions.filter((a) => !ds.some((d) => d.id === a.id))]);
+              setQuestionTopics([]);
+              setNotice("Questions added to Conversations.");
+            }}>Add selected questions</Button>
             {drafts.map((draft) => (
               <Paper withBorder p="md" key={draft.id}>
                 <Stack gap="sm">
@@ -810,6 +777,8 @@ export default function App() {
                   </Text>
                   <Title order={4}>{draft.title}</Title>
                   <Text className="source-quote">{draft.text}</Text>
+                  {questionDiscussed(workspace, draft) &&
+                    <Text size="sm" c="dimmed">{workspace.reports[draft.id] ? "Eimhin’s account recorded" : "Discussed"}</Text>}
                   <Group gap="xs">
                     <Button
                       variant="light"
@@ -862,7 +831,7 @@ export default function App() {
               maxLength={2000}
             />
             <Text size="sm" c="dimmed">
-              Saved in Next steps for your discussion. Nothing is sent.
+              Saved in Conversations for your discussion. Nothing is sent.
             </Text>
             <Group justify="flex-end">
               <Button variant="default" onClick={closeComposer}>

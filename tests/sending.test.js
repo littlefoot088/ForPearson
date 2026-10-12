@@ -96,7 +96,7 @@ test("v3 workspaces gain no assumed approval or sending history", () => {
     getItem: () =>
       JSON.stringify({ version: 3, workspace: s, drafts: [], recordFlags: [] }),
   });
-  assert.equal(loaded.version, 6);
+  assert.equal(loaded.version, 10);
   assert.deepEqual(loaded.workspace.sentIntroductions, []);
   assert.equal(loaded.workspace.referral.why, s.referral.why);
 });

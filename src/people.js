@@ -3,12 +3,22 @@ import { person, vacancy } from "./data.js";
 
 export const assessmentHash = "#people/eimhin/wind-turbine-technician";
 export const intentions = [
+  "Not yet decided",
   "Seeking employment",
-  "Exploring options",
   "Planning retirement",
   "Employment arranged",
-  "Not yet discussed",
 ];
+export function normalizeIntention(value) {
+  return value === "Exploring options" || value === "Not yet discussed" ? "Not yet decided" : value;
+}
+function keeperIntention(person, saved, workspace) {
+  const intention = normalizeIntention(saved?.intention ?? person.intention);
+  const sent = person.currentPerson && workspace.sentIntroductions?.at(-1);
+  const explicitAfterSend = saved?.intention && saved.updatedAt && sent &&
+    Date.parse(saved.updatedAt) >= Date.parse(sent.sentAt);
+  return intention === "Not yet decided" && sent && !explicitAfterSend
+    ? "Seeking employment" : intention;
+}
 export function assessmentOverview(workspace) {
   const view = workflowView(workspace);
   return {
@@ -17,7 +27,7 @@ export function assessmentOverview(workspace) {
   };
 }
 // Workspace scenarios only: these associations and outcomes are not source evidence.
-const illustrativePeople = [
+export const illustrativePeople = [
   {
     id: "K0847",
     name: "Aoife Ní Mhurchú",
@@ -35,21 +45,21 @@ const illustrativePeople = [
   {
     id: "K0147",
     name: "Coilean Ó Caomhthaigh",
-    intention: "Exploring options",
+    intention: "Not yet decided",
     opportunities: [
       {
         id: "survey",
         title: "Offshore Survey Technician",
         employer: "Deepline Offshore Ltd",
-        progress: "Exploring",
-        nextAction: "Discuss working preferences",
+        progress: "To do",
+        nextAction: "Review suitability",
       },
       {
         id: "marine",
         title: "Marine Electrician",
         employer: "Port of Cnoc Harbour Trust",
-        progress: "Suggested",
-        nextAction: null,
+        progress: "To do",
+        nextAction: "Review suitability",
       },
     ],
   },
@@ -62,7 +72,7 @@ const illustrativePeople = [
         id: "array-om",
         title: "Wind Turbine Technician",
         employer: "Carrowmore Array",
-        progress: "Qualification check needed",
+        progress: "Reviewing documents",
         nextAction: "Check certificates and discuss training support",
       },
     ],
@@ -88,8 +98,18 @@ const illustrativePeople = [
     ],
   },
 ];
+export const keeperIds = [person.id, ...illustrativePeople.map((p) => p.id)];
+export const vacancyOptions = [
+  { id: vacancy.id, title: vacancy.title, employer: vacancy.employer },
+  { id: "marine", title: "Marine Electrician", employer: "Port of Cnoc Harbour Trust" },
+  { id: "coastguard", title: "Watch Officer", employer: "Northern Isles Coastguard Service" },
+  { id: "survey", title: "Offshore Survey Technician", employer: "Deepline Offshore Ltd" },
+];
+export const profileHash = (id) => `#people/${id === person.id ? "eimhin" : id}`;
+export const profileIdForHash = (hash) => keeperIds.find((id) => profileHash(id) === hash);
+
 export function peopleForWorkspace(workspace) {
-  return [
+  const people = [
     {
       id: person.id,
       name: person.name,
@@ -101,20 +121,42 @@ export function peopleForWorkspace(workspace) {
           id: "marine",
           title: "Marine Electrician",
           employer: "Port of Cnoc Harbour Trust",
-          progress: "Exploring",
-          nextAction: "Review role requirements",
+          progress: "To do",
+          nextAction: "Review suitability",
         },
         {
           id: "coastguard",
           title: "Watch Officer",
           employer: "Northern Isles Coastguard Service",
-          progress: "Suggested",
-          nextAction: "Discuss interest in this role",
+          progress: "To do",
+          nextAction: "Review suitability",
         },
       ],
     },
     ...illustrativePeople,
   ];
+  const resolved = people.map((p) => {
+    const saved = workspace.keeperProfiles?.[p.id];
+    const intention = keeperIntention(p, saved, workspace);
+    const opportunities = [...p.opportunities];
+    for (const id of saved?.opportunityIds ?? []) {
+      if (!opportunities.some((o) => o.id === id)) {
+        const vacancy = vacancyOptions.find((v) => v.id === id);
+        if (vacancy) opportunities.push({ ...vacancy, progress: "To do", nextAction: "Review suitability" });
+      }
+    }
+    const inactive = intention === "Planning retirement" || intention === "Employment arranged";
+    return { ...p, intention, careerPreferences: saved?.preferences ?? "",
+      contextUpdatedAt: saved?.updatedAt,
+      consideredOpportunities: opportunities,
+      opportunities: intention === "Planning retirement" ? [] : opportunities.map((o) => inactive ? { ...o, nextAction: null } : o),
+    };
+  });
+  return resolved.sort(
+    (a, b) =>
+      Number(a.intention === "Planning retirement") -
+      Number(b.intention === "Planning retirement"),
+  );
 }
 const normalize = (value) =>
   value

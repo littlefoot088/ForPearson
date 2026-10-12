@@ -1,5 +1,6 @@
 import {
   workflowView,
+  questionDiscussed,
   verificationFor,
   today,
   currentSend,
@@ -24,7 +25,6 @@ import {
 import {
   Pencil,
   Trash2,
-  Plus,
   MoreHorizontal,
   MessageSquare,
 } from "lucide-react";
@@ -35,11 +35,25 @@ import { CandidateIntroduction } from "./introduction";
 export const workspaceTitles = {
   referral: "Candidate introduction",
   task: "Next step",
-  notes: "Conversation notes",
+  notes: "Conversations",
   report: "Eimhin’s account",
   preferences: "Eimhin’s working preferences",
   verification: "Qualification verification",
 };
+function StatusRow({ label, value, detail, action, prominent = false }) {
+  return (
+    <div className="workspace-status-row">
+      <Stack gap={4} className="workspace-status-copy">
+        <Text size="sm" c="dimmed">{label}</Text>
+        {prominent ? <Title order={2} size="h3">{value}</Title> : <Text size="sm" fw={500}>{value}</Text>}
+        {detail && <Text size="xs" c="dimmed">{detail}</Text>}
+      </Stack>
+      {action && <Button className="workspace-status-action" size="compact-xs" variant="subtle"
+        aria-label={action.name} onClick={action.onClick}>{action.label}</Button>}
+    </div>
+  );
+}
+
 export function Workspace({
   state,
   dispatch,
@@ -47,12 +61,13 @@ export function Workspace({
   onWorkflow,
   drafts,
   onDiscussion,
-  onDraftToggle,
-  onEditDraft,
-  onRemoveDraft,
   progressTarget,
 }) {
-  const recent = [...state.notes].sort(
+  const contacts = [
+    ...state.notes.map((note) => ({ ...note, kind: "Private note" })),
+    ...Object.values(state.reports).map((report) => ({ ...report, kind: "Eimhin’s account", title: claims.find((c) => c.id === report.id)?.title })),
+  ];
+  const recent = contacts.sort(
     (a, b) =>
       b.date.localeCompare(a.date) || (b.recordedAt ?? 0) - (a.recordedAt ?? 0),
   )[0];
@@ -73,6 +88,7 @@ export function Workspace({
           ? () => onOpen("referral")
           : () => onWorkflow(kind),
   };
+  const pendingQuestions = drafts.filter((d) => !questionDiscussed(state, d)).length;
   const tasks = view.tasks
     .filter(
       (t) =>
@@ -81,10 +97,7 @@ export function Workspace({
           t.id === "career-preferences") &&
         !(
           t.id === "responsibilities" &&
-          (Object.keys(state.reports).length > 0 ||
-            drafts.some((draft) =>
-              ["pump", "electrical"].includes(draft.id),
-            ))
+          Object.keys(state.reports).length > 0
         ),
     )
     .sort((a, b) => Number(a.done) - Number(b.done));
@@ -99,93 +112,25 @@ export function Workspace({
       bg="transparent"
     >
       <Stack gap="md">
-        <Stack gap="xs">
-          {sent ? (
-            <>
-              <Title order={2} size="h3">
-                Introduction sent
-              </Title>
-              <Group justify="space-between" gap="xs" align="flex-start">
-                <Stack gap={2}>
-                  <Text size="sm" c="dimmed">
-                    Your assessment
-                  </Text>
-                  <Text size="sm" fw={600}>
-                    {officerAssessments[assessment]}
-                  </Text>
-                </Stack>
-                <Button
-                  size="compact-xs"
-                  variant="subtle"
-                  onClick={() => onWorkflow("assessment")}
-                  aria-label="Change decision"
-                >
-                  Change decision
-                </Button>
-              </Group>
-            </>
-          ) : (
-            <>
-              <Group justify="space-between" gap="xs">
-                <Text size="sm" c="dimmed">
-                  Your assessment
-                </Text>
-                <Button
-                  size="compact-xs"
-                  variant="subtle"
-                  onClick={() => onWorkflow("assessment")}
-                  aria-label={
-                    assessment === "not-reviewed"
-                      ? "Record decision"
-                      : "Change decision"
-                  }
-                >
-                  {assessment === "not-reviewed"
-                    ? "Record decision"
-                    : "Change decision"}
-                </Button>
-              </Group>
-              <Title order={2} size="h3">
-                {assessment === "not-reviewed"
-                  ? "Decision not recorded"
-                  : officerAssessments[assessment]}
-              </Title>
-            </>
-          )}
-          <Group gap="xs" align="center">
-            <Text size="sm">Eimhin’s interest</Text>
-            <Button
-              size="compact-sm"
-              variant="subtle"
-              onClick={() => onWorkflow("response")}
-              aria-label="Update Eimhin’s interest"
-              rightSection={<Pencil size={14} />}
-            >
-              <span data-testid="keeper-interest">
-                {interestLabel(state.opportunity)}
-              </span>
-            </Button>
-          </Group>
+        <Stack gap="lg" className="workspace-status-list">
+          <StatusRow label="Progress" prominent value={view.progress}
+            action={!sent && { label: "Update", name: "Update progress", onClick: () => onWorkflow("progress") }} />
+          <StatusRow label="Your assessment" value={officerAssessments[assessment]}
+            action={{
+              label: assessment === "not-reviewed" || assessment === "needs-clarification" ? "Record" : "Change",
+              name: assessment === "not-reviewed" || assessment === "needs-clarification" ? "Record decision" : "Change decision",
+              onClick: () => onWorkflow("assessment"),
+            }} />
+          <StatusRow label="Eimhin’s interest"
+            value={<span data-testid="keeper-interest">{interestLabel(state.opportunity)}</span>}
+            action={{ label: "Change", name: "Update Eimhin’s interest", onClick: () => onWorkflow("response") }} />
           {(primary.introduction || state.referral) && (
-            <Stack gap="xs">
-              <Text size="sm">Candidate introduction</Text>
-              <Text size="sm" c="dimmed">
-                {view.introduction}
-                {sent && !state.referral?.needsReview
-                  ? ` · ${dateLabel(sent.sentAt.slice(0, 10))}`
-                  : ""}
-              </Text>
-              {state.referral && (!primary.introduction || sent) && (
-                <Button
-                  variant="subtle"
-                  size="compact-sm"
-                  w="fit-content"
-                  onClick={() => onOpen("referral")}
-                >
-                  {sent ? "View sent introduction" : "View introduction"}
-                </Button>
-              )}
-            </Stack>
+            <StatusRow label="Candidate introduction" value={view.introduction}
+              detail={sent && !state.referral?.needsReview ? dateLabel(sent.sentAt.slice(0, 10)) : null}
+              action={state.referral && (!primary.introduction || sent) && {
+                label: "View", name: sent ? "View sent introduction" : "View introduction",
+                onClick: () => onOpen("referral"),
+              }} />
           )}
         </Stack>
         {!sent && (
@@ -224,151 +169,14 @@ export function Workspace({
         aria-label="Next steps"
       >
         <Stack gap="xs">
-          <Group justify="space-between">
-            <Title order={2} size="h4">
-              What needs doing
-            </Title>
-            <ActionIcon
-              variant="subtle"
-              id="add-workspace-task"
-              aria-label="Add task"
-              onClick={() => onOpen("task")}
-            >
-              <Plus size={18} />
-            </ActionIcon>
+          <Group justify="space-between" wrap="nowrap" gap="xs">
+            <Title order={2} size="h4">What needs doing</Title>
+            <Button size="compact-xs" variant="subtle" className="workspace-status-action"
+              id="add-workspace-task" onClick={() => onOpen("task")}>
+              Add task
+            </Button>
           </Group>
-          {drafts.map((draft) => {
-            const report = state.reports[draft.id];
-            const complete = Boolean(draft.completed || report);
-            const canRecordAccount = ["pump", "electrical"].includes(
-              draft.id,
-            );
-            return (
-              <Stack
-                gap="xs"
-                key={draft.id}
-                className="workspace-task"
-                data-complete={complete || undefined}
-              >
-                <Group wrap="nowrap" align="flex-start" gap="xs">
-                  <Checkbox
-                    mt={3}
-                    aria-label={`Discuss ${draft.title}`}
-                    checked={complete}
-                    onChange={() =>
-                      report
-                        ? onOpen("report", { id: draft.id })
-                        : onDraftToggle(draft.id)
-                    }
-                    aria-describedby={
-                      report ? `discussion-status-${draft.id}` : undefined
-                    }
-                  />
-                  <Stack gap={2} flex={1} miw={0}>
-                    <Text size="sm" className="source-text">
-                      Discuss {draft.title}
-                    </Text>
-                    {report && (
-                      <Text
-                        id={`discussion-status-${draft.id}`}
-                        size="xs"
-                        c="dimmed"
-                      >
-                        Completed automatically when Eimhin’s account was
-                        recorded
-                      </Text>
-                    )}
-                    <Button
-                      variant="subtle"
-                      size="compact-xs"
-                      px={0}
-                      w="fit-content"
-                      onClick={() =>
-                        canRecordAccount
-                          ? onOpen("report", { id: draft.id })
-                          : onEditDraft(draft)
-                      }
-                    >
-                      {canRecordAccount
-                        ? report
-                          ? "View Eimhin’s account"
-                          : "Record Eimhin’s account"
-                        : "View discussion question"}
-                    </Button>
-                  </Stack>
-                  <Menu position="bottom-end" withinPortal returnFocus>
-                    <Menu.Target>
-                      <ActionIcon
-                        variant="subtle"
-                        aria-label={`Options for discussion: ${draft.title}`}
-                      >
-                        <MoreHorizontal size={18} />
-                      </ActionIcon>
-                    </Menu.Target>
-                    <Menu.Dropdown>
-                      <Menu.Item
-                        leftSection={<Pencil size={16} />}
-                        onClick={() => onEditDraft(draft)}
-                      >
-                        Edit question
-                      </Menu.Item>
-                      <Menu.Item
-                        leftSection={<MessageSquare size={16} />}
-                        onClick={() => onDiscussion()}
-                      >
-                        Add discussion item
-                      </Menu.Item>
-                      <Menu.Item
-                        color="red"
-                        leftSection={<Trash2 size={16} />}
-                        onClick={() => onRemoveDraft(draft.id)}
-                      >
-                        Remove question
-                      </Menu.Item>
-                    </Menu.Dropdown>
-                  </Menu>
-                </Group>
-              </Stack>
-            );
-          })}
-          {Object.values(state.reports)
-            .filter((report) => !drafts.some((draft) => draft.id === report.id))
-            .map((report) => (
-              <Stack
-                gap="xs"
-                key={report.id}
-                className="workspace-task"
-                data-complete
-              >
-                <Group wrap="nowrap" align="flex-start" gap="xs">
-                  <Checkbox
-                    mt={3}
-                    checked
-                    aria-label={`Discuss ${claims.find((claim) => claim.id === report.id)?.title}`}
-                    aria-describedby={`report-status-${report.id}`}
-                    onChange={() => onOpen("report", { id: report.id })}
-                  />
-                  <Stack gap={2} flex={1} miw={0}>
-                    <Text size="sm" className="source-text">
-                      Discuss {claims.find((claim) => claim.id === report.id)?.title}
-                    </Text>
-                    <Text id={`report-status-${report.id}`} size="xs" c="dimmed">
-                      Completed automatically when Eimhin’s account was recorded
-                    </Text>
-                    <Button
-                      variant="subtle"
-                      size="compact-xs"
-                      px={0}
-                      w="fit-content"
-                      onClick={() => onOpen("report", { id: report.id })}
-                    >
-                      View Eimhin’s account
-                    </Button>
-                  </Stack>
-                </Group>
-              </Stack>
-            ))}
-          {tasks.length === 0 && drafts.length === 0 && (
+          {tasks.length === 0 && (
             <Text size="sm" c="dimmed">
               No tasks recorded.
             </Text>
@@ -491,16 +299,25 @@ export function Workspace({
           ))}
         </Stack>
       </Paper>
-      <Paper component="section" radius={0} p="md" bg="transparent">
+      <Paper component="section" aria-label="Conversations" radius={0} p="md" bg="transparent">
         <Stack gap="sm">
-          <Title order={2} size="h4">
-            Last contact
-          </Title>
+          <Group justify="space-between" wrap="nowrap" gap="xs">
+            <Title order={2} size="h4">Conversations</Title>
+            <Button size="compact-xs" variant="subtle" className="workspace-status-action" aria-label="Record conversation"
+              onClick={() => onOpen("notes", { newNote: true })}>
+              Record
+            </Button>
+          </Group>
+          {drafts.length > 0 && <Text size="sm" c="dimmed">{pendingQuestions} {pendingQuestions === 1 ? "question" : "questions"} prepared · {drafts.length - pendingQuestions} discussed</Text>}
+          {!primary.discussion && <Button variant="subtle" size="compact-xs" w="fit-content" onClick={() => onDiscussion()}>
+            {drafts.length ? "View questions" : "Prepare questions"}
+          </Button>}
           {recent ? (
             <>
               <Text size="sm" c="dimmed">
-                {dateLabel(recent.date)} · Private note
+                {dateLabel(recent.date)} · {recent.kind}
               </Text>
+              {recent.title && <Text size="sm" fw={500}>{recent.title}</Text>}
               <Text size="sm" lineClamp={3} className="source-quote">
                 {recent.text}
               </Text>
@@ -517,21 +334,12 @@ export function Workspace({
           )}
           <Group gap="xs">
             <Button
-              size="compact-sm"
-              variant="subtle"
-              onClick={() => onOpen("notes", { newNote: true })}
-            >
-              Add note
-            </Button>
-            {recent && (
-              <Button
                 size="compact-sm"
                 variant="subtle"
                 onClick={() => onOpen("notes")}
               >
-                View notes ({state.notes.length})
+                View conversation history ({contacts.length})
               </Button>
-            )}
           </Group>
         </Stack>
       </Paper>
@@ -548,6 +356,7 @@ export function WorkspacePanel({
   storageFailed,
   onQuestion,
   drafts = [],
+  onRecordAccount,
 }) {
   if (mode === "verification")
     return (
@@ -581,6 +390,9 @@ export function WorkspacePanel({
     return (
       <NotesEditor
         notes={state.notes}
+        drafts={drafts}
+        reports={state.reports}
+        onRecordAccount={onRecordAccount}
         newNote={item?.newNote}
         onSave={(note) => dispatch({ type: "note-save", note })}
       />
@@ -674,13 +486,14 @@ function TaskEditor({ task, onSave, onCancel, onQuestion, onRemove, drafted }) {
     </Stack>
   );
 }
-function NotesEditor({ notes, newNote, onSave }) {
+function NotesEditor({ notes, drafts, reports, onRecordAccount, newNote, onSave }) {
   const blank = () => ({
     id: crypto.randomUUID(),
     date: "",
     text: "",
     followup: "",
     recordedAt: Date.now(),
+    topics: [],
   });
   const [editing, setEditing] = useState(newNote ? blank() : null);
   const [saved, setSaved] = useState(false);
@@ -721,6 +534,15 @@ function NotesEditor({ notes, newNote, onSave }) {
               setEditing({ ...editing, date: e.currentTarget.value })
             }
           />
+          {drafts.length > 0 && <Stack gap="xs">
+            <Text size="sm" fw={500}>Questions covered</Text>
+            <Text size="xs" c="dimmed">Select all that you discussed. Unselected questions stay prepared.</Text>
+            {drafts.map((draft) => <Checkbox key={draft.id} label={draft.title} description={draft.text}
+              checked={(editing.topics ?? []).some((t) => t.id === draft.id)}
+              onChange={(e) => setEditing({ ...editing, topics: e.currentTarget.checked
+                ? [...(editing.topics ?? []), { id: draft.id, title: draft.title, text: draft.text }]
+                : (editing.topics ?? []).filter((t) => t.id !== draft.id) })} />)}
+          </Stack>}
           <Textarea
             label="Private note"
             required
@@ -762,16 +584,27 @@ function NotesEditor({ notes, newNote, onSave }) {
           Add note
         </Button>
       )}
-      {[...notes]
+      {!editing && <Stack gap="xs">
+        <Text size="sm" fw={500}>Eimhin’s accounts</Text>
+        <Text size="sm" c="dimmed">Record reported experience separately when it may support the assessment. Private notes are never included in an introduction.</Text>
+        {["pump", "electrical"].map((id) => <Group key={id} justify="space-between" wrap="nowrap">
+          <Text size="sm">{claims.find((c) => c.id === id).title}</Text>
+          <Button size="compact-xs" variant="subtle" aria-label={`${reports[id] ? "View" : "Record"} account: ${claims.find((c) => c.id === id).title}`}
+            onClick={() => onRecordAccount(id)}>{reports[id] ? "View" : "Record"}</Button>
+        </Group>)}
+      </Stack>}
+      {[...notes, ...Object.values(reports).map((report) => ({ ...report, isReport: true }))]
         .sort(
           (a, b) =>
             b.date.localeCompare(a.date) ||
             (b.recordedAt ?? 0) - (a.recordedAt ?? 0),
         )
         .map((note) => (
-          <Paper key={note.id} withBorder p="md">
+          <Paper key={`${note.isReport ? "report" : "note"}-${note.id}`} withBorder p="md">
             <Stack gap="xs">
-              <Text fw={600}>{dateLabel(note.date)}</Text>
+              <Text fw={600}>{dateLabel(note.date)} · {note.isReport ? "Eimhin’s account" : "Private note"}</Text>
+              {note.isReport && <Text size="sm">{claims.find((c) => c.id === note.id)?.title}</Text>}
+              {note.topics?.length > 0 && <Text size="sm" c="dimmed">Discussed: {note.topics.map((t) => t.title).join(" · ")}</Text>}
               <Text className="source-quote">{note.text}</Text>
               {note.followup && (
                 <Text size="sm">
@@ -782,11 +615,11 @@ function NotesEditor({ notes, newNote, onSave }) {
                 variant="subtle"
                 size="compact-sm"
                 onClick={() => {
-                  setEditing(note);
-                  setSaved(false);
+                  if (note.isReport) onRecordAccount(note.id);
+                  else { setEditing(note); setSaved(false); }
                 }}
               >
-                Edit note from {dateLabel(note.date)}
+                {note.isReport ? "View account from" : "Edit note from"} {dateLabel(note.date)}
               </Button>
             </Stack>
           </Paper>

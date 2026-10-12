@@ -89,9 +89,7 @@ it("navigates directly to the assessment and back without resetting tasks or sav
     screen.getByRole("checkbox", { name: "Needs attention" }),
   ).toBeChecked();
   const eimhin = screen.getByRole("region", { name: "Eimhin Mac Neidhe" });
-  expect(
-    within(eimhin).getByText("Review suitability"),
-  ).toBeInTheDocument();
+  expect(within(eimhin).getAllByText("Review suitability")).toHaveLength(3);
   expect(
     within(eimhin).queryByText("Check existing offshore certificates"),
   ).not.toBeInTheDocument();
@@ -114,4 +112,51 @@ it("navigates directly to the assessment and back without resetting tasks or sav
   expect(
     screen.getByRole("heading", { name: "Relevant experience" }),
   ).toBeInTheDocument();
+});
+
+it("opens a profile, edits career context, adds an opportunity and returns through the assessment without losing filters", async () => {
+  const user = userEvent.setup();
+  mount();
+  await user.type(screen.getByRole('textbox', {name:'Search by name'}), 'Eimhin');
+  await user.click(screen.getByRole('link', {name:'View profile for Eimhin Mac Neidhe'}));
+  await screen.findByRole('heading', {name:'Career context'});
+  expect(screen.getByRole('heading', {name:'Opportunities under consideration'})).toBeVisible();
+  await user.click(screen.getByRole('button', {name:'Edit career context'}));
+  await user.selectOptions(await screen.findByRole('combobox', {name:'Employment intention'}),'Seeking employment');
+  await user.type(screen.getByRole('textbox', {name:'Career preferences'}),'Shore-based maintenance');
+  await user.click(screen.getByRole('button', {name:'Save career context'}));
+  await waitFor(()=>expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.getByText('Shore-based maintenance')).toBeVisible();
+  await user.click(screen.getByRole('button', {name:'Explore opportunities'}));
+  expect(await screen.findByRole('combobox', {name:'Opportunity'})).toHaveValue('survey');
+  await user.click(screen.getByRole('button', {name:'Add opportunity'}));
+  await waitFor(()=>expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.getByText('Offshore Survey Technician')).toBeVisible();
+  expect(screen.queryByRole('link',{name:'Offshore Survey Technician'})).not.toBeInTheDocument();
+  await user.click(screen.getByRole('link', {name:'Wind Turbine Technician'}));
+  await screen.findByRole('heading',{name:'Relevant experience'});
+  await user.click(screen.getByRole('link',{name:'Eimhin Mac Neidhe'}));
+  await screen.findByRole('heading',{name:'Career context'});
+  expect(screen.getByText('Shore-based maintenance')).toBeVisible();
+  await user.click(screen.getByRole('button',{name:'Explore opportunities'}));
+  await waitFor(()=>expect(screen.getByText('All available vacancies have already been considered for this keeper.')).toBeVisible());
+  await user.keyboard('{Escape}');
+  await waitFor(()=>expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  await user.click(screen.getByRole('link',{name:'People'}));
+  await screen.findByRole('heading',{name:'Redeployment workspace'});
+  expect(screen.getByRole('textbox',{name:'Search by name'})).toHaveValue('Eimhin');
+  expect(screen.getByText('Offshore Survey Technician')).toBeVisible();
+}, 15000);
+
+it('retirement and employment-arranged profiles do not prompt another search',async()=>{
+ const user=userEvent.setup();mount();
+ await user.click(screen.getByRole('link',{name:'View profile for Fintan Ó Ceallaigh'}));
+ await screen.findByRole('heading',{name:'Career context'});
+ expect(screen.queryByRole('button',{name:'Explore opportunities'})).not.toBeInTheDocument();
+ expect(screen.getByText('Planning retirement. No placement opportunities are being suggested.')).toBeVisible();
+ await user.click(screen.getByRole('link',{name:'People'}));
+ await user.click(await screen.findByRole('link',{name:'View profile for Cian Ó Dálaigh'}));
+ await screen.findByRole('heading',{name:'Career context'});
+ expect(screen.getByText('Employment arranged. No further job search is needed.')).toBeVisible();
+ expect(screen.queryByRole('button',{name:'Explore opportunities'})).not.toBeInTheDocument();
 });

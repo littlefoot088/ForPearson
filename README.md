@@ -86,12 +86,14 @@ The workspace now presents six illustrative scenarios. These are presentation fi
 | --------------------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | Eimhin Mac Neidhe     | Three potential opportunities; Wind Turbine Technician uses existing saved progress and next action | Existing K0104 identity                                                 |
 | Aoife Ní Mhurchú      | Watch Officer interview invitation                                                                  | Existing synthetic K0847 identity, documented from `clean/keepers.json` |
-| Coilean Ó Caomhthaigh | Exploring two opportunities                                                                         | Existing synthetic K0147 identity, documented from `clean/keepers.json` |
+| Coilean Ó Caomhthaigh | Exploring options, with two opportunities awaiting review                                      | Existing synthetic K0147 identity, documented from `clean/keepers.json` |
 | Nóra Ní Bhraonáin     | Certificate check and discussion of training support                                                | New illustrative identity, no historical records attached               |
-| Fintan Ó Ceallaigh    | Planning retirement; no job recommendations                                                         | Existing illustrative retirement identity from the brief                |
+| Fintan Ó Ceallaigh    | Planning retirement; no opportunities under consideration                                                       | Existing illustrative retirement identity from the brief                |
 | Cian Ó Dálaigh        | Employment arranged as Marine Electrician                                                           | New illustrative identity, no historical records attached               |
 
 All additional opportunity associations, intentions, interview/employment outcomes and next actions are illustrative prototype data, not findings from historical records. No qualifications, training needs or employment histories are asserted as verified. Eimhin’s overall career intention remains unchanged; his implemented opportunity continues to read the existing saved workspace state. The two extra opportunities do not override that state.
+
+Employment intention is person-level information and stays beside the keeper’s name. Opportunity progress describes the officer’s work stage, separately from the suitability judgement. It does not restate whether the keeper is generally exploring options. Retirement cases sort after active redeployment cases and have no opportunities under consideration.
 
 Vacancy titles and employers reuse the existing project references: Carrowmore Array’s Wind Turbine Technician, Port of Cnoc Harbour Trust’s Marine Electrician, Northern Isles Coastguard Service’s Watch Officer and Deepline Offshore Ltd’s Offshore Survey Technician. Only Eimhin’s Wind Turbine Technician opens an assessment. Other entries are plain text. No new detailed pages, messaging, interview, training or placement workflows are implemented.
 
@@ -118,3 +120,33 @@ Verification changes clear readiness and mark saved introduction wording for rev
 The officer panel now keeps assessment and interest editing in fixed positions and labels the separate Next action. Introduction preparation continues in its existing drawer. After saving current wording, the officer reviews it with Eimhin, explicitly confirms his agreement to share that version, and can simulate sending it to Carrowmore Array. The simulation makes no network request and does not record employer delivery, acceptance or an interview. Outstanding qualifications remain caveats, not additional sending gates.
 
 Local storage version 4 adds `sentIntroductions`: immutable, dated snapshots of the public introduction with recipient and explicit approval acknowledgement. Private notes, internal source provenance and previous drafts are excluded. Version 6 restores the general offshore-certificate check as a verification-driven task after the interaction model was clarified. Old workspaces start with no send history or assumed approval. Changed wording requires fresh confirmation, while previous snapshots remain available. Identical versions cannot be sent twice. Qualification verification is included consistently in saved introduction signatures.
+
+### Work stage and suitability separation
+
+The People workspace represents opportunities already selected for further consideration. These associations remain illustrative; the keeper profile provides career context and curated vacancy selection. Employment intention remains person-level and retirement cases have no opportunities under consideration.
+
+Both existing pages use the same progress selector: To do, Reviewing documents, Discussing with keeper, Preparing introduction, Reviewing with Eimhin and Introduction sent. Officers explicitly update the early work stage in the existing drawer. Saving, readiness and simulated sending supply later stages; stale wording requires Reviewing introduction and a negative decision or response puts work On hold. Opening a drawer does not imply completing work or discussing it. Your assessment separately records Not yet decided, Potential match or Not a current match. Legacy clarification decisions retain their stored value and follow-up action until edited.
+
+Storage version 7 adds the explicit work stage. Older drafts start at preparation; other reviewed cases start at document review and unreviewed cases at To do. No conversation, approval or send is inferred. Updating work stage alone does not invalidate introduction wording or readiness. Existing snapshots, notes, tasks and evidence remain intact.
+
+### Keeper profiles and curated opportunity selection
+
+The workspace retains its grouped opportunity rows, direct turbine assessment link, search and filters. Each keeper also has a View profile link. The reusable profile shows Employment intention, Career preferences, Opportunities under consideration, individual Progress and Next action. There is no aggregate person-level progress. The assessment breadcrumb returns to Eimhin’s profile; People remains reachable directly.
+
+Career context is editable for all six existing keepers and remains separate from opportunity interest. Eimhin’s previously recorded offshore working preferences are shown with their original date and scope; profile edits do not rewrite those records or alter verification, interest, tasks or introductions. Other current roles are shown as Not recorded rather than fabricated.
+
+Explore opportunities uses four existing curated vacancy titles. Selections persist locally, cannot be duplicated, and begin at To do without implying suitability or interest. Only Eimhin’s Wind Turbine Technician opens a detailed assessment. Other roles and existing interview/employment scenarios remain illustrative and have no detailed assessment or outcome editor.
+
+Retirement suppresses placement suggestions and sorts last; employment arranged suppresses further job-search actions. Changing intention retains earlier selections for reference. Negative turbine decisions/responses appear as opportunities on hold with the explicit reason, not inferred employer rejection; the keeper case remains open. No employer rejection, training recommendation or new historical evidence is generated.
+
+Storage version 8 adds keeperProfiles to the existing workspace envelope. Version 7 workspaces migrate with an empty map and retain all prior state. Assessment reset preserves profile context/selections. No backend, matching engine, additional assessment pages, training management or messaging was added.
+
+Employment intention is now limited to Not yet decided, Seeking employment, Employment arranged and Planning retirement. Version 9 maps older Not yet discussed / Exploring options values to Not yet decided while retaining preference text and all assessment history. A sent introduction establishes Seeking employment when the wider intention was previously undecided; a subsequent explicit intention takes precedence. This does not infer consent for another introduction or an employer outcome. Career preferences can still be Not yet discussed independently.
+
+### Conversations, prepared questions and private notes
+
+Conversations replaces Last contact. Prepared questions and reported accounts no longer appear as checklist tasks. The sidebar summarises prepared/discussed questions and the most recent dated private note or reported account. The existing task list retains real tasks and its verification/preferences behaviour.
+
+Question topics support multiple selection. Adding them saves the existing editable prompts; the officer can still edit/remove each question. Record conversation opens the dated private-note editor and allows multiple prepared questions to be marked as covered. Notes retain snapshots of their selected question text, so later editing/removing a prepared question does not rewrite conversation history. Existing completed-question markers remain respected. Recording a note never verifies a qualification, changes interest/consent, or adds its text to the candidate introduction.
+
+The conversation history includes private notes and Eimhin’s separately recorded accounts, with date and source identified. Reported experience remains an explicit separate action in the history drawer and still requires opt-in inclusion in an introduction. Version 10 accepts optional topic snapshots on notes and preserves all existing notes, questions, reports, dates and legacy follow-ups.

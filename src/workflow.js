@@ -14,10 +14,10 @@ export const opportunityContext = {
     "What more would you like to know about the Wind Turbine Technician role before deciding whether to pursue it? We can discuss the work, offshore conditions, rota, travel and training requirements.",
 };
 export const officerAssessments = {
-  "not-reviewed": "Not reviewed",
-  "needs-clarification": "Needs clarification",
-  "worth-discussing": "Worth discussing",
-  "not-suitable": "Not currently suitable",
+  "not-reviewed": "Not yet decided",
+  "needs-clarification": "Not yet decided",
+  "worth-discussing": "Potential match",
+  "not-suitable": "Not a current match",
   "worth-nominating": "Worth nominating",
 };
 export const keeperResponses = {
@@ -26,7 +26,14 @@ export const keeperResponses = {
   "not-interested": "Not interested",
   "more-information": "Wants more information",
 };
+export const workStages = {
+  "to-do": "To do",
+  reviewing: "Reviewing documents",
+  discussing: "Discussing with keeper",
+  preparing: "Preparing introduction",
+};
 export const initialOpportunity = {
+  workStage: "to-do",
   suggested: false,
   interest: "not-discussed",
   responseOrigin: null,
@@ -41,6 +48,10 @@ export function interestLabel(state) {
 }
 export function opportunityReducer(state, action) {
   switch (action.type) {
+    case "work-stage":
+      return Object.hasOwn(workStages, action.value)
+        ? { ...state, workStage: action.value }
+        : state;
     case "suggest":
       // Recommending an opportunity never creates a keeper response.
       return state.assessment === "not-suitable"

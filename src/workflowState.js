@@ -1,5 +1,5 @@
 import { qualifications, dateLabel, person, vacancy } from "./data.js";
-import { interestLabel } from "./workflow.js";
+import { workStages } from "./workflow.js";
 
 export const today = () =>
   new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
@@ -159,70 +159,33 @@ export function workflowView(state) {
         : ready
           ? "Ready for Eimhin’s review"
           : "Introduction draft saved";
-  let action, label, progress;
+  const paused = o.interest === "not-interested" || o.assessment === "not-suitable";
+  const progress = paused ? "On hold"
+    : referral?.needsReview ? "Reviewing introduction"
+    : sent ? "Introduction sent"
+    : ready ? "Reviewing with Eimhin"
+    : workStages[o.workStage] ?? workStages["to-do"];
+  let action, label;
   if (o.interest === "not-interested")
-    [action, label, progress] = [
-      "response",
-      "Review Eimhin’s response",
-      "Not interested",
-    ];
+    [action, label] = ["response", "Review Eimhin’s response"];
   else if (o.assessment === "not-suitable")
-    [action, label, progress] = [
-      "assessment",
-      "Reconsider suitability",
-      "Not currently suitable",
-    ];
+    [action, label] = ["assessment", "Reconsider suitability"];
+  else if (sent && !referral?.needsReview)
+    [action, label] = [null, null];
+  else if (o.workStage === "discussing" || o.assessment === "needs-clarification" || o.interest === "more-information")
+    [action, label] = ["discussion", "Prepare follow-up discussion"];
   else if (o.assessment === "not-reviewed")
-    [action, label, progress] = [
-      "assessment",
-      "Review suitability",
-      interestLabel(o),
-    ];
-  else if (
-    o.assessment === "needs-clarification" ||
-    o.interest === "more-information"
-  )
-    [action, label, progress] = [
-      "discussion",
-      "Prepare follow-up discussion",
-      "Needs clarification",
-    ];
+    [action, label] = ["assessment", "Review suitability"];
   else if (o.interest !== "interested")
-    [action, label, progress] = [
-      "response",
-      "Record Eimhin’s response",
-      interestLabel(o),
-    ];
+    [action, label] = ["response", "Record Eimhin’s response"];
   else if (referral?.needsReview)
-    [action, label, progress] = [
-      "introduction",
-      "Review candidate introduction",
-      "Introduction needs review",
-    ];
+    [action, label] = ["introduction", "Review candidate introduction"];
   else if (!referral)
-    [action, label, progress] = [
-      "introduction",
-      "Prepare candidate introduction",
-      "Worth discussing",
-    ];
-  else if (sent)
-    [action, label, progress] = [
-      null,
-      null,
-      `Sent to Carrowmore Array · simulated · ${dateLabel(sent.sentAt.slice(0, 10))}`,
-    ];
+    [action, label] = ["introduction", "Prepare candidate introduction"];
   else if (ready)
-    [action, label, progress] = [
-      "introduction",
-      "Review with Eimhin",
-      "Ready for Eimhin’s review",
-    ];
+    [action, label] = ["introduction", "Review with Eimhin"];
   else
-    [action, label, progress] = [
-      "introduction",
-      "Review candidate introduction",
-      "Introduction draft saved",
-    ];
+    [action, label] = ["introduction", "Review candidate introduction"];
   return {
     assessment: o.assessment,
     interest: o.interest,
@@ -231,4 +194,8 @@ export function workflowView(state) {
     primary: { action, label },
     tasks: workflowTasks(state),
   };
+}
+
+export function questionDiscussed(state, draft) {
+  return Boolean(draft.completed || state.reports[draft.id] || state.notes.some((n) => n.topics?.some((t) => t.id === draft.id)));
 }

@@ -17,20 +17,21 @@ import {
 import { Search } from "lucide-react";
 import {
   assessmentHash,
+  profileHash,
   filterPeople,
   intentions,
   peopleForWorkspace,
 } from "./people";
 
-function Progress({ children }) {
+export function Progress({ children }) {
   const color = [
     "Interview invited",
     "Employment arranged",
-    "Interested",
-    "Ready for Eimhin’s review",
+    "Introduction sent",
+    "Reviewing with Eimhin",
   ].includes(children)
     ? "documented"
-    : children === "Qualification check needed"
+    : ["On hold", "Reviewing introduction"].includes(children)
       ? "clarification"
       : "carrowmore";
   return (
@@ -41,7 +42,7 @@ function Progress({ children }) {
       tt="none"
       fw={500}
       h="auto"
-      style={{ whiteSpace: "normal" }}
+      styles={{ root: { maxWidth: "100%" }, label: { whiteSpace: "normal", overflow: "visible", textOverflow: "clip" } }}
     >
       {children}
     </Badge>
@@ -69,7 +70,7 @@ export function PeopleWorkspace({
             Redeployment workspace
           </Title>
           <Text c="dimmed" size="sm" mt="xs">
-            People, opportunities and next actions
+            People, opportunities under consideration and next actions
           </Text>
         </Box>
         <Grid align="flex-end">
@@ -125,7 +126,7 @@ export function PeopleWorkspace({
                 <Grid gutter="xs">
                   <Grid.Col span={5}>
                     <Text size="xs" c="dimmed">
-                      Opportunity
+                      Opportunities under consideration
                     </Text>
                   </Grid.Col>
                   <Grid.Col span={3}>
@@ -151,12 +152,17 @@ export function PeopleWorkspace({
                 gutter="lg"
               >
                 <Grid.Col span={{ base: 12, sm: 3 }}>
-                  <Title order={2} size="md" id={`person-${p.id}`}>
-                    {p.name}
-                  </Title>
-                  <Text size="sm" c="dimmed" mt="xs">
-                    {p.intention}
-                  </Text>
+                  <Stack gap={2}>
+                    <Title order={2} size="md" id={`person-${p.id}`}>
+                      {p.name}
+                    </Title>
+                    <Text size="sm" c="dimmed">
+                      {p.intention}
+                    </Text>
+                    <Anchor href={profileHash(p.id)} size="sm" underline="always" aria-label={`View profile for ${p.name}`} style={{ minHeight: 24, width: "fit-content" }}>
+                      View profile
+                    </Anchor>
+                  </Stack>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 9 }}>
                   {p.opportunities.length ? (
@@ -200,7 +206,7 @@ export function PeopleWorkspace({
                     </Stack>
                   ) : (
                     <Text size="sm" c="dimmed">
-                      No job recommendations
+                      No opportunities under consideration
                     </Text>
                   )}
                 </Grid.Col>

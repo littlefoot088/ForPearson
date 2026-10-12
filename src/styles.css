@@ -83,6 +83,20 @@
   font-display: swap;
 }
 
+html {
+  background: var(--carrowmore-page);
+}
+
+body {
+  min-height: 100dvh;
+  background-color: var(--carrowmore-page);
+  background-image: url("/backgrounds/ivory-watercolour.jpg");
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
 /* Quiet Authority: shared identity. Layout spacing remains Mantine-owned. */
 [data-carrowmore-identity="quiet"] {
   font-optical-sizing: auto;
@@ -248,4 +262,17 @@
 .reference-position,
 input[type="date"] {
   font-variant-numeric: tabular-nums;
+}
+
+/* Fixed status/action columns across every officer workflow state. */
+.workspace-status-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.5rem;
+  gap: var(--mantine-spacing-sm);
+  align-items: start;
+}
+.workspace-status-copy { min-width: 0; }
+.workspace-status-action {
+  justify-self: end;
+  min-height: 24px;
 }

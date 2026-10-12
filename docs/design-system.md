@@ -170,9 +170,9 @@ Every logbook timeline item now shows the same “Exclude this record” checkbo
 
 ## Neutral visual foundation — current
 
-This palette supersedes the earlier visual proof and background experiments. Page: #F7F6F2; content and header: #FFFFFF; officer workspace: #F0F0ED; primary navy: #243951; body text: #273238. Surface tokens are centralised in the Mantine CSS-variable resolver. The header has a straight inset 1px #D8DEE0 lower rule to preserve its height. The approved navy lighthouse and serif wordmark are retained in the header; application typography remains IBM Plex Sans.
+The page uses a warm ivory #F7F4EE base and one locally hosted, low-contrast ivory-and-cream watercolour texture. The image sits only on the page canvas; content panels and the header remain solid #FFFFFF, and the officer workspace remains #F0F0ED. Primary navy is #243951 and body text is #273238. Surface tokens are centralised in the Mantine CSS-variable resolver. The header has a straight inset 1px #D8DEE0 lower rule to preserve its height. The approved navy lighthouse and serif wordmark are retained in the header; application typography remains IBM Plex Sans.
 
-Watercolour assets and decorative background layers have been removed. The lighthouse SVG retains padded bounds to prevent clipping. Existing component sizing, typography, focus states, semantic status colours and all assessment/workspace behaviour remain intact. The logo is the sole exception to the neutral visual reset, as requested.
+The background asset is an original texture stored at `public/backgrounds/ivory-watercolour.jpg`. It uses broad, irregular warm washes without recognisable imagery, tiling or decorative overlays. The lighthouse SVG retains padded bounds to prevent clipping. Existing component sizing, typography, focus states, semantic status colours and all assessment/workspace behaviour remain intact.
 
 ### Workflow integration (no visual redesign)
 

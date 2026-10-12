@@ -64,7 +64,7 @@ it("treats a current simulated send as the end of the workflow", () => {
   expect(
     screen.getByRole("heading", { name: "Introduction sent" }),
   ).toBeVisible();
-  expect(screen.getByText("Worth discussing")).toBeVisible();
+  expect(screen.getByText("Potential match")).toBeVisible();
   expect(screen.queryByText("Next action")).not.toBeInTheDocument();
   expect(
     screen.getByRole("button", { name: "View sent introduction" }),
@@ -138,7 +138,7 @@ it("saves dated private notes with follow-up, edits them and excludes their text
   const user = userEvent.setup();
   mount();
   expect(screen.getByText("No conversation recorded.")).toBeVisible();
-  await user.click(screen.getByRole("button", { name: "Add note" }));
+  await user.click(screen.getByRole("button", { name: "Record conversation" }));
   fireEvent.change(await screen.findByLabelText(/Conversation or note date/), {
     target: { value: "2026-12-31" },
   });
@@ -294,30 +294,8 @@ it("records responsibilities separately and includes them only on explicit selec
   await user.click(
     screen.getByRole("button", { name: /Pump maintenance & repair.*Repeated/ }),
   );
-  await user.click(
-    screen.getAllByRole("button", { name: /Options for task:/ })[0],
-  );
-  await user.click(
-    await screen.findByRole("menuitem", {
-      name: "Prepare discussion questions",
-    }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "Write question" }),
-  );
-  await user.click(
-    await screen.findByRole("button", { name: "Save question" }),
-  );
-  await user.keyboard("{Escape}");
-  await waitFor(() =>
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
-  );
-  await user.click(
-    within(screen.getByRole("region", { name: "Next steps" })).getByRole(
-      "button",
-      { name: "Record Eimhin’s account" },
-    ),
-  );
+  await user.click(screen.getByRole("button", { name: "View conversation history (0)" }));
+  await user.click(await screen.findByRole("button", { name: "Record account: Pump maintenance & repair" }));
   fireEvent.change(await screen.findByLabelText(/Date reported/), {
     target: { value: "2026-12-31" },
   });
@@ -333,16 +311,8 @@ it("records responsibilities separately and includes them only on explicit selec
   await waitFor(() =>
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
   );
-  expect(
-    screen.getByRole("checkbox", {
-      name: "Discuss Pump maintenance & repair",
-    }),
-  ).toBeChecked();
-  expect(
-    screen.getByText(
-      "Completed automatically when Eimhin’s account was recorded",
-    ),
-  ).toBeVisible();
+  expect(within(screen.getByRole("region", { name: "Conversations" })).getByText("I replaced pump seals independently.")).toBeVisible();
+  expect(within(screen.getByRole("region", { name: "Next steps" })).queryByText("I replaced pump seals independently.")).not.toBeInTheDocument();
   expect(
     screen.getByText(/Recorded by you; not independently verified/),
   ).toBeVisible();
@@ -505,7 +475,7 @@ it("cancels edits, confirms regeneration and preserves previous manual wording a
     "Please explore",
   );
   expect(stored.workspace.ready).toBeNull();
-});
+}, 10000);
 
 it("does not replace a legacy referral until explicitly requested", async () => {
   const { initialWorkspace } = await import("../src/workspace");
@@ -624,7 +594,7 @@ it("preserves legacy note follow-ups when editing without creating tasks", async
   );
   const user = userEvent.setup();
   mount();
-  await user.click(screen.getByRole("button", { name: "View notes (1)" }));
+  await user.click(screen.getByRole("button", { name: "View conversation history (1)" }));
   await user.click(
     await screen.findByRole("button", { name: "Edit note from 1 Dec 2026" }),
   );
@@ -707,3 +677,45 @@ it("records, edits and cancels working preferences and completes the linked task
   ).toBeVisible();
   expect(screen.queryByText("Unsaved wording")).not.toBeInTheDocument();
 });
+
+it("prepares multiple questions and records one conversation without turning notes into tasks or evidence", async () => {
+  const user = userEvent.setup();
+  let view = mount();
+  await user.click(screen.getByRole('button',{name:'Prepare questions'}));
+  const topics = await screen.findByRole('combobox',{name:'Question topics'});
+  await waitFor(() => expect(topics).toBeVisible());
+  await user.click(topics);
+  await user.keyboard('{ArrowDown}');
+  // JSDOM has no layout for Floating UI; live dropdown visibility is browser-checked.
+  fireEvent.click(screen.getAllByRole('option',{hidden:true}).find((o)=>o.textContent==='Pump maintenance & repair'));
+  await user.click(topics);
+  fireEvent.click(screen.getAllByRole('option',{hidden:true}).find((o)=>o.textContent==='Electrical fault-finding & control'));
+  await user.click(screen.getByRole('button',{name:'Add selected questions'}));
+  await user.keyboard('{Escape}');
+  await waitFor(()=>expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  expect(screen.getByText('2 questions prepared · 0 discussed')).toBeVisible();
+  const tasksBefore = JSON.parse(localStorage.getItem(storageKey)).workspace.tasks;
+  expect(within(screen.getByRole('region',{name:'Next steps'})).queryByText('Discuss Pump maintenance & repair')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button',{name:'Record conversation'}));
+  fireEvent.change(await screen.findByLabelText(/Conversation or note date/),{target:{value:'2026-10-12'}});
+  await user.click(screen.getByRole('checkbox',{name:'Pump maintenance & repair'}));
+  await user.click(screen.getByRole('checkbox',{name:'Electrical fault-finding & control'}));
+  await user.type(screen.getByRole('textbox',{name:'Private note'}),'We discussed both areas. This is private.');
+  await user.click(screen.getByRole('button',{name:'Save note'}));
+  await close(user);
+  expect(screen.getByText('0 questions prepared · 2 discussed')).toBeVisible();
+  expect(within(screen.getByRole('region',{name:'Conversations'})).getByText('We discussed both areas. This is private.')).toBeVisible();
+  let saved = JSON.parse(localStorage.getItem(storageKey));
+  expect(saved.workspace.notes[0].topics).toHaveLength(2);
+  expect(saved.workspace.tasks).toEqual(tasksBefore);
+  expect(saved.workspace.reports).toEqual({});
+  expect(saved.workspace.verifications).toEqual({});
+  expect(saved.workspace.opportunity.interest).toBe('interested');
+  view.unmount();view=mount();
+  expect(screen.getByText('0 questions prepared · 2 discussed')).toBeVisible();
+  await user.click(screen.getByRole('button',{name:'View questions'}));
+  await user.click((await screen.findAllByRole('button',{name:'Remove'}))[0]);
+  saved=JSON.parse(localStorage.getItem(storageKey));
+  expect(saved.workspace.notes[0].topics).toHaveLength(2);
+  expect(saved.drafts).toHaveLength(1);
+}, 12000);

@@ -11,10 +11,11 @@ import {
 } from "@mantine/core";
 import { Check } from "lucide-react";
 import { Icon } from "./components";
-import { officerAssessments, keeperResponses } from "./workflow";
+import { officerAssessments, keeperResponses, workStages } from "./workflow";
 import { vacancy } from "./data";
 
 export const workflowTitles = {
+  progress: "Update progress",
   suggest: "Suggest this opportunity to Eimhin",
   response: "Record Eimhin’s response",
   assessment: "Your assessment",
@@ -27,7 +28,8 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
     fieldRef.current?.focus();
   }, []);
   const [response, setResponse] = useState(state.interest);
-  const [assessment, setAssessment] = useState(state.assessment);
+  const [assessment, setAssessment] = useState(state.assessment === "needs-clarification" ? "not-reviewed" : state.assessment);
+  const [stage, setStage] = useState(state.workStage ?? "to-do");
   const [decision, setDecision] = useState(
     state.nominationDecision?.decision ?? "defer",
   );
@@ -37,6 +39,7 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
   const [acknowledged, setAcknowledged] = useState(false);
   function save(event) {
     event.preventDefault();
+    if (mode === "progress") onSave({ type: "work-stage", value: stage });
     if (mode === "suggest") onSave({ type: "suggest" });
     if (mode === "response") onSave({ type: "response", value: response });
     if (mode === "assessment")
@@ -52,6 +55,14 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
       : mode === "assessment" && assessment === "worth-nominating";
   return (
     <Stack component="form" gap="md" onSubmit={save}>
+      {mode === "progress" && (
+        <>
+          <NativeSelect ref={fieldRef} label="Progress" value={stage}
+            onChange={(event) => setStage(event.currentTarget.value)}
+            data={Object.entries(workStages).map(([value, label]) => ({ value, label }))} />
+          <Text size="sm">Choose the work you are currently doing. Sending the introduction updates progress automatically.</Text>
+        </>
+      )}
       {mode === "suggest" && (
         <>
           <Text fw={600}>
@@ -86,7 +97,7 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
             data={Object.entries(officerAssessments)
               .filter(
                 ([value]) =>
-                  value !== "worth-nominating" || state.assessment === value,
+                  value !== "needs-clarification" && (value !== "worth-nominating" || state.assessment === value),
               )
               .map(([value, label]) => ({
                 value,
@@ -195,7 +206,7 @@ export function WorkflowForm({ mode, state, onSave, onCancel }) {
           disabled={disabled}
           rightSection={<Icon icon={Check} />}
         >
-          {mode === "suggest"
+          {mode === "progress" ? "Save progress" : mode === "suggest"
             ? "Record suggestion locally"
             : mode === "response"
               ? "Save response"

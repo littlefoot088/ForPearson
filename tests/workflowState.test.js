@@ -179,7 +179,7 @@ test("v2 migration preserves manual work while moving the certificate check to v
         recordFlags: ["pump_2009-03-13"],
       }),
   });
-  assert.equal(loaded.version, 6);
+  assert.equal(loaded.version, 10);
   assert.equal(loaded.workspace.tasks[0].origin, "system");
   assert(
     !workflowTasks(loaded.workspace).find((t) => t.id === "certificates").done,
@@ -202,4 +202,45 @@ test("v2 migration preserves manual work while moving the certificate check to v
     loadWorkspace({ getItem: () => stored }).workspace,
     loaded.workspace,
   );
+});
+
+test("work stage is independent of suitability and does not invalidate saved wording", () => {
+  let state = positive(initialWorkspace());
+  assert.equal(workflowView(state).progress, "To do");
+  state = reduce(state, { type: "opportunity", action: { type: "work-stage", value: "discussing" } });
+  assert.equal(workflowView(state).progress, "Discussing with keeper");
+  assert.equal(workflowView(state).assessment, "worth-discussing");
+  assert.equal(workflowView(state).primary.action, "discussion");
+  assert.equal(assessmentOverview(state).progress, workflowView(state).progress);
+  state = reduce(state, { type: "referral-save", referral: createReferral() });
+  const referral = state.referral;
+  state = reduce(state, { type: "opportunity", action: { type: "work-stage", value: "preparing" } });
+  assert.deepEqual(state.referral, referral);
+  assert.equal(workflowView(state).progress, "Preparing introduction");
+  assert.equal(reduce(state, { type: "opportunity", action: { type: "work-stage", value: "sent" } }).opportunity.workStage, "preparing");
+});
+
+test("v6 migration adds work stage without inferring discussion or changing stored judgement", () => {
+  const old = initialWorkspace();
+  delete old.opportunity.workStage;
+  old.opportunity.assessment = "needs-clarification";
+  const loaded = loadWorkspace({ getItem: () => JSON.stringify({ version: 6, workspace: old, drafts: [], recordFlags: [] }) });
+  assert.equal(loaded.workspace.opportunity.workStage, "reviewing");
+  assert.equal(loaded.workspace.opportunity.assessment, "needs-clarification");
+  assert.equal(workflowView(loaded.workspace).primary.action, "discussion");
+  assert.deepEqual(loaded.workspace.notes, old.notes);
+});
+
+test('conversation topic snapshots persist without promoting private notes to evidence or erasing earlier wording',()=>{
+ const draft={id:'pump',title:'Pump maintenance & repair',text:'Which repairs?',requirementId:'maintenance',completed:false};
+ const original=initialWorkspace();
+ const state=reduce(original,{type:'note-save',note:{id:'multi',date:'2026-10-12',text:'Private discussion',followup:'',topics:[{id:draft.id,title:draft.title,text:draft.text}]}});
+ assert.deepEqual(state.tasks,original.tasks);
+ assert.deepEqual(state.reports,original.reports);
+ assert.deepEqual(state.verifications,original.verifications);
+ assert.deepEqual(state.opportunity,original.opportunity);
+ let raw;persistWorkspace({setItem:(_,value)=>raw=value},{workspace:state,drafts:[{...draft,text:'Updated question'}],recordFlags:[]});
+ const restored=loadWorkspace({getItem:()=>raw});
+ assert.equal(restored.workspace.notes[0].topics[0].text,'Which repairs?');
+ assert.equal(restored.drafts[0].text,'Updated question');
 });

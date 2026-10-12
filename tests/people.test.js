@@ -14,10 +14,10 @@ import {
 test("workspace uses pair tasks and progress without inferring overall intention", () => {
   let state = initialWorkspace();
   assert.deepEqual(assessmentOverview(state), {
-    progress: "Interested",
+    progress: "To do",
     nextAction: "Review suitability",
   });
-  assert.equal(peopleForWorkspace(state)[0].intention, "Not yet discussed");
+  assert.equal(peopleForWorkspace(state)[0].intention, "Not yet decided");
   state = workspaceReducer(state, { type: "task-toggle", id: "certificates" });
   assert.equal(
     assessmentOverview(state).nextAction,
@@ -32,15 +32,15 @@ test("workspace uses pair tasks and progress without inferring overall intention
     type: "referral-save",
     referral: createReferral(),
   });
-  assert.equal(assessmentOverview(state).progress, "Introduction draft saved");
+  assert.equal(assessmentOverview(state).progress, "Preparing introduction");
   state = workspaceReducer(state, { type: "ready" });
-  assert.equal(assessmentOverview(state).progress, "Ready for Eimhin’s review");
+  assert.equal(assessmentOverview(state).progress, "Reviewing with Eimhin");
   state = workspaceReducer(state, {
     type: "opportunity",
     action: { type: "response", value: "not-interested" },
   });
   assert.deepEqual(assessmentOverview(state), {
-    progress: "Not interested",
+    progress: "On hold",
     nextAction: "Review Eimhin’s response",
   });
 });
@@ -71,14 +71,15 @@ test("six workspace scenarios stay separate from evidence and have only one asse
       .length,
     0,
   );
+  assert.equal(people.at(-1).intention, "Planning retirement");
   assert.equal(filterPeople(people, "Aoife Ni Mhurchu", null, false).length, 1);
   const progress = people.flatMap((p) =>
     p.opportunities.map((o) => o.progress),
   );
   for (const status of [
     "Interview invited",
-    "Qualification check needed",
-    "Exploring",
+    "Reviewing documents",
+    "To do",
     "Employment arranged",
   ])
     assert.ok(progress.includes(status));

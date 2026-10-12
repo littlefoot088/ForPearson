@@ -159,7 +159,7 @@ export const theme = createTheme({
 
 export const cssVariablesResolver = () => ({
   variables: {
-    "--carrowmore-page": "#F7F6F2",
+    "--carrowmore-page": "#F7F4EE",
     "--carrowmore-workspace": "#F0F0ED",
     "--carrowmore-header-border": "#D8DEE0",
   },

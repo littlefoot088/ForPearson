@@ -53,7 +53,7 @@ Eimhin’s selected records do not establish his personal plans or offshore pref
 
 Conceptually, an explicit retirement intention leaves a keeper visible in People, clearly labelled, but suppresses employment recommendations and automatic vacancy suggestions. The keeper can change the preference later. Age and tenure never trigger this behaviour.
 
-**Illustrative prototype directory example — not derived from employment records:** Fintan Ó Ceallaigh · Planning retirement · No job recommendations. This example is displayed in the entry workspace without changing any source fixture. Intention changes remain conceptual; no retirement management workflow is implemented. How to handle already-active referrals when a keeper changes their intention would require operational research and a conversation with the keeper, rather than automatic assumptions.
+**Illustrative prototype directory example — not derived from employment records:** Fintan Ó Ceallaigh · Planning retirement · No opportunities under consideration. This example is displayed last in the entry workspace without changing any source fixture. Employment intention can now be edited on the keeper profile; no retirement management workflow is implemented. How to handle already-active referrals when a keeper changes their intention would require operational research and a conversation with the keeper, rather than automatic assumptions.
 
 ## Implemented moment: assessment to referral
 
@@ -155,3 +155,21 @@ The shared workflow selector now exposes a local simulated-send outcome to both 
 Sending requires a positive suitability decision, recorded interest, a current saved introduction and explicit confirmation that Eimhin reviewed and approved that version. The reducer validates the submitted version against the saved document and current assessment signature. `sentIntroductions` stores recipient, timestamp, approval acknowledgement and a cloned public-document snapshot; the existing employer progression remains `not-submitted`. Version-4 migration creates an empty history, never inferred consent. Editing or changing evidence cannot mutate previous snapshots or trigger sending. An unchanged version cannot be sent twice; a revised version requires new confirmation.
 
 “Replace wording from assessment” remains an explicit, confirmed draft-generation action; it does not reset workflow or send history. Historical documents are read-only in the introduction drawer’s history viewer. No network sending capability exists.
+
+## Work stage separated from suitability
+
+Progress is shared across People and the opportunity workspace and describes current work, not employment intention or suitability. The fixed assessment control now offers Not yet decided, Potential match and Not a current match. A separate Update progress drawer records early work stages; actual introduction saves, readiness and sending supply document stages. Negative responses/decisions pause progression. Historical clarification values remain compatible and request follow-up. Version 7 migrates explicit stages without inferring discussion or approval. People opportunities represent already-selected illustrative matches; the keeper profile now provides career context and curated opportunity selection.
+
+## Keeper profile integration
+
+The accepted journey is People → keeper profile → opportunity assessment, with the existing People → turbine assessment shortcut preserved. People keeps individual opportunity rows and filters. All six people use one profile component; hash routes use the existing person IDs (Eimhin retains #people/eimhin). The assessment breadcrumb links to the profile and navigation preserves the single workspace state.
+
+Use Employment intention for the person’s plans, Career preferences for their stated wider preferences, Progress for work on an individual opportunity, and Your assessment for suitability. Opportunities under consideration replaces Matching opportunities. The profile never aggregates different opportunity stages into one status.
+
+Edit career context and Explore opportunities use existing Mantine drawer conventions, explicit save/cancel, Escape and return focus. Career context and curated selections use additive version-8 workspace persistence. Existing offshore preferences, assessment evidence, introduction snapshots and private notes stay separate. New selections are To do and do not create detailed assessments. Profiles do not offer placement exploration for retirement or employment-arranged intentions. Earlier selections and paused outcomes remain visible separately, without inferring rejection or closing a person’s case.
+
+Employment intention uses four choices consistently in filters and profile editing: Not yet decided, Seeking employment, Employment arranged and Planning retirement. Exploring options is no longer a separate category. Older values migrate additively in storage version 9. An explicit sent introduction resolves an earlier undecided intention to Seeking employment for display on both pages; a later officer-recorded intention remains authoritative. Written preferences, opportunity interest and approval records remain distinct.
+
+## Conversations instead of discussion documents in tasks
+
+What needs doing contains tasks. Conversations owns prepared discussion questions, conversation recording and history. A multi-select prepares several topic prompts together. A dated private note can cover multiple selected questions; the original prompts are snapshotted in the note. Prepared/discussed counts derive from saved notes, explicit reported accounts and existing completion markers. The latest-contact preview now considers both notes and reported accounts. Both remain clearly labelled; recording a private conversation does not establish documentary verification or sharing approval. Reported experience is explicitly recorded separately through the history drawer and remains opt-in for introductions. Storage version 10 extends notes additively, retaining existing question drafts and note provenance.

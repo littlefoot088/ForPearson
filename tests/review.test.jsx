@@ -1,9 +1,10 @@
 import React from "react";
 import { assessmentHash } from "../src/people";
 beforeEach(() => window.history.replaceState(null, "", assessmentHash));
-import { beforeEach, afterEach, describe, expect, it } from "vitest";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import {
   cleanup,
+  fireEvent,
   render,
   screen,
   within,
@@ -14,10 +15,11 @@ import { MantineProvider } from "@mantine/core";
 import App from "../src/App";
 import { theme } from "../src/theme";
 import { sources as sourceRecords } from "../src/records";
-import { claims, getSources } from "../src/data";
+import { claims, qualifications, getSources } from "../src/data";
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   window.history.replaceState(null, "", "/");
   window.localStorage.clear();
 });
@@ -43,34 +45,23 @@ async function openPump(user) {
 }
 
 async function writeQuestion(user, topic = "pump") {
-  const discussionOptions = screen.queryAllByRole("button", {
-    name: /Options for discussion:/,
+  await user.click(screen.getByRole("button", { name: /^(Prepare questions|View questions)$/ }));
+  const topics = await screen.findByRole("combobox", { name: "Question topics" });
+  await waitFor(() => expect(topics).toBeVisible());
+  await user.click(topics);
+  await user.keyboard("{ArrowDown}");
+  const label = [...claims, ...qualifications].find((t) => t.id === topic).title;
+  // Floating UI hides a zero-size reference in JSDOM; real visibility is browser-checked.
+  const option = await waitFor(() => {
+    const element = screen.getAllByRole("option", { hidden: true }).find((o) => o.textContent === label);
+    expect(element).toBeDefined(); return element;
   });
-  if (discussionOptions.length) {
-    await user.click(discussionOptions[0]);
-    await user.click(
-      await screen.findByRole("menuitem", { name: "Add discussion item" }),
-    );
+  if (option.getAttribute("aria-disabled") !== "true" && !option.hasAttribute("data-combobox-disabled")) {
+    fireEvent.click(option);
+    await user.click(screen.getByRole("button", { name: "Add selected questions" }));
   } else {
-    await user.click(
-      screen.getByRole("button", {
-        name: "Options for task: Check existing offshore certificates",
-      }),
-    );
-    await user.click(
-      await screen.findByRole("menuitem", {
-        name: "Prepare discussion questions",
-      }),
-    );
+    await user.click(screen.getByText("Save questions for your conversation with Eimhin. Questions stay local; nothing is sent."));
   }
-  await user.selectOptions(
-    await screen.findByLabelText("Question topic"),
-    topic,
-  );
-  await user.click(screen.getByRole("button", { name: "Write question" }));
-  await user.click(
-    await screen.findByRole("button", { name: "Save question" }),
-  );
   await user.keyboard("{Escape}");
   await waitFor(() =>
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
@@ -171,14 +162,8 @@ describe("Mantine review interactions", () => {
   it("saves, edits and removes a draft without altering assessment or interest", async () => {
     const user = setup();
     await writeQuestion(user);
-    await user.click(
-      screen.getByRole("button", {
-        name: "Options for discussion: Pump maintenance & repair",
-      }),
-    );
-    await user.click(
-      await screen.findByRole("menuitem", { name: "Edit question" }),
-    );
+    await user.click(screen.getByRole("button", { name: "View questions" }));
+    await user.click(await screen.findByRole("button", { name: "Edit question" }));
     const input = await screen.findByRole("textbox", {
       name: "Question for Eimhin",
     });
@@ -241,8 +226,8 @@ describe("Mantine review interactions", () => {
     await user.click(screen.getByRole("button", { name: "Save assessment" }));
     await waitFor(() => expect(edit).toHaveFocus());
     expect(
-      screen.getByRole("heading", { name: "Not currently suitable" }),
-    ).toHaveTextContent("Not currently suitable");
+      screen.getByText("Not a current match"),
+    ).toHaveTextContent("Not a current match");
     await user.click(
       screen.getByRole("button", { name: "Update Eimhin’s interest" }),
     );
@@ -269,9 +254,7 @@ it("keeps discussion topics unique and distinct from qualification checks", asyn
   const user = setup();
   await writeQuestion(user, "sea");
   await writeQuestion(user, "sea");
-  expect(
-    screen.getByRole("checkbox", { name: "Discuss Sea survival" }),
-  ).not.toBeChecked();
+  expect(screen.getByText("1 question prepared · 0 discussed")).toBeVisible();
   expect(
     screen.queryByRole("checkbox", { name: "Check Sea survival" }),
   ).not.toBeInTheDocument();
@@ -316,16 +299,8 @@ it("keeps optional discussion prompts available after saving a contextual questi
   const user = setup();
   await writeQuestion(user, "pump");
   await writeQuestion(user, "electrical");
-  expect(
-    screen.getByRole("checkbox", {
-      name: "Discuss Pump maintenance & repair",
-    }),
-  ).not.toBeChecked();
-  expect(
-    screen.getByRole("checkbox", {
-      name: "Discuss Electrical fault-finding & control",
-    }),
-  ).not.toBeChecked();
+  expect(screen.getByText("2 questions prepared · 0 discussed")).toBeVisible();
+  expect(within(screen.getByRole("region", { name: "Next steps" })).queryByText("Discuss Pump maintenance & repair")).not.toBeInTheDocument();
   expect(screen.getByTestId("keeper-interest")).toHaveTextContent("Interested");
 });
 
@@ -497,12 +472,12 @@ it("reviews suitability before promoting introduction preparation", async () => 
   expect(
     screen.getByRole("button", { name: "Prepare candidate introduction" }),
   ).not.toHaveAttribute("data-variant", "subtle");
-  await user.click(screen.getByRole("button", { name: "Change decision" }));
+  await user.click(screen.getByRole("button", { name: "Update progress" }));
   await user.selectOptions(
-    await screen.findByRole("combobox", { name: "Your assessment" }),
-    "needs-clarification",
+    await screen.findByRole("combobox", { name: "Progress" }),
+    "discussing",
   );
-  await user.click(screen.getByRole("button", { name: "Save assessment" }));
+  await user.click(screen.getByRole("button", { name: "Save progress" }));
   await waitFor(() =>
     expect(
       screen.getByRole("button", { name: "Prepare follow-up discussion" }),
