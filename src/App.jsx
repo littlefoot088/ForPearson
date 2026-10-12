@@ -367,7 +367,7 @@ export default function App() {
         <Container size="lg">
           <Group justify="space-between">
             <img
-              src="/brand/carrowmore-lighthouse.svg?v=3"
+              src={`${import.meta.env.BASE_URL}brand/carrowmore-lighthouse.svg?v=3`}
               alt="Carrowmore Light Authority"
               width={228}
               height={48}
