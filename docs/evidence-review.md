@@ -1,5 +1,7 @@
 # Eimhin: full supplied-log review
 
+Scope: this document records source-data provenance and historical fixture interpretation. For current UI, workflow, verification and persistence rules, use [information architecture](information-architecture.md) and the [design system](design-system.md). Runtime verification and reviewer exclusions can change the displayed assessment without changing original evidence.
+
 This review replaces frequency claims inferred from eleven selected examples. It is a bounded review of the supplied pack, not a claim that the pack records every task Eimhin performed. The scenario includes records through 31 December 2026.
 
 ## Findings

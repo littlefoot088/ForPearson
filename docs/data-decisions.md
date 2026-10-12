@@ -1,5 +1,7 @@
 # Data decisions
 
+Scope: this document records source-data provenance and historical fixture interpretation. For current UI, workflow, verification and persistence rules, use [information architecture](information-architecture.md) and the [design system](design-system.md). Runtime verification and reviewer exclusions can change the displayed assessment without changing original evidence.
+
 ## Selected person and vacancy
 
 Eimhin Mac Neidhe, keeper code **K0104**, is reviewed against `employers/carrowmore-array-om-technician.md`. The brief asks for 40 potential interview candidates, not 40 available openings. The vacancy requires hands-on maintenance, offshore safety coverage, medical fitness and comfort in the offshore working environment. It values permit experience; it does not require prior wind experience or the separate HV Authorised Person award.
