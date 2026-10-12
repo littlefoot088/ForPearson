@@ -62,7 +62,7 @@ import {
   workspaceReducer,
 } from "./workspace.js";
 import { PeopleWorkspace } from "./PeopleWorkspace";
-import { assessmentHash, profileHash, profileIdForHash, peopleForWorkspace } from "./people";
+import { assessmentHash, profileIdForHash, peopleForWorkspace } from "./people";
 import { KeeperProfile } from "./KeeperProfile";
 const pageForHash = () => window.location.hash === assessmentHash ? "assessment" : profileIdForHash(window.location.hash) ?? "people";
 
@@ -405,7 +405,7 @@ export default function App() {
               <Anchor size="sm" href="#people">
                 People
               </Anchor>
-              <Anchor size="sm" href={profileHash(person.id)}>{person.name}</Anchor>
+              <Text size="sm">{person.name}</Text>
               <Text size="sm">{vacancy.title}</Text>
             </Breadcrumbs>
             <Grid gutter="lg" align="flex-start">

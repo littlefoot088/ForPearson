@@ -3,45 +3,16 @@ import { Anchor, Breadcrumbs, Button, Container, Drawer, Grid, Group, NativeSele
 import { useMediaQuery } from "@mantine/hooks";
 import { ChevronRight } from "lucide-react";
 import { assessmentHash, intentions, vacancyOptions } from "./people";
-import { dateLabel } from "./data";
-import { Progress } from "./PeopleWorkspace";
+import { dateLabel, person } from "./data";
 
 export function KeeperProfile({ keeper, workspace, dispatch, storageFailed }) {
   const [editor, setEditor] = useState(null);
   const [notice, setNotice] = useState("");
   const narrow = useMediaQuery("(max-width: 48em)");
   if (!keeper) return null;
-  const retired = keeper.intention === "Planning retirement";
-  const arranged = keeper.intention === "Employment arranged";
-  const undecided = keeper.intention === "Not yet decided";
-  const active = retired || arranged ? [] : keeper.opportunities.filter((o) => o.progress !== "On hold");
-  const previous = keeper.consideredOpportunities.filter((o) => undecided || retired || arranged || o.progress === "On hold");
   const available = vacancyOptions.filter((o) => !keeper.consideredOpportunities.some((selected) => selected.id === o.id));
   const working = keeper.currentPerson && workspace.workingPreferences;
   const close = () => setEditor(null);
-  function opportunityRow(o, showNext = true) {
-    return (
-      <Grid key={o.id} gutter="md" align="flex-start" component="article" aria-label={`${o.title} at ${o.employer}`}>
-        <Grid.Col span={{ base: 12, sm: 5 }}>
-          <Stack gap={4}>
-            {o.implemented
-              ? <Anchor href={assessmentHash} size="sm" fw={600} underline="always">{o.title}</Anchor>
-              : <Text size="sm" fw={500}>{o.title}</Text>}
-            <Text size="sm" c="dimmed">{o.employer}</Text>
-          </Stack>
-        </Grid.Col>
-        <Grid.Col span={{ base: 6, sm: 3 }}>
-          <Stack gap={4}><Text size="xs" c="dimmed">Progress</Text><Progress>{o.progress}</Progress></Stack>
-        </Grid.Col>
-        <Grid.Col span={{ base: 6, sm: 4 }}>
-          {showNext && o.nextAction && <Stack gap={4}><Text size="xs" c="dimmed">Next action</Text><Text size="sm">{o.nextAction}</Text></Stack>}
-          {o.implemented && o.progress === "On hold" && <Text size="sm" c="dimmed">
-            {workspace.opportunity.interest === "not-interested" ? "Eimhin is not interested in this opportunity." : "Your assessment: Not a current match."}
-          </Text>}
-        </Grid.Col>
-      </Grid>
-    );
-  }
   return (
     <Container size="lg" py="lg" component="main" id="main" tabIndex={-1}>
       <Stack gap="lg">
@@ -54,17 +25,24 @@ export function KeeperProfile({ keeper, workspace, dispatch, storageFailed }) {
               <Title order={1} size="h2">{keeper.name}</Title>
               <Text size="sm">Current role: {keeper.currentPerson ? "Lighthouse keeper · Carrowmore Light Authority" : "Not recorded"}</Text>
             </Stack>
+            {keeper.currentPerson && <Stack gap="sm" maw="48rem">
+              <Title order={2} size="h4">About Eimhin</Title>
+              <Text size="sm">Eimhin is a lighthouse keeper with Carrowmore Light Authority. His personnel record gives a joining date of {dateLabel(person.joined)}. As the Authority automates its stations, the redeployment officer is helping him consider what comes next.</Text>
+              <Text size="sm">His selected work records describe pump repairs, electrical fault-finding and control work, alongside examples of work planning and permit issuing. These records provide a starting point for discussing transferable experience; they do not establish his current qualifications or the full scope of his responsibilities.</Text>
+              <Text size="xs" c="dimmed">Background from personnel and selected work records. The detailed assessment contains the evidence and its limitations.</Text>
+            </Stack>}
             <Group justify="space-between" wrap="nowrap" gap="xs">
               <Title order={2} size="h4">Career context</Title>
               <Button className="workspace-status-action" style={{ flexShrink: 0 }} size="compact-xs" variant="subtle" onClick={() => setEditor("context")}>Edit career context</Button>
             </Group>
+            <Text size="sm" c="dimmed" maw="48rem">This is where the officer records what matters to the keeper: their plans after lighthouse work, the roles they want to explore, preferred locations and working patterns, and support they may need. It is informed by their questionnaire and conversations.</Text>
             <Grid gutter="lg">
               <Grid.Col span={{ base: 12, sm: 4 }}><Stack gap={4}>
                 <Text size="sm" c="dimmed">Employment intention</Text><Text size="sm" fw={500}>{keeper.intention}</Text>
               </Stack></Grid.Col>
               <Grid.Col span={{ base: 12, sm: 8 }}><Stack gap={4}>
                 <Text size="sm" c="dimmed">Career preferences</Text>
-                <Text size="sm" className="source-text" style={{ whiteSpace: "pre-wrap" }}>{keeper.careerPreferences || "Not yet discussed"}</Text>
+                <Text size="sm" className="source-text" style={{ whiteSpace: "pre-wrap" }}>{keeper.careerPreferences || "Preferences have not yet been recorded. Discuss their plans, preferred work and any support needed, then save their response here."}</Text>
               </Stack></Grid.Col>
             </Grid>
             {keeper.contextUpdatedAt && <Text size="xs" c="dimmed">Updated by you · {dateLabel(keeper.contextUpdatedAt.slice(0, 10))}</Text>}
@@ -76,34 +54,7 @@ export function KeeperProfile({ keeper, workspace, dispatch, storageFailed }) {
             </Stack>}
           </Stack>
         </Paper>
-        <Paper p="lg" radius="lg" bg="white">
-          <Stack gap="lg">
-            <Group justify="space-between" align="flex-start" wrap="nowrap" gap="sm">
-              <Title order={2} size="h4" style={{ minWidth: 0 }}>Opportunities under consideration</Title>
-              {!undecided && !retired && !arranged && <Button className="workspace-status-action" style={{ flexShrink: 0 }} size="compact-xs" variant="subtle" aria-label="Explore opportunities" onClick={() => setEditor("opportunities")}>Explore</Button>}
-            </Group>
-            {active.length ? active.map((o) => opportunityRow(o)) : <Stack gap="sm">
-              <Text size="sm">{undecided ? "Clarify employment plans before considering opportunities."
-                : retired ? "Planning retirement. No placement opportunities are being suggested."
-                : arranged ? "Employment arranged. No further job search is needed."
-                : "No active opportunities under consideration."}</Text>
-              {undecided && <Text size="sm">{keeper.intentionFollowup} Record their response in Career context.</Text>}
-              {!undecided && !retired && !arranged && <Text size="sm" c="dimmed">Review career preferences, explore other vacancies or sectors, and agree a follow-up with the keeper. Discuss whether training would help with their chosen direction.</Text>}
-            </Stack>}
-          </Stack>
-        </Paper>
-        {undecided && previous.length > 0 && <Paper p="lg" radius="lg" bg="white" component="details">
-          <Text component="summary" size="sm">Previously considered opportunities</Text>
-          <Stack gap="lg" mt="lg">
-            <Text size="sm" c="dimmed">Retained for reference. Clarify employment plans before continuing placement work.</Text>
-            {previous.map((o) => opportunityRow(o, false))}
-          </Stack>
-        </Paper>}
-        {!undecided && previous.length > 0 && <Paper p="lg" radius="lg" bg="white"><Stack gap="lg">
-          <Title order={2} size="h4">{arranged ? "Employment and previous considerations" : retired ? "Previously considered" : "Opportunities on hold"}</Title>
-          {!retired && !arranged && <Text size="sm" c="dimmed">An opportunity on hold does not close the keeper’s redeployment case.</Text>}
-          {previous.map((o) => opportunityRow(o, false))}
-        </Stack></Paper>}
+        <CareerPlanning currentPerson={keeper.currentPerson} />
         {notice && <Text role="status" size="sm">{notice}</Text>}
         {storageFailed && <Text role="alert" size="sm" c="clarification.8">Browser storage is unavailable. Changes will not survive refresh.</Text>}
       </Stack>
@@ -120,6 +71,22 @@ export function KeeperProfile({ keeper, workspace, dispatch, storageFailed }) {
       </Drawer>
     </Container>
   );
+}
+function CareerPlanning({ currentPerson }) {
+  return <Paper p="lg" radius="lg" bg="white">
+    <Stack gap="md" maw="48rem">
+      <Stack gap={4}>
+        <Text size="xs" c="dimmed">Conceptual view</Text>
+        <Title order={2} size="h4">Career planning and opportunities</Title>
+      </Stack>
+      <Text size="sm">In the full product, this profile would bring together the keeper’s intentions, preferences and experience alongside available employment opportunities. Redeployment officers would use it to assess which roles could be a suitable match, identify support needs and select opportunities to take forward.</Text>
+      <Text size="sm">For this prototype, one opportunity assessment has been developed in detail to show how historical evidence can support a redeployment decision.</Text>
+      {currentPerson && <Stack gap={4}>
+        <Anchor href={assessmentHash} size="sm" fw={600} underline="always">Explore Wind Turbine Technician assessment</Anchor>
+        <Text size="sm" c="dimmed">Eimhin Mac Neidhe · Carrowmore Array</Text>
+      </Stack>}
+    </Stack>
+  </Paper>;
 }
 function CareerEditor({ keeper, onSave, onCancel }) {
   const [intention, setIntention] = useState(keeper.intention);

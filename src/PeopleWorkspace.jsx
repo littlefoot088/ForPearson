@@ -17,7 +17,6 @@ import {
 import { Search } from "lucide-react";
 import {
   assessmentHash,
-  profileHash,
   filterPeople,
   intentions,
   peopleForWorkspace,
@@ -159,9 +158,6 @@ export function PeopleWorkspace({
                     <Text size="sm" c="dimmed">
                       {p.intention}
                     </Text>
-                    <Anchor href={profileHash(p.id)} size="sm" underline="always" aria-label={`View profile for ${p.name}`} style={{ minHeight: 24, width: "fit-content" }}>
-                      View profile
-                    </Anchor>
                   </Stack>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, sm: 9 }}>

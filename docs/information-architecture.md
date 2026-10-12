@@ -4,11 +4,13 @@ This document describes current implemented behaviour. Use [design-system.md](de
 
 ## Navigation and scope
 
-People → keeper profile → opportunity assessment is the principal journey. The People → Eimhin turbine assessment shortcut is available when his intention permits showing opportunities. Assessment breadcrumbs link to both People and Eimhin's profile. Navigation preserves workspace state and in-app People filters.
+People → Eimhin's Wind Turbine Technician assessment is the principal reviewer journey. People offers no profile actions. The assessment breadcrumb links back to People and retains Eimhin's name as plain context. Conceptual profiles remain accessible through their existing routes, outside the normal reviewer journey. Navigation preserves workspace state and in-app People filters.
 
-All six existing keepers share the profile component. Only Eimhin's Wind Turbine Technician opportunity has a full assessment; other opportunities and interview/employment outcomes are illustrative directory scenarios. Curated vacancy selection adds an opportunity under consideration, not a new assessment or an algorithmic match. No aggregate person-level Progress is calculated.
+All six existing keepers share the profile component, with editable career context and a conceptual career-planning section. Eimhin also has a source-grounded background and a direct link to his Wind Turbine Technician assessment. Other profiles have no detailed-assessment link. Profiles no longer expose opportunity lists or selection controls; the existing picker, reducer and saved selections are retained. People continues showing illustrative opportunity associations and outcomes. No aggregate person-level Progress is calculated.
 
 ## Vocabulary and ownership
+
+The conceptual profile presents available employment opportunities for officers to assess against the keeper's intentions, preferences and experience, then select suitable matches to take forward. This precedes the opportunities under consideration shown in People; availability alone is not an officer's selection or suitability decision.
 
 The starting directory uses Eimhin as a Seeking employment example with three opportunities under consideration. Aoife has Watch Officer (Interview invited) and Offshore Survey Technician (To do) under consideration. Coilean is the only Not yet decided example. These are illustrative intentions; explicitly saved profile choices continue to take precedence.
 
@@ -30,7 +32,7 @@ Retirement cases sort after active cases and suppress placement exploration. Emp
 
 ## Shared derivation and action priority
 
-Not yet decided intentions suppress job rows in People and disable opportunity exploration/addition in the profile and reducer. People instead prompts a discussion of employment plans or a questionnaire reminder; these cases remain in Needs attention. This is person-level follow-up, not an opportunity Progress stage. Previously considered opportunities remain available in a collapsed profile reference section without next actions. Recording Seeking employment enables exploration and restores retained selections. Questionnaire guidance does not send a message or assume a questionnaire response.
+Not yet decided intentions suppress job rows in People and block opportunity addition in the reducer. People instead prompts a discussion of employment plans or a questionnaire reminder; these cases remain in Needs attention. This is person-level follow-up, not an opportunity Progress stage. Previously considered opportunities remain stored. Recording Seeking employment restores their display in People. Questionnaire guidance does not send a message or assume a questionnaire response.
 
 `src/workflowState.js` is authoritative for `workflowView`, verification currentness and linked task completion. People/profile projections use that shared state rather than deriving their own version of the implemented opportunity's progress. Persist inputs and events, not derived progress or recommendations.
 
