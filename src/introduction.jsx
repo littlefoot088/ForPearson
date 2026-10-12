@@ -156,7 +156,7 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
     legacy
       ? null
       : (state.referral ??
-        createReferral(state.excludedRecordIds, state.verifications)),
+        createReferral(state.excludedRecordIds, state.verifications, state.training)),
   );
   const [approved, setApproved] = useState(false);
   const [reviewing, setReviewing] = useState(() =>
@@ -204,7 +204,7 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
     const { previousDraft: ignored, ...snapshot } = previous ?? {};
     regenerated.current = true;
     setDraft({
-      ...createReferral(state.excludedRecordIds, state.verifications),
+      ...createReferral(state.excludedRecordIds, state.verifications, state.training),
       previousDraft: previous ? snapshot : null,
     });
     setEditing(false);
@@ -444,6 +444,7 @@ export function CandidateIntroduction({ state, dispatch, storageFailed }) {
                         assessmentSignature: assessmentSignature(
                           state.excludedRecordIds,
                           state.verifications,
+                          state.training,
                         ),
                       };
                       dispatch({ type: "referral-save", referral: savedDraft });

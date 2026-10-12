@@ -10,6 +10,10 @@ import {
   linkedTask,
   today,
   requiredQualifications,
+  safetyIds,
+  trainingStatuses,
+  trainingReasons,
+  verificationFor,
 } from "./workflowState.js";
 import {
   recordIds,
@@ -50,7 +54,7 @@ const legacyFields = [
   "qualifications",
   "questions",
 ];
-export function assessmentSignature(excluded = [], verifications = {}) {
+export function assessmentSignature(excluded = [], verifications = {}, training = {}) {
   return JSON.stringify({
     claims,
     qualifications,
@@ -59,6 +63,7 @@ export function assessmentSignature(excluded = [], verifications = {}) {
       ? { verifications: verificationSignature({ verifications }) }
       : {}),
     ...(excluded.length ? { excluded: [...excluded].sort() } : {}),
+    ...(Object.keys(training).length ? { training } : {}),
   });
 }
 export function initialWorkspace() {
@@ -98,6 +103,7 @@ export function initialWorkspace() {
       },
     ],
     verifications: {},
+    training: {},
     sentIntroductions: [],
     notes: [],
     reports: {},
@@ -107,12 +113,13 @@ export function initialWorkspace() {
     ready: null,
   };
 }
-export function createReferral(excluded = [], verifications = {}) {
+export function createReferral(excluded = [], verifications = {}, training = {}) {
   return {
     format: 2,
     why: excluded.length
       ? summaryWithQualifications(selectedCandidateSummary(excluded), {
           verifications,
+          training,
         })
       : "Eimhin’s lighthouse work includes practical maintenance of mechanical and electrical equipment. Carrowmore Array welcomes experience from other kinds of plant, making his background worth exploring for the Wind Turbine Technician role.",
     ...Object.fromEntries(
@@ -121,13 +128,13 @@ export function createReferral(excluded = [], verifications = {}) {
         selectedClaim(claim, excluded).introductionSummary,
       ]),
     ),
-    qualifications: qualificationSummary({ verifications }),
+    qualifications: qualificationSummary({ verifications, training }),
     recommendation:
       "We recommend considering Eimhin for an initial technical interview to explore how his maintenance experience could transfer to offshore wind operations.",
     includedReports: [],
     editedFields: [],
     needsReview: false,
-    assessmentSignature: assessmentSignature(excluded, verifications),
+    assessmentSignature: assessmentSignature(excluded, verifications, training),
     // Internal provenance never renders as part of the employer-facing document.
     sourceIds: claims.flatMap((c) => {
       const records = includedRecords(c, excluded).filter(
@@ -160,6 +167,23 @@ const upsert = (items, item) =>
     : [...items, item];
 export function workspaceReducer(state, action) {
   switch (action.type) {
+    case "training-save": {
+      const history = state.training?.[action.id] ?? [];
+      if (!safetyIds.includes(action.id) || !validTraining(action.record) ||
+        (!history.length && (action.record.status !== "assigned" || verificationFor(state, action.id).current))) return state;
+      const record = Object.fromEntries(["course", "provider", "reason", "status", "dueOn", "completedOn"].map((key) => [key, action.record[key].trim()]));
+      const previous = history.at(-1);
+      if (previous && Object.keys(record).every((key) => previous[key] === record[key])) return state;
+      return {
+        ...state,
+        training: { ...state.training, [action.id]: [...history, { ...record, recordedAt: Date.now() }] },
+        tasks: history.length || state.tasks.some((t) => t.id === `training:${action.id}`)
+          ? state.tasks
+          : [...state.tasks, { id: `training:${action.id}`, trainingId: action.id, title: `Complete ${qualifications.find((q) => q.id === action.id).title} training`, origin: "system", done: false }],
+        ready: null,
+        referral: state.referral ? { ...state.referral, needsReview: true } : null,
+      };
+    }
     case "keeper-context-save": {
       if (!keeperIds.includes(action.id) || !intentions.includes(action.intention) || typeof action.preferences !== "string") return state;
       return { ...state, keeperProfiles: { ...state.keeperProfiles, [action.id]: {
@@ -375,6 +399,7 @@ export function workspaceReducer(state, action) {
         assessmentSignature: assessmentSignature(
           state.excludedRecordIds,
           state.verifications,
+          state.training,
         ),
       };
       const changed =
@@ -395,7 +420,7 @@ export function workspaceReducer(state, action) {
         !canSendIntroduction(state) ||
         action.version !== introductionVersion(state.referral) ||
         state.referral.assessmentSignature !==
-          assessmentSignature(state.excludedRecordIds, state.verifications)
+          assessmentSignature(state.excludedRecordIds, state.verifications, state.training)
       )
         return state;
       return {
@@ -445,6 +470,12 @@ function validVerification(r) {
     (r.withdrawn == null || typeof r.withdrawn === "boolean")
   );
 }
+function validTraining(r) {
+  return Boolean(r && string(r.course) && r.course.trim() && string(r.provider) &&
+    Object.hasOwn(trainingReasons, r.reason) && Object.hasOwn(trainingStatuses, r.status) &&
+    (r.dueOn === "" || validDate(r.dueOn)) &&
+    (r.status === "completed" ? validDate(r.completedOn) && r.completedOn <= today() : r.completedOn === ""));
+}
 function validWorkspace(w) {
   return (
     w &&
@@ -476,6 +507,8 @@ function validWorkspace(w) {
         Array.isArray(history) &&
         history.every(validVerification),
     ) &&
+    w.training && typeof w.training === "object" && !Array.isArray(w.training) &&
+    Object.entries(w.training).every(([id, history]) => safetyIds.includes(id) && Array.isArray(history) && history.every((r) => validTraining(r) && Number.isFinite(r.recordedAt))) &&
     (w.excludedRecordIds == null ||
       (Array.isArray(w.excludedRecordIds) &&
         w.excludedRecordIds.every((id) => recordIds.has(id)))) &&
@@ -491,6 +524,7 @@ function validWorkspace(w) {
         string(t.id) &&
         string(t.title) &&
         typeof t.done === "boolean" &&
+        (!t.trainingId || safetyIds.includes(t.trainingId)) &&
         (!t.qualificationId ||
           qualifications.some((q) => q.id === t.qualificationId)),
     ) &&
@@ -601,6 +635,7 @@ export function loadWorkspace(storage) {
         assessmentSignature(
           saved.workspace.excludedRecordIds,
           saved.workspace.verifications,
+          saved.workspace.training,
         )
     ) {
       saved.workspace.referral.needsReview = true;
@@ -671,6 +706,10 @@ export function loadWorkspace(storage) {
       saved.version = 9;
     }
     if (saved.version === 9 && saved.workspace) saved.version = 10;
+    if (saved.version === 10 && saved.workspace) {
+      saved.workspace.training ??= {};
+      saved.version = 11;
+    }
     const topicIds = [
       "career-preferences",
       "existing-certificates",
@@ -681,7 +720,7 @@ export function loadWorkspace(storage) {
       ...qualifications.map((q) => q.id),
     ];
     if (
-      saved.version !== 10 ||
+      saved.version !== 11 ||
       !validWorkspace(saved.workspace) ||
       !list(
         saved.drafts,
@@ -718,7 +757,7 @@ export function loadWorkspace(storage) {
 }
 export function persistWorkspace(storage, snapshot) {
   try {
-    storage.setItem(storageKey, JSON.stringify({ ...snapshot, version: 10 }));
+    storage.setItem(storageKey, JSON.stringify({ ...snapshot, version: 11 }));
     return true;
   } catch {
     return false;

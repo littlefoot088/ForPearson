@@ -5,6 +5,29 @@ export const today = () =>
   new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
 export const requiredQualifications = qualifications.filter((q) => q.required);
 export const safetyIds = ["sea", "fire", "first-aid", "height"];
+export const trainingStatuses = {
+  assigned: "Training assigned",
+  "in-progress": "Training in progress",
+  completed: "Training completed · certificate to verify",
+  cancelled: "Training cancelled",
+};
+export const trainingReasons = {
+  "not-held": "Certificate not held",
+  renewal: "Certificate needs renewal",
+  "full-certificate": "Training needed for the full certificate",
+};
+export function trainingFor(state, id) {
+  const record = state.training?.[id]?.at(-1);
+  return { record, label: record ? trainingStatuses[record.status] : null };
+}
+export function trainingSummary(state) {
+  return safetyIds.flatMap((id) => {
+    const { record, label } = trainingFor(state, id);
+    if (!record || verificationFor(state, id).current) return [];
+    const title = requiredQualifications.find((q) => q.id === id).title;
+    return [`${title}: ${label.toLowerCase()}.`];
+  }).join(" ");
+}
 export function verificationFor(state, id, date = today()) {
   const record = state.verifications?.[id]?.at(-1);
   const current = Boolean(
@@ -32,13 +55,19 @@ export function verificationSignature(state, date = today()) {
 }
 export function qualificationCopy(q, state) {
   const { record, current, label } = verificationFor(state, q.id);
-  if (!record) return q;
-  return {
+  const training = trainingFor(state, q.id);
+  const base = !record ? q : {
     ...q,
     status: label,
     detail: current
       ? `${record.issuer} · ${record.reference}. Verified ${dateLabel(record.verifiedOn)}. ${record.noExpiry ? "No expiry stated on the document." : `Expires ${dateLabel(record.expiresOn)}.`}`
       : `${record.withdrawn ? "Verification was withdrawn." : `The verified document expired ${dateLabel(record.expiresOn)}.`} ${q.detail}`,
+  };
+  if (!training.record || current) return base;
+  return {
+    ...base,
+    status: training.label,
+    detail: `Reason for training: ${trainingReasons[training.record.reason]}. ${training.label}: ${training.record.course}. ${training.record.provider ? `Provider: ${training.record.provider}. ` : "Provider not yet arranged. "}${base.detail}`,
   };
 }
 export function qualificationSummary(state) {
@@ -48,7 +77,7 @@ export function qualificationSummary(state) {
   const outstanding = requiredQualifications.filter(
     (q) => !verificationFor(state, q.id).current,
   );
-  if (!Object.keys(state.verifications ?? {}).length)
+  if (!Object.keys(state.verifications ?? {}).length && !Object.keys(state.training ?? {}).length)
     return "Sea-survival training is recorded, but complete offshore safety certification and medical fitness still need verification. Safety certification is required before mobilisation; the vacancy does not specify when medical fitness must be verified.";
   return [
     verified.length
@@ -57,13 +86,14 @@ export function qualificationSummary(state) {
     outstanding.length
       ? `Still to verify: ${outstanding.map((q) => q.title).join(", ")}.`
       : "All required safety certificates and medical clearance have current verification recorded.",
+    trainingSummary(state),
     "Safety certification is required before mobilisation; the vacancy does not specify when medical fitness must be verified.",
   ]
     .filter(Boolean)
     .join(" ");
 }
 export function summaryWithQualifications(text, state) {
-  if (!Object.keys(state.verifications ?? {}).length) return text;
+  if (!Object.keys(state.verifications ?? {}).length && !Object.keys(state.training ?? {}).length) return text;
   const base = text
     .replace(
       /; safety certification and medical fitness still need checking\./,
@@ -76,9 +106,10 @@ export function summaryWithQualifications(text, state) {
   const outstanding = requiredQualifications.filter(
     (q) => !verificationFor(state, q.id).current,
   );
-  return `${base} ${outstanding.length ? `Still to verify: ${outstanding.map((q) => q.title).join(", ")}.` : "All required safety certificates and medical clearance have current verification recorded."}`;
+  return `${base} ${outstanding.length ? `Still to verify: ${outstanding.map((q) => q.title).join(", ")}.` : "All required safety certificates and medical clearance have current verification recorded."} ${trainingSummary(state)}`.trim();
 }
 export function systemTaskComplete(task, state) {
+  if (task.trainingId) return trainingFor(state, task.trainingId).record?.status === "completed";
   if (task.id === "prepare-referral") return Boolean(state.referral);
   if (task.id === "certificates")
     return safetyIds.every((id) => verificationFor(state, id).current);
@@ -93,6 +124,7 @@ export function linkedTask(task) {
     task.id === "prepare-referral" ||
     task.id === "certificates" ||
     task.id === "career-preferences" ||
+    Boolean(task.trainingId) ||
     Boolean(task.qualificationId)
   );
 }

@@ -71,6 +71,52 @@ it("treats a current simulated send as the end of the workflow", () => {
   ).toBeVisible();
 });
 
+it("assigns a missing certificate course through the existing drawer, persists it and verifies only after document review", async () => {
+  const user = userEvent.setup();
+  let view = mount();
+  await user.click(screen.getByRole("button", { name: /First aidCertificate not recorded/ }));
+  const verifyTrigger = await screen.findByRole("button", { name: "Record verification" });
+  await user.click(verifyTrigger);
+  await user.click(await screen.findByRole("button", { name: "Assign training" }));
+  let dialog = await screen.findByRole("dialog", { name: "Training to support job search" });
+  expect(within(dialog).getByRole("button", { name: "Assign training" })).toBeDisabled();
+  await user.selectOptions(within(dialog).getByLabelText(/Reason for training/), "not-held");
+  await user.type(within(dialog).getByLabelText(/Course name/), "First aid certification course");
+  await user.type(within(dialog).getByLabelText("Training provider"), "Example provider");
+  await user.click(within(dialog).getByRole("button", { name: "Assign training" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  await waitFor(() => expect(verifyTrigger).toHaveFocus());
+  expect(screen.getByRole("checkbox", { name: "Complete First aid training" })).not.toBeChecked();
+  expect(screen.getByRole("button", { name: /First aidTraining assigned/ })).toBeVisible();
+  view.unmount();
+  view = mount();
+  await user.click(screen.getByRole("checkbox", { name: "Complete First aid training" }));
+  dialog = await screen.findByRole("dialog", { name: "Training to support job search" });
+  expect(within(dialog).getByLabelText(/Course name/)).toHaveValue("First aid certification course");
+  await user.selectOptions(within(dialog).getByLabelText("Training progress"), "completed");
+  expect(within(dialog).getByRole("button", { name: "Save training update" })).toBeDisabled();
+  fireEvent.change(within(dialog).getByLabelText(/Completion date/), { target: { value: "2020-01-01" } });
+  await user.click(within(dialog).getByRole("button", { name: "Save training update" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  expect(screen.getByRole("checkbox", { name: "Complete First aid training" })).toBeChecked();
+  expect(screen.getByRole("checkbox", { name: "Check existing offshore certificates" })).not.toBeChecked();
+  await user.click(screen.getByRole("button", { name: "Verify certificate" }));
+  dialog = await screen.findByRole("dialog", { name: "Qualification verification" });
+  await user.type(within(dialog).getByLabelText(/Issuer or provider/), "Example provider");
+  await user.type(within(dialog).getByLabelText(/Document reference/), "FA-CERT-1");
+  fireEvent.change(within(dialog).getByLabelText(/Expiry date/), { target: { value: "2099-01-01" } });
+  await user.click(within(dialog).getByRole("checkbox", { name: /I checked the document/ }));
+  await user.click(within(dialog).getByRole("button", { name: "Save verification" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  expect(screen.getByRole("button", { name: /First aidVerified by you/ })).toBeVisible();
+  expect(screen.getByRole("checkbox", { name: "Check existing offshore certificates" })).not.toBeChecked();
+  await user.click(screen.getByRole("button", { name: /Offshore medical fitness/ }));
+  await user.click(await screen.findByRole("button", { name: "Record verification" }));
+  dialog = await screen.findByRole("dialog");
+  expect(within(dialog).queryByRole("button", { name: "Assign training" })).not.toBeInTheDocument();
+  await close(user);
+});
+
 async function recordPositiveDecision(user) {
   if (!screen.queryByRole("button", { name: "Record decision" })) return;
   await user.click(screen.getByRole("button", { name: "Record decision" }));

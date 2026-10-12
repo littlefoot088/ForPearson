@@ -1,51 +1,61 @@
-# Carrowmore redeployment prototype
+# Carrowmore — Redeployment
 
-A React, JavaScript, Mantine and Vite prototype for redeployment officers. It connects a People workspace, keeper profiles and an evidence-backed opportunity assessment to a locally simulated candidate introduction journey.
+Carrowmore Light Authority is preparing to redeploy 340 lighthouse keepers as its stations are automated. Their fragmented historical records contain potentially transferable experience, but do not necessarily establish current competence or formal qualifications. This prototype explores how a redeployment officer can assess that evidence against an employment opportunity and decide what to investigate or do next.
 
-This document describes the current application, not its development history. Start with [CONTRIBUTING.md](CONTRIBUTING.md) before making changes.
+## Run locally
 
-## Run and validate
+Use Node.js 22 (22.13+) or 24, with npm. From the repository directory:
 
 ```sh
 npm ci
 npm run dev
-npm test
-npm run build
 ```
 
-Vite prints the local development URL. The build output is `dist/`. There is no backend, authentication, cross-device synchronisation or real sending integration. Changes are saved in this browser's localStorage; sharing a deployment does not share an officer's saved workspace.
+Open the URL printed by Vite, normally `http://127.0.0.1:5173`. No account or API key is needed. For the initial scenario, use a fresh browser profile or private window; previously saved work otherwise resumes.
 
-## Pages and scope
+## Start here
 
-| Page | Current behaviour |
+A short route through the main experience, taking approximately 2–3 minutes:
+
+1. **Begin in the Redeployment workspace.** Scan Employment intention, Progress and Next action. The starting point is supporting people through redeployment; retirement cases remain visible without placement suggestions. Choose **View profile** beneath **Eimhin Mac Neidhe**.
+2. **Read Eimhin's Career context.** Career intentions, preferences and Opportunities under consideration provide the individual context. The profile and additional roles frame the wider journey. Open **Wind Turbine Technician** at Carrowmore Array for the main assessment.
+3. **Investigate why the role could fit.** Read **Why this could work**, expand **Pump maintenance & repair**, then choose **View evidence**. Original logbook passages support the maintenance assessment; **View source details** exposes provenance. Notice the early records' date-attribution concerns alongside their exclusion controls.
+4. **Compare qualification evidence.** Expand **Sea survival** and **First aid**: one has a module pass, the other has no certificate in the selected records. **Record verification** captures a document the officer has checked. **Assign training** supports an established training need.
+5. **Make a decision and prepare an introduction.** Beside **Your assessment**, choose **Record**, select **Potential match**, then **Save assessment**. Eimhin starts **Interested** as a demonstration scenario, so Next action offers **Prepare candidate introduction**. Try **Edit introduction → Review introduction → Save introduction draft**. Close the drawer and use **People** in the breadcrumb: this opportunity now shows **Preparing introduction**. Reopening the assessment retains the same draft and progress.
+
+To explore the final step, reopen the introduction and choose **Review with Eimhin**. An initially unchecked acknowledgement precedes **Send to Carrowmore Array**. This is entirely simulated: no employer is contacted and no real keeper's consent is established.
+
+## What this prototype explores
+
+**Judgement with visible uncertainty.** Relevant experience is not verified independent competence; attendance is not a completed qualification; missing documentation does not prove a qualification is absent. The officer remains responsible for suitability. Your assessment, the keeper's interest and work Progress have separate meanings.
+
+**Additional information with a clear source.** In **Conversations**, **Prepare questions** supports several topics; **Record** saves a dated private note against questions covered. **View conversation history** also lets you record Eimhin's account separately. These accounts require explicit inclusion in an introduction and remain labelled as reported information; private notes never enter it.
+
+**Connected work.** As with the introduction's shared Progress, completing an assigned course checks its training task automatically; the certificate still requires verification. Changed assessment information flags saved wording for review, preserving the officer's edits and earlier sent versions.
+
+## Scope and limitations
+
+| Scope | What to expect |
 | --- | --- |
-| People (`#people`) | Six sample keepers, name search, employment-intention and attention filters, grouped opportunities with individual Progress and Next action. Filters survive in-app navigation. |
-| Keeper profile (`#people/eimhin`, or another existing person ID) | Career context, editable employment intention/preferences, curated opportunity selection and opportunity-level progress. |
-| Opportunity assessment (`#people/eimhin/wind-turbine-technician`) | Eimhin's Wind Turbine Technician assessment, evidence inspection, qualification verification, tasks, conversations and candidate introduction. |
+| Implemented | Eimhin's assessment, evidence inspection and supporting workflow, including local training assignments and introductions. Profile editing and curated opportunity selection also persist. |
+| Illustrative | The wider journey, six-person directory's sample intentions and associations, other opportunities and interview/employment outcomes. Only Eimhin's turbine role opens a detailed assessment. |
+| Not implemented | Live matching, live AI inference, automatic ingestion of all personnel records, external qualification verification, course booking, real employer communication, authentication, backend or production integrations. |
 
-The direct People → turbine assessment link remains alongside View profile. Other opportunity entries are illustrative and do not open additional assessments. Retirement cases sort last and suppress placement exploration; employment-arranged profiles also suppress further job search. Earlier selections are retained for reference.
+Evidence is curated from Pearson's synthetic data pack. The bounded audit contains 18 pump, 48 electrical and two planning/permit matches before exclusions: recorded entries, not actual work frequency. Historical fixture interpretation uses 31 December 2026; new verification uses today's Europe/London date. Source attribution and date limitations are documented below.
 
-The six scenarios are Eimhin Mac Neidhe (implemented assessment), Aoife Ní Mhurchú (interview invitation), Coilean Ó Caomhthaigh (undecided), Nóra Ní Bhraonáin (qualification support), Fintan Ó Ceallaigh (retirement), and Cian Ó Dálaigh (employment arranged). Additional associations and employer outcomes are illustrative fixtures, not findings from source records. Eimhin's initial Interested response is a user-confirmed demonstration scenario; it is not inferred from employment evidence or permission to share.
+Explicitly saved changes persist in this browser's localStorage. Sharing the application does not share that workspace, and there is no cross-device recovery. Storage failure is disclosed. **Reset workspace** requires confirmation and resets the assessment workspace while retaining keeper profile context.
 
-## Current interaction model
+## Development and documentation
 
-- Employment intention describes the person's wider plans. Your assessment is suitability for one opportunity. Progress describes the officer's work stage. These remain separate.
-- The officer panel keeps status-editing controls in consistent positions and gives one recommended Next action. A current simulated send completes the journey: View sent introduction remains available, without another Next action.
-- What needs doing contains tasks. Linked system tasks complete from saved workflow events; manual tasks remain manually managed. A checkbox cannot establish certificate verification.
-- Conversations owns multi-topic question preparation, dated private notes, questions covered and history. Eimhin's reported accounts are recorded separately and require explicit inclusion in an introduction.
-- Evidence opens as a complete dated timeline. Every logbook entry can be excluded or restored. Originals remain available; flags are separate from inclusion and attribution.
-- Required qualifications support officer-recorded document verification, corrections and withdrawal. Training modules do not establish complete certificates. Medical verification stores clearance metadata only.
-- Introduction preparation follows preview → edit → review → explicit save → review with Eimhin → unchecked sharing acknowledgement → simulated send. Nothing is transmitted. Changed or stale wording requires review; earlier sent snapshots remain immutable.
+Built with React, JavaScript, Vite and Mantine, with locally hosted IBM Plex Sans, a central theme and shared workflow derivation. Storage migrations preserve earlier saved work. Read [CONTRIBUTING.md](CONTRIBUTING.md) before making changes.
 
-## State and evidence
+```sh
+npm test
+npm run build
+npm run preview
+```
 
-`src/workflowState.js` is the shared derivation layer for assessment, People and profiles. `src/workspace.js` owns reducer guards, explicit saves and additive storage migration. The current envelope is version 10 under the existing person/opportunity storage key. Old notes, tasks, questions, exclusions, flags, preferences, introductions and sent snapshots are preserved. Storage failure leaves the session usable with a visible warning. Confirmed workspace reset retains keeper profile context.
-
-Original evidence lives in `src/records.js` and `src/evidence-audit.json`; curated interpretation lives in `src/data.js`. The complete bounded log review exposes 18 pump, 48 electrical and two planning/permit matches before reviewer exclusions. These counts describe recorded entries, not verified competence or actual work frequency. Uncertain early entries remain inspectable but cannot become confirmed introduction evidence merely because they are included.
-
-Historical fixture interpretation uses the agreed fictional review date, 31 December 2026. Newly recorded qualification verification uses the current Europe/London calendar date. Missing documentation is not proof that a qualification was never held. See the source-specific documentation below for provenance and limitations.
-
-## Documentation and handover
+The build output is `dist/`; preview serves that build locally. Tests cover source integrity, workflow and migration, profiles, conversations, training, introduction privacy and component interactions. Browser checks supplement these tests; no full screen-reader, physical-device or WCAG conformance audit is claimed.
 
 | Document | Purpose |
 | --- | --- |
@@ -56,6 +66,4 @@ Historical fixture interpretation uses the agreed fictional review date, 31 Dece
 | [Data decisions](docs/data-decisions.md) | Historical source selection, attribution and fixture interpretation. |
 | [Evidence review](docs/evidence-review.md) | Bounded log audit, matching rules and limitations. |
 
-The [screenshot gallery](artifacts/app-review/index.html) and [ZIP](artifacts/carrowmore-screenshots.zip) show desktop/mobile pages and principal interaction states captured on 12 October 2026 using an isolated sample workspace. They are a dated reference, not a substitute for checking a changed UI.
-
-Tests cover fixture integrity, workflow guards, migration, introduction privacy, profiles, conversations and component interactions. Browser screenshots and keyboard checks supplement them; jsdom does not verify rendered layout. No full screen-reader, physical-device or WCAG conformance audit is claimed. Real messaging, automated matching, additional assessments, employer decision workflows and interview scheduling are outside the implemented scope.
+The [screenshot gallery](artifacts/app-review/index.html) and [ZIP](artifacts/carrowmore-screenshots.zip) cover desktop/mobile interactions from 12 October 2026, before the [training addition](artifacts/training-support/). Open the gallery locally after cloning or extracting the ZIP. These use isolated sample data; the running application is the current reference.

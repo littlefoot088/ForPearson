@@ -5,11 +5,13 @@ import {
   today,
   currentSend,
   safetyIds,
+  trainingFor,
 } from "./workflowState";
 import { createPortal } from "react-dom";
 import React, { useState, useRef, useEffect } from "react";
 import {
   ActionIcon,
+  Anchor,
   Menu,
   Button,
   Checkbox,
@@ -31,6 +33,7 @@ import {
 import { claims, dateLabel, qualifications } from "./data";
 import { interestLabel, officerAssessments } from "./workflow";
 import { CandidateIntroduction } from "./introduction";
+import { TrainingEditor } from "./TrainingEditor";
 
 export const workspaceTitles = {
   referral: "Candidate introduction",
@@ -39,6 +42,7 @@ export const workspaceTitles = {
   report: "Eimhin’s account",
   preferences: "Eimhin’s working preferences",
   verification: "Qualification verification",
+  training: "Training to support job search",
 };
 function StatusRow({ label, value, detail, action, prominent = false }) {
   return (
@@ -52,6 +56,11 @@ function StatusRow({ label, value, detail, action, prominent = false }) {
         aria-label={action.name} onClick={action.onClick}>{action.label}</Button>}
     </div>
   );
+}
+
+function TaskLink({ children, onClick }) {
+  return <Anchor component="button" type="button" size="xs" underline="always"
+    c="carrowmore.7" ta="left" onClick={onClick}>{children}</Anchor>;
 }
 
 export function Workspace({
@@ -89,12 +98,18 @@ export function Workspace({
           : () => onWorkflow(kind),
   };
   const pendingQuestions = drafts.filter((d) => !questionDiscussed(state, d)).length;
+  const verifiedSafetyCount = safetyIds.filter((id) => verificationFor(state, id).current).length;
+  function openCertificateCheck() {
+    const nextId = safetyIds.find((id) => !verificationFor(state, id).current) ?? safetyIds[0];
+    onOpen("verification", qualifications.find((q) => q.id === nextId));
+  }
   const tasks = view.tasks
     .filter(
       (t) =>
         (!t.automatic ||
           t.id === "certificates" ||
-          t.id === "career-preferences") &&
+          t.id === "career-preferences" || t.trainingId) &&
+        !(t.automatic && t.trainingId && trainingFor(state, t.trainingId).record?.status === "cancelled") &&
         !(
           t.id === "responsibilities" &&
           Object.keys(state.reports).length > 0
@@ -194,31 +209,49 @@ export function Workspace({
                   miw={0}
                   aria-label={t.title}
                   label={
+                    <Text component="span" size="sm" className="source-text">
+                      {t.title}
+                    </Text>
+                  }
+                  description={(t.id === "certificates" || t.id === "career-preferences" || t.trainingId) && (
                     <Stack component="span" gap={2}>
-                      <Text component="span" size="sm" className="source-text">
-                        {t.title}
-                      </Text>
                       {t.id === "certificates" && (
-                        <Text component="span" size="xs" c="dimmed">
-                          {
-                            safetyIds.filter(
-                              (id) => verificationFor(state, id).current,
-                            ).length
-                          }{" "}
-                          of 4 safety certificates verified
-                        </Text>
+                        <TaskLink onClick={openCertificateCheck}>
+                          {verifiedSafetyCount} of 4 safety certificates verified
+                        </TaskLink>
                       )}
                       {t.id === "career-preferences" && (
-                        <Text component="span" size="xs" c="dimmed">
+                        <TaskLink onClick={() => onOpen("preferences")}>
                           {t.done
                             ? "Working preferences recorded"
                             : "Complete by recording working preferences"}
+                        </TaskLink>
+                      )}
+                      {t.trainingId && (
+                        <>
+                        <Text component="span" size="xs" c="dimmed">
+                          {trainingFor(state, t.trainingId).record?.course} · {verificationFor(state, t.trainingId).current ? "Certificate verified" : trainingFor(state, t.trainingId).label}
                         </Text>
+                        <Group component="span" gap="sm">
+                          <TaskLink onClick={() => onOpen("training", qualifications.find((q) => q.id === t.trainingId))}>
+                            Update training
+                          </TaskLink>
+                          {trainingFor(state, t.trainingId).record?.status === "completed" && !verificationFor(state, t.trainingId).current && (
+                            <TaskLink onClick={() => onOpen("verification", qualifications.find((q) => q.id === t.trainingId))}>
+                              Verify certificate
+                            </TaskLink>
+                          )}
+                        </Group>
+                        </>
                       )}
                     </Stack>
-                  }
+                  )}
                   checked={t.done}
                   onChange={() => {
+                    if (t.automatic && t.trainingId) {
+                      onOpen("training", qualifications.find((q) => q.id === t.trainingId));
+                      return;
+                    }
                     if (t.id === "career-preferences") {
                       onOpen("preferences");
                       return;
@@ -227,14 +260,7 @@ export function Workspace({
                       dispatch({ type: "task-toggle", id: t.id });
                       return;
                     }
-                    const nextId =
-                      safetyIds.find(
-                        (id) => !verificationFor(state, id).current,
-                      ) ?? safetyIds[0];
-                    onOpen(
-                      "verification",
-                      qualifications.find((q) => q.id === nextId),
-                    );
+                    openCertificateCheck();
                   }}
                 />
                 <Menu position="bottom-end" withinPortal returnFocus>
@@ -357,7 +383,10 @@ export function WorkspacePanel({
   onQuestion,
   drafts = [],
   onRecordAccount,
+  onNavigate,
 }) {
+  if (mode === "training")
+    return <TrainingEditor qualification={item} state={state} dispatch={dispatch} onClose={onClose} onVerify={() => onNavigate("verification", item)} />;
   if (mode === "verification")
     return (
       <VerificationEditor
@@ -365,6 +394,7 @@ export function WorkspacePanel({
         state={state}
         dispatch={dispatch}
         onClose={onClose}
+        onTraining={() => onNavigate("training", item)}
       />
     );
   if (mode === "referral")
@@ -741,8 +771,10 @@ function PreferencesEditor({ preference, onSave, onCancel }) {
   );
 }
 
-function VerificationEditor({ qualification, state, dispatch, onClose }) {
-  const { record } = verificationFor(state, qualification.id);
+function VerificationEditor({ qualification, state, dispatch, onClose, onTraining }) {
+  const { record, current } = verificationFor(state, qualification.id);
+  const firstInput = useRef(null);
+  useEffect(() => { firstInput.current?.focus(); }, []);
   const [value, setValue] = useState(
     record && !record.withdrawn
       ? { ...record }
@@ -786,12 +818,22 @@ function VerificationEditor({ qualification, state, dispatch, onClose }) {
       }}
     >
       <Text fw={600}>{qualification.title}</Text>
+      {safetyIds.includes(qualification.id) && !current && (
+        <Stack gap="xs">
+          <Text size="sm">If Eimhin does not hold this certificate or needs to renew it, you can assign training to support his job search.</Text>
+          <Button variant="default" w="fit-content" onClick={onTraining}>
+            {trainingFor(state, qualification.id).record ? "Manage training" : "Assign training"}
+          </Button>
+          <Divider />
+        </Stack>
+      )}
       {qualification.id === "medical" && (
         <Text size="sm">
           Record clearance details only, not clinical information.
         </Text>
       )}
       <TextInput
+        ref={firstInput}
         label="Issuer or provider"
         required
         value={value.issuer}

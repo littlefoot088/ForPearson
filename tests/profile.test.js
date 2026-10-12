@@ -41,7 +41,7 @@ test('retirement pauses suggestions without deleting selections; employment arra
 test('v7 migration adds empty profiles without changing existing workspace; assessment reset retains profile work',()=>{
  const old=initialWorkspace();delete old.keeperProfiles;
  const loaded=loadWorkspace({getItem:()=>JSON.stringify({version:7,workspace:old,drafts:[],recordFlags:[]})});
- assert.equal(loaded.version,10);assert.deepEqual(loaded.workspace,{...old,keeperProfiles:{}});
+ assert.equal(loaded.version,11);assert.deepEqual(loaded.workspace,{...old,keeperProfiles:{}});
  const s=reduce(loaded.workspace,{type:'keeper-context-save',id:eimhin(loaded.workspace).id,intention:'Not yet decided',preferences:'Considering other sectors'});
  assert.deepEqual(reduce(s,{type:'reset'}).keeperProfiles,s.keeperProfiles);
 });

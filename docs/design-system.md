@@ -42,6 +42,8 @@ The assessment separates candidate/opportunity context and Why this could work, 
 
 A task's completion control and its route to doing the work remain visually related. System checkboxes derive completion from real saved events; opening verification does not check a requirement. Explain linked progress with concise text such as “0 of 4 safety certificates verified.” Do not replace a task row with an unrelated heading-like link. Prepared conversation questions and account documents belong in Conversations, not the checklist.
 
+Task destinations beneath the title use navy, always-underlined text actions, including certificate progress, working preferences and training actions. They are independently focusable buttons because they open drawers, and sit outside the checkbox label so following a link does not toggle completion. Descriptive text without an action remains muted and unadorned. Retain the same link treatment for completed-task destinations.
+
 Offer introduction preparation only when recommended. Existing drafts remain accessible while work is paused. Avoid duplicate links/buttons opening the same introduction in one state.
 
 ## Drawers, confirmations and editing
@@ -59,6 +61,10 @@ The reading sequence is scan → expand one requirement → inspect evidence. Do
 Logbook evidence uses one oldest-first timeline with every associated record immediately available. Date, station and Original logbook form a compact shared heading; the exact quotation follows. There is no record selector or “3 of 18” pagination. Each entry has the same Exclude this record checkbox. A relevant attribution concern is its associated description. Explain exclusion scope once. Review flags and raw metadata belong under View source details. The latest relevant manager appraisal remains a separately attributed source.
 
 Preserve exact quotation text and highlight boundaries. Original records are not rewritten to simplify copy. Missing records are described as missing documentation, not missing competence. Qualification details distinguish training outcomes from current “Verified by you” document verification.
+
+Safety qualification details offer Record verification and Assign training in the same action group. The verification drawer also offers the training route when the certificate cannot be verified. Switch content in the existing drawer, retaining its original focus-return target. Medical clearance has no course-assignment action.
+
+Training uses the existing labelled form controls: confirmed reason, course, optional provider/target date, then progress and a required completion date when completed. Save explicitly. The qualification row shows the current training status until the document is verified. The linked checklist row retains a checkbox, descriptive status and Update training action; completion checks it automatically and adds Verify certificate. Cancelled system training tasks leave the checklist while their history remains in Manage training. Do not use verification-success styling for course completion.
 
 ## Conversations and introduction
 

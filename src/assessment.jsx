@@ -1,7 +1,7 @@
-import { qualificationCopy, verificationFor } from "./workflowState";
+import { qualificationCopy, verificationFor, trainingFor, safetyIds } from "./workflowState";
 import { selectedClaim } from "./evidenceSelection";
 import React from "react";
-import { Accordion, Button, Stack, Text } from "@mantine/core";
+import { Accordion, Button, Group, Stack, Text } from "@mantine/core";
 import {
   FileText,
   Files,
@@ -31,8 +31,9 @@ const statusColors = {
 export function RequirementRow({ requirement, children, workspace = {} }) {
   const status = assessmentStates[requirement.assessment];
   const verification = verificationFor(workspace, requirement.id);
+  const training = trainingFor(workspace, requirement.id);
   const qualificationScan =
-    verification.label ??
+    (verification.current ? verification.label : training.label ?? verification.label) ??
     {
       environment: requirement.conclusion ?? "Not yet discussed",
       sea: "Module passed",
@@ -41,7 +42,12 @@ export function RequirementRow({ requirement, children, workspace = {} }) {
       height: "Certificate not recorded",
       medical: "Clearance not recorded",
     }[requirement.id];
-  const qualificationDate = verification.record
+  const qualificationDate = training.record && !verification.current
+    ? training.record.status === "completed"
+      ? `Completed ${dateLabel(training.record.completedOn)}`
+      : training.record.dueOn && training.record.status !== "cancelled"
+        ? `Target ${dateLabel(training.record.dueOn)}` : null
+    : verification.record
     ? verification.record.withdrawn
       ? null
       : verification.record.noExpiry
@@ -163,6 +169,7 @@ export function ExpandedAssessment({
   excludedRecordIds = [],
   workspace = {},
   onVerify,
+  onTraining,
   onInspect,
 }) {
   const linkedClaims = (requirement.claimIds ?? []).map((id) =>
@@ -246,6 +253,7 @@ export function ExpandedAssessment({
           <Stack component="section" gap="sm" aria-label={q.title} key={q.id}>
             <TrainingSummary q={qualificationCopy(q, workspace)}>
               {q.required && (
+                <Group gap="xs">
                 <Button
                   variant="default"
                   size="sm"
@@ -256,6 +264,12 @@ export function ExpandedAssessment({
                     ? "Edit verification"
                     : "Record verification"}
                 </Button>
+                {safetyIds.includes(q.id) && (!verificationFor(workspace, q.id).current || trainingFor(workspace, q.id).record) && (
+                  <Button variant="default" size="sm" onClick={() => onTraining(q)}>
+                    {trainingFor(workspace, q.id).record ? "Manage training" : "Assign training"}
+                  </Button>
+                )}
+                </Group>
               )}
               {q.recordId && (
                 <Button
