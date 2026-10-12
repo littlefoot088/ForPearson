@@ -77,7 +77,8 @@ it("assigns a missing certificate course through the existing drawer, persists i
   await user.click(screen.getByRole("button", { name: /First aidCertificate not recorded/ }));
   const verifyTrigger = await screen.findByRole("button", { name: "Record verification" });
   await user.click(verifyTrigger);
-  await user.click(await screen.findByRole("button", { name: "Assign training" }));
+  const verificationDialog = await screen.findByRole("dialog", { name: "Qualification verification" });
+  await user.click(within(verificationDialog).getByRole("button", { name: "Assign training" }));
   let dialog = await screen.findByRole("dialog", { name: "Training to support job search" });
   expect(within(dialog).getByRole("button", { name: "Assign training" })).toBeDisabled();
   await user.selectOptions(within(dialog).getByLabelText(/Reason for training/), "not-held");
