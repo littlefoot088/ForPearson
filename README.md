@@ -2,6 +2,8 @@
 
 Carrowmore Light Authority is preparing to redeploy 340 lighthouse keepers as its stations are automated. Their fragmented historical records contain potentially transferable experience, but do not necessarily establish current competence or formal qualifications. This prototype explores how a redeployment officer can assess that evidence against an employment opportunity and decide what to investigate or do next.
 
+**[Open the deployed prototype](https://littlefoot088.github.io/ForPearson/)**
+
 ## Run locally
 
 Use Node.js 22 (22.13+) or 24, with npm. From the repository directory:
