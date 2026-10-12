@@ -15,10 +15,10 @@ Open the URL printed by Vite, normally `http://127.0.0.1:5173`. No account or AP
 
 ## Start here
 
-A short route through the main experience, taking approximately 2–3 minutes:
+A short route through the main experience, taking approximately 2–3 minutes: **People workspace → Eimhin's Wind Turbine Technician assessment**. The People workspace provides illustrative context for the wider redeployment journey; this assessment is the primary developed experience. Conceptual keeper profiles remain available by their existing routes but are outside the normal reviewer journey.
 
-1. **Begin in the Redeployment workspace.** Scan Employment intention, Progress and Next action. The starting point is supporting people through redeployment; retirement cases remain visible without placement suggestions. Choose **View profile** beneath **Eimhin Mac Neidhe**.
-2. **Read Eimhin's Career context.** Career intentions, preferences and Opportunities under consideration provide the individual context. The profile and additional roles frame the wider journey. Open **Wind Turbine Technician** at Carrowmore Array for the main assessment.
+1. **Begin in the Redeployment workspace.** Scan Employment intention, Progress and Next action. Eimhin has three opportunities under consideration; Coilean's undecided example prompts a conversation or questionnaire follow-up, and retirement cases remain visible without placement suggestions.
+2. **Open Eimhin's assessment.** Choose **Wind Turbine Technician** at Carrowmore Array in Eimhin's row. This takes you directly to the detailed assessment. The breadcrumb retains his name as context and provides a **People** link back to the workspace.
 3. **Investigate why the role could fit.** Read **Why this could work**, expand **Pump maintenance & repair**, then choose **View evidence**. Original logbook passages support the maintenance assessment; **View source details** exposes provenance. Notice the early records' date-attribution concerns alongside their exclusion controls.
 4. **Compare qualification evidence.** Expand **Sea survival** and **First aid**: one has a module pass, the other has no certificate in the selected records. **Record verification** captures a document the officer has checked. **Assign training** supports an established training need.
 5. **Make a decision and prepare an introduction.** Beside **Your assessment**, choose **Record**, select **Potential match**, then **Save assessment**. Eimhin starts **Interested** as a demonstration scenario, so Next action offers **Prepare candidate introduction**. Try **Edit introduction → Review introduction → Save introduction draft**. Close the drawer and use **People** in the breadcrumb: this opportunity now shows **Preparing introduction**. Reopening the assessment retains the same draft and progress.
@@ -37,8 +37,8 @@ To explore the final step, reopen the introduction and choose **Review with Eimh
 
 | Scope | What to expect |
 | --- | --- |
-| Implemented | Eimhin's assessment, evidence inspection and supporting workflow, including local training assignments and introductions. Profile editing and curated opportunity selection also persist. |
-| Illustrative | The wider journey, six-person directory's sample intentions and associations, other opportunities and interview/employment outcomes. Only Eimhin's turbine role opens a detailed assessment. |
+| Implemented | Eimhin's assessment, evidence inspection and supporting workflow, including local training assignments and introductions. Career-context editing persists; existing opportunity selections are retained. |
+| Illustrative | The profile's conceptual career-planning view, wider journey, six-person directory's sample intentions and associations, other opportunities and interview/employment outcomes. Only Eimhin's turbine role opens a detailed assessment. |
 | Not implemented | Live matching, live AI inference, automatic ingestion of all personnel records, external qualification verification, course booking, real employer communication, authentication, backend or production integrations. |
 
 Evidence is curated from Pearson's synthetic data pack. The bounded audit contains 18 pump, 48 electrical and two planning/permit matches before exclusions: recorded entries, not actual work frequency. Historical fixture interpretation uses 31 December 2026; new verification uses today's Europe/London date. Source attribution and date limitations are documented below.

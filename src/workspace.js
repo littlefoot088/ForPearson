@@ -193,7 +193,7 @@ export function workspaceReducer(state, action) {
     }
     case "keeper-opportunity-add": {
       const keeper = peopleForWorkspace(state).find((p) => p.id === action.id);
-      if (!keeper || ["Planning retirement", "Employment arranged"].includes(keeper.intention)
+      if (!keeper || keeper.intention !== "Seeking employment"
         || !vacancyOptions.some((v) => v.id === action.opportunityId)
         || keeper.consideredOpportunities.some((o) => o.id === action.opportunityId)) return state;
       const existing = state.keeperProfiles?.[action.id] ?? {};

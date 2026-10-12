@@ -40,6 +40,13 @@ export const illustrativePeople = [
         progress: "Interview invited",
         nextAction: "Confirm interview arrangements",
       },
+      {
+        id: "survey",
+        title: "Offshore Survey Technician",
+        employer: "Deepline Offshore Ltd",
+        progress: "To do",
+        nextAction: "Review suitability",
+      },
     ],
   },
   {
@@ -113,7 +120,8 @@ export function peopleForWorkspace(workspace) {
     {
       id: person.id,
       name: person.name,
-      intention: person.careerIntention,
+      // Agreed job-seeking demonstration scenario, separate from source records.
+      intention: "Seeking employment",
       currentPerson: true,
       opportunities: [
         { ...vacancy, ...assessmentOverview(workspace), implemented: true },
@@ -146,10 +154,12 @@ export function peopleForWorkspace(workspace) {
       }
     }
     const inactive = intention === "Planning retirement" || intention === "Employment arranged";
+    const undecided = intention === "Not yet decided";
     return { ...p, intention, careerPreferences: saved?.preferences ?? "",
+      intentionFollowup: undecided ? "Discuss their plans or remind them to complete their questionnaire." : null,
       contextUpdatedAt: saved?.updatedAt,
       consideredOpportunities: opportunities,
-      opportunities: intention === "Planning retirement" ? [] : opportunities.map((o) => inactive ? { ...o, nextAction: null } : o),
+      opportunities: undecided || intention === "Planning retirement" ? [] : opportunities.map((o) => inactive ? { ...o, nextAction: null } : o),
     };
   });
   return resolved.sort(
@@ -168,6 +178,6 @@ export function filterPeople(people, search, intention, attentionOnly) {
     (p) =>
       normalize(p.name).includes(normalize(search.trim())) &&
       (!intention || p.intention === intention) &&
-      (!attentionOnly || p.opportunities.some((o) => o.nextAction)),
+      (!attentionOnly || p.intentionFollowup || p.opportunities.some((o) => o.nextAction)),
   );
 }

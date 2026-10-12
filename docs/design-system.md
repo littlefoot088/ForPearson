@@ -24,7 +24,9 @@ Application typography is locally hosted IBM Plex Sans, with system fallbacks an
 
 People groups opportunities by person on one white list surface. Keep intention close to the person's name. Opportunity, Progress and Next action align across rows and receive explicit labels on narrow screens. Use links only for implemented destinations.
 
-Profiles use the existing rounded white career-context and opportunity panels. Career context and opportunity selection use drawers; they do not need separate edit pages.
+Profiles use rounded white surfaces for career context and a reusable Career planning and opportunities conceptual section. Eimhin's profile introduces his background from existing personnel and selected work records, with limitations stated. Career context explains what belongs here and gives guidance when preferences are unrecorded, without inventing answers. Its existing edit drawer remains functional. A quiet Conceptual view label distinguishes the wider journey; only Eimhin has the underlined Explore Wind Turbine Technician assessment link. Do not display opportunity rows, progress, next actions or Explore controls on profiles.
+
+For Not yet decided intentions, use a simple follow-up block across the list's opportunity area: Clarify employment plans, followed by conversation/questionnaire guidance. Do not show job rows or opportunity progress badges. All profiles use the conceptual career-planning presentation; earlier opportunity selections remain stored.
 
 The assessment separates candidate/opportunity context and Why this could work, relevant experience, and safety/medical requirements into white panels. Name and rationale share a panel. The neutral officer workspace contains progress/status, tasks and conversations. Desktop uses the existing 8/4 Mantine grid and bounded sticky workspace. Below md, progress appears after the summary and before experience through the existing portal; tasks and conversations follow the assessment. Do not duplicate the progress component or change reading order through CSS alone.
 
